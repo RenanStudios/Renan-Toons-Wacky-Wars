@@ -165,46 +165,75 @@
             cursor: pointer;
         }
 
-        /* Faixas diagonais estilo Melee no fundo do lobby */
+        /* ===== LOBBY: fundo estilo menu do Melee (grade azul + brilhos) ===== */
+        #lobby-overlay {
+            background:
+                radial-gradient(ellipse at 30% 60%, rgba(60,70,255,0.35) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 30%, rgba(90,60,220,0.25) 0%, transparent 50%),
+                linear-gradient(160deg, #060a26 0%, #0b1240 50%, #04061a 100%);
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
         #lobby-overlay::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-                -35deg,
-                rgba(255,205,25,0.07) 0px, rgba(255,205,25,0.07) 26px,
-                transparent 26px, transparent 60px
-            );
+            inset: -40px;
+            background:
+                linear-gradient(rgba(140,160,255,0.16) 1px, transparent 1px) 0 0 / 38px 38px,
+                linear-gradient(90deg, rgba(140,160,255,0.16) 1px, transparent 1px) 0 0 / 38px 38px;
+            transform: perspective(600px) rotateX(18deg) scale(1.15);
+            animation: lobby-grid-move 6s linear infinite;
             pointer-events: none;
         }
-        #lobby-overlay::after { content: none; }
-
-        /* Túnel de raios de luz cruzados no fundo, estilo tela de título de jogo de luta */
-        #title-screen::before {
-            content: '';
-            position: absolute;
-            inset: -75%;
-            background:
-                repeating-conic-gradient(from 0deg,
-                    rgba(255,80,80,0.16) 0deg 4deg,
-                    rgba(80,140,255,0.16) 4deg 8deg,
-                    rgba(80,255,160,0.12) 8deg 12deg,
-                    transparent 12deg 22deg);
-            transform-origin: 50% 50%;
-            animation: rays-spin 40s linear infinite;
-            filter: blur(0.3px);
-        }
-        #title-screen::after {
+        @keyframes lobby-grid-move { to { background-position: 0 38px, 38px 0; } }
+        #lobby-overlay::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(ellipse at 50% 45%, rgba(5,7,15,0) 0%, rgba(5,7,15,0.55) 65%, rgba(5,7,15,0.92) 100%);
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 22% at 6% 34%, rgba(120,150,255,0.55), transparent 70%),
+                radial-gradient(ellipse 70% 40% at 55% 105%, rgba(120,90,255,0.35), transparent 70%),
+                radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(2,3,12,0.85) 100%);
         }
-        @keyframes rays-spin {
-            0%   { transform: rotate(0deg) scale(2); }
-            50%  { transform: rotate(180deg) scale(2.2); }
-            100% { transform: rotate(360deg) scale(2); }
+
+        /* Fundo da tela de título: esfera wireframe 3D + raios (esfera-grid) */
+        #title-screen { background: #0a0a0c; }
+        #title-screen .ts-mask {
+            position: absolute; inset: 0; overflow: hidden;
+            -webkit-mask: radial-gradient(circle, transparent 4%, #000 32%);
+            mask: radial-gradient(circle, transparent 4%, #000 32%);
         }
+        #title-screen .ts-rays {
+            position: absolute; inset: -25%; will-change: transform; opacity: .55;
+            background: repeating-conic-gradient(#1b22a0 0 4deg, #0a0a0c 4deg 7deg, #8a1838 7deg 11deg, #0a0a0c 11deg 14deg);
+            animation: ts-rot 120s linear infinite;
+        }
+        #title-screen .ts-scene {
+            position: absolute; inset: 0; perspective: 220px; perspective-origin: 50% 50%; overflow: hidden;
+        }
+        #title-screen .ts-sphere {
+            position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+            transform-style: preserve-3d; will-change: transform; animation: ts-spin 70s linear infinite;
+        }
+        #title-screen .ts-ring {
+            position: absolute; left: 0; top: 0; border-radius: 50%; box-sizing: border-box;
+            border: 1px solid rgba(150,170,130,.45);
+        }
+        #title-screen .ts-ring.b { border: 2px solid rgba(50,60,235,.45); }
+        #title-screen .ts-ring.r { border: 2px solid rgba(225,50,80,.4); }
+        #title-screen .ts-ring.g { border-color: rgba(120,255,140,.3); }
+        #title-screen .ts-vig {
+            position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(circle, rgba(10,10,12,.85) 0, transparent 14%, transparent 55%, rgba(10,10,12,.7) 100%);
+        }
+        #title-screen.hidden .ts-rays, #title-screen.hidden .ts-sphere { animation-play-state: paused; }
+        @keyframes ts-rot { to { transform: rotate(360deg); } }
+        @keyframes ts-spin {
+            from { transform: rotate3d(.3,1,.1,0deg); }
+            to   { transform: rotate3d(.3,1,.1,360deg); }
+        }
+        @media (prefers-reduced-motion: reduce) { #title-screen .ts-rays, #title-screen .ts-sphere { animation: none; } }
 
         .title-screen-logo {
             position: relative;
@@ -271,107 +300,192 @@
         #lobby-card {
             position: relative;
             z-index: 1;
-            background: linear-gradient(160deg, #1c2a52 0%, #142145 60%, #0d1836 100%);
-            border: 2px solid #ffd60a;
-            border-radius: 4px;
-            padding: 28px 30px;
-            width: 340px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
-            text-align: center;
+            box-sizing: border-box;
+            width: min(640px, 94vw);
+            margin: auto;
+            padding: 30px 26px 44px;
+            background: linear-gradient(160deg, rgba(10,16,60,0.82), rgba(5,8,34,0.9));
+            border: 4px solid #3f63ff;
+            border-radius: 28px;
+            box-shadow: 0 0 0 2px rgba(10,14,50,0.9), 0 0 30px rgba(60,90,255,0.55), inset 0 0 40px rgba(50,80,255,0.25);
             font-family: Arial, Helvetica, sans-serif;
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            grid-template-areas: "nick nick" "tabs panel";
+            column-gap: 22px;
+            row-gap: 20px;
+            align-items: start;
         }
 
-        .lobby-logo {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            margin: 0 auto 20px;
-            filter: drop-shadow(0 0 18px rgba(120,180,255,0.55)) drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+        /* Título com "aba" no canto, como o "Main Menu" */
+        .lobby-head {
+            position: absolute;
+            top: -46px;
+            left: 22px;
+            padding-right: 70px;
+            font-size: 30px;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: 1px;
+            text-transform: none;
+            background: linear-gradient(#e9ecf3, #8f96a8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.7));
+            pointer-events: none;
         }
-
-        .lobby-tabs {
-            display: flex;
-            margin-bottom: 18px;
-            border-radius: 3px;
-            overflow: hidden;
-            border: 2px solid #3a4d8f;
+        .lobby-head::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 6px;
+            width: 54px;
+            height: 22px;
+            background: repeating-linear-gradient(-60deg, #4b6cff 0 6px, transparent 6px 11px);
+            opacity: 0.9;
         }
-
-        .lobby-tab {
-            flex: 1;
-            padding: 9px;
-            cursor: pointer;
-            background: #1c2a52;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            color: #9aa8d0;
-            transition: all 150ms ease;
-        }
-
-        .lobby-tab.active {
-            background: #ffd60a;
-            color: #16234d;
-        }
-
-        .lobby-section { display: none; }
-        .lobby-section.open { display: block; }
 
         #lobby-card input[type="text"] {
             width: 100%;
             box-sizing: border-box;
-            padding: 9px 12px;
-            margin-bottom: 12px;
-            border-radius: 3px;
-            border: 2px solid #3a4d8f;
-            background: #0d1836;
-            font-size: 14px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            border: 2px solid #3f63ff;
+            background: rgba(2,4,20,0.85);
+            font-size: 15px;
+            font-weight: 700;
             color: #fff;
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(60,90,255,0.35);
         }
+        #lobby-card input[type="text"]:focus {
+            border-color: #ffe600;
+            box-shadow: 0 0 12px rgba(255,230,0,0.5), inset 0 0 10px rgba(60,90,255,0.35);
+        }
+        #lobby-card input[type="text"]::placeholder { color: #7f8bc4; font-weight: 600; }
+        #lobby-nick { grid-area: nick; }
+
+        /* Abas = itens de menu em "pílula", ativo em amarelo */
+        .lobby-tabs {
+            grid-area: tabs;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            filter: drop-shadow(0 0 7px rgba(255,170,0,0.6));
+        }
+        .lobby-tab {
+            position: relative;
+            isolation: isolate;
+            padding: 16px 30px 16px 34px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 21px;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: 0.5px;
+            color: #ffb52e;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+            background: #f2a51c;
+            clip-path: polygon(9% 0, 100% 0, 100% 100%, 9% 100%, 0 50%);
+            transition: transform 150ms ease, color 150ms ease;
+            user-select: none;
+        }
+        .lobby-tab::before {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            z-index: -1;
+            background: linear-gradient(#0b0d18, #04050b);
+            clip-path: polygon(9% 0, 100% 0, 100% 100%, 9% 100%, 0 50%);
+        }
+        .lobby-tab::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            margin-top: -6px;
+            border-radius: 50%;
+            border: 3px solid #f2a51c;
+            box-sizing: border-box;
+        }
+        .lobby-tab:hover { transform: translateX(6px); color: #ffd36a; }
+        .lobby-tab.active {
+            background: #fff200;
+            color: #14162a;
+            text-shadow: none;
+            transform: translateX(10px);
+        }
+        .lobby-tab.active::before { background: linear-gradient(#fff86a, #ffe800); }
+        .lobby-tab.active::after {
+            border-color: #14162a;
+            background: radial-gradient(circle, #6cff8c 0 30%, transparent 32%);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.7);
+        }
+
+        /* Painel translúcido ciano à direita */
+        .lobby-section { display: none; grid-area: panel; }
+        .lobby-section.open {
+            display: block;
+            padding: 20px 18px;
+            border-radius: 14px;
+            background: linear-gradient(160deg, rgba(60,200,220,0.28), rgba(30,120,170,0.22));
+            border: 2px solid rgba(170,235,245,0.5);
+            box-shadow: 0 0 18px rgba(80,210,230,0.25), inset 0 0 20px rgba(120,230,255,0.12);
+            backdrop-filter: blur(2px);
+        }
+        .lobby-section #lobby-join-code { margin-bottom: 14px; text-align: center; letter-spacing: 3px; font-size: 18px; }
 
         #lobby-card button.main-btn {
             width: 100%;
-            padding: 11px;
-            border-radius: 3px;
-            border: 2px solid #ffd60a;
-            background: linear-gradient(#e8b400, #b58200);
-            color: #16234d;
-            font-size: 14px;
+            padding: 14px;
+            border-radius: 10px;
+            border: 3px solid #fff8a0;
+            background: linear-gradient(#fff86a, #ffd800);
+            color: #14162a;
+            font-size: 17px;
             font-weight: 900;
+            font-style: italic;
             letter-spacing: 1px;
             text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-        }
-
-        #lobby-card button.main-btn {
+            box-shadow: 0 0 14px rgba(255,220,0,0.55), 0 4px 8px rgba(0,0,0,0.5);
             transition: filter 150ms ease, transform 120ms ease, box-shadow 150ms ease;
         }
-
         #lobby-card button.main-btn:hover {
-            filter: brightness(1.18);
+            filter: brightness(1.1);
             transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.55), 0 0 0 2px rgba(255,214,10,0.35);
+            box-shadow: 0 0 22px rgba(255,230,0,0.8), 0 6px 14px rgba(0,0,0,0.55);
         }
-
         #lobby-card button.main-btn:active {
             transform: translateY(1px);
             filter: brightness(0.95);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-
         #lobby-card button.main-btn:disabled {
             cursor: not-allowed;
             opacity: 0.6;
             filter: grayscale(0.4);
             transform: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
         }
-
         #lobby-card button.main-btn:disabled:hover {
             transform: none;
             filter: grayscale(0.4);
+        }
+
+        @media (max-width: 560px) {
+            #lobby-card {
+                grid-template-columns: 1fr;
+                grid-template-areas: "nick" "tabs" "panel";
+                padding: 26px 16px 44px;
+                margin-top: 60px;
+            }
+            .lobby-head { font-size: 24px; top: -38px; }
+            .lobby-tabs { flex-direction: row; gap: 8px; }
+            .lobby-tab { flex: 1; font-size: 16px; padding: 14px 22px 14px 26px; }
+            .lobby-tab::after { display: none; }
+            .lobby-tab:hover, .lobby-tab.active { transform: none; }
         }
 
         /* Pequeno spinner exibido dentro do botão enquanto host/join está em andamento */
@@ -388,117 +502,170 @@
         }
         @keyframes btn-spinner-spin { to { transform: rotate(360deg); } }
 
+        /* Barra de legenda inferior, como o "Solo Smash!" */
         #lobby-status {
-            margin-top: 10px;
-            font-size: 13px;
+            position: absolute;
+            left: 50%;
+            bottom: -24px;
+            transform: translateX(-50%);
+            box-sizing: border-box;
+            width: min(70%, 420px);
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 14px;
+            background: linear-gradient(#0a0b14, #030409);
+            border: 3px solid #d7dbe6;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.7);
+            font-size: 18px;
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
+            text-align: center;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
             transition: color 150ms ease;
         }
-        #lobby-status.status-error {
-            color: #ff6b6b;
-        }
-        #lobby-status.status-warn {
-            color: #ffd60a;
-        }
-        #lobby-status.status-ok {
-            color: #6bffb0;
-            min-height: 18px;
-        }
+        #lobby-status:empty::before { content: 'Jogue com seus amigos!'; }
+        #lobby-status.status-error { color: #ff6b6b; }
+        #lobby-status.status-warn { color: #ffd60a; }
+        #lobby-status.status-ok { color: #6bffb0; }
 
         #lobby-room-display {
             display: none;
-            margin-top: 12px;
+            margin-top: 14px;
             padding: 12px;
-            background: #0d1836;
-            border: 2px solid #3a4d8f;
-            border-radius: 3px;
+            background: rgba(2,4,20,0.8);
+            border: 2px solid #3f63ff;
+            border-radius: 10px;
             color: #fff;
             font-size: 13px;
+            text-align: center;
         }
 
         #lobby-room-code {
-            font-size: 22px;
+            font-size: 30px;
             font-weight: 900;
-            color: #ffd60a;
-            letter-spacing: 2px;
+            font-style: italic;
+            color: #fff200;
+            letter-spacing: 4px;
+            text-shadow: 0 0 12px rgba(255,230,0,0.6);
         }
 
         #lobby-player-list {
             margin-top: 8px;
-            font-size: 13px;
-            color: #cdd6f0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #dfe6ff;
             text-align: left;
         }
 
-        /* ============ SALA DE ESPERA (seleção de personagem) — estética Melee ============ */
+        /* ============ SELEÇÃO DE PERSONAGEM — estética Melee VS ============ */
         #ready-overlay {
             position: fixed;
             inset: 0;
             z-index: 100;
-            background: linear-gradient(160deg, #0d1c3d 0%, #142a5c 45%, #0a1630 100%);
+            background:
+                linear-gradient(180deg, #5b6474 0%, #465063 9%, #0e1a36 24%, #0a1330 70%, #070d22 100%);
             overflow: auto;
             display: none;
             font-family: Arial, Helvetica, sans-serif;
         }
+        /* linhas horizontais e faixa diagonal amarela, como no fundo do Melee */
         #ready-overlay::before {
             content: '';
-            position: absolute;
+            position: fixed;
             inset: 0;
-            background: repeating-linear-gradient(
-                -35deg,
-                rgba(255,205,25,0.07) 0px, rgba(255,205,25,0.07) 26px,
-                transparent 26px, transparent 60px
-            );
             pointer-events: none;
+            background:
+                linear-gradient(115deg, transparent 0 78%, rgba(255,214,10,0.9) 78.15% 78.6%, transparent 78.75%) 0 0 / 100% 120px no-repeat,
+                linear-gradient(rgba(150,165,200,0.25) 0 2px, transparent 2px) 0 108px / 100% 100% no-repeat,
+                linear-gradient(rgba(150,165,200,0.18) 0 2px, transparent 2px) 0 92% / 100% 100% no-repeat,
+                repeating-linear-gradient(-35deg, rgba(90,120,255,0.05) 0 30px, transparent 30px 70px);
         }
         #ready-inner {
             position: relative;
             z-index: 1;
-            max-width: 680px;
+            max-width: 780px;
             margin: 0 auto;
-            padding: 26px 20px 40px;
+            padding: 22px 16px 44px;
             text-align: center;
+        }
+
+        /* Cabeçalho: logo + VS + plaquinha com o título */
+        #ready-head {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .ready-logo {
+            font-size: 34px;
+            font-weight: 900;
+            font-style: italic;
+            transform: skewX(-8deg);
+            color: #0a0a10;
+            letter-spacing: -1px;
+            text-shadow: 0 0 1px #fff, 1px 1px 0 rgba(255,255,255,0.35);
+            -webkit-text-stroke: 1px rgba(255,255,255,0.25);
+        }
+        .ready-vs {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-style: italic; font-size: 20px;
+            color: #cfd6e6;
+            background: radial-gradient(circle at 35% 30%, #4a5366, #1a2030);
+            border: 3px solid #2a3145;
+            box-shadow: 0 0 0 2px rgba(200,210,230,0.35);
         }
         #ready-title {
             display: inline-block;
-            font-weight: 900;
-            font-style: italic;
-            letter-spacing: 1px;
-            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-size: 22px;
             color: #fff;
-            background: linear-gradient(#2b3f7a, #16234d);
-            padding: 6px 26px;
-            clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%);
-            border: 2px solid #ffd60a;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            margin-bottom: 22px;
-            text-shadow: 0 2px 3px rgba(0,0,0,0.7);
+            background: linear-gradient(#0a0e1c, #04060f);
+            padding: 8px 34px;
+            border: 3px solid #aab4cc;
+            border-radius: 10px;
+            box-shadow: 0 0 0 3px #0a0e1c, 0 4px 12px rgba(0,0,0,0.6);
+            text-shadow: 0 2px 3px rgba(0,0,0,0.8);
         }
+
+        /* Grade de personagens */
         #char-select-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            margin-bottom: 24px;
-            background: rgba(0,0,0,0.35);
-            border: 2px solid #ffd60a;
-            border-radius: 4px;
-            padding: 10px;
+            gap: 6px;
+            margin: 0 auto 20px;
+            max-width: 640px;
+            padding: 0;
         }
         .char-slot {
-            background: linear-gradient(#1c2a52, #0f1836);
-            border: 2px solid #3a4d8f;
-            border-radius: 4px;
-            padding: 6px 4px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 6px;
+            border: 3px solid #8e98b0;
+            background: linear-gradient(160deg, #55617a, #2b3348);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 2px 5px rgba(0,0,0,0.5);
+            transition: transform 120ms ease, box-shadow 150ms ease, border-color 150ms ease;
         }
-        .char-slot.playable {
-            border-color: #ffd60a;
-            box-shadow: 0 0 10px rgba(255,214,10,0.6);
-            cursor: pointer;
+        .char-slot.playable { cursor: pointer; border-color: #d6dcec; }
+        .char-slot.playable:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: #fff200;
+            box-shadow: 0 0 14px rgba(255,242,0,0.75), 0 6px 10px rgba(0,0,0,0.5);
+            z-index: 2;
         }
         .char-slot.playable.selected {
-            border-color: #3ddc61;
-            box-shadow: 0 0 14px rgba(61,220,97,0.8);
+            border-color: #fff200;
+            box-shadow: 0 0 0 2px #ff9d00, 0 0 18px rgba(255,214,10,0.9);
+            animation: char-slot-pulse 1.2s ease-in-out infinite;
+        }
+        @keyframes char-slot-pulse {
+            50% { box-shadow: 0 0 0 2px #ff9d00, 0 0 8px rgba(255,214,10,0.5); }
         }
         .char-slot img, .char-slot .char-slot-placeholder {
             width: 100%;
@@ -506,106 +673,116 @@
             object-fit: contain;
             image-rendering: pixelated;
             display: block;
-            border-radius: 3px;
-            background: rgba(0,0,0,0.4);
+            background: transparent;
+        }
+        .char-slot .char-slot-placeholder { position: relative; }
+        .char-slot .char-slot-placeholder::after {
+            content: '?';
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.28);
         }
         .char-slot-name {
+            position: absolute;
+            left: 0; right: 0; bottom: 0;
+            padding: 3px 2px 2px;
+            background: linear-gradient(transparent, rgba(4,6,15,0.92) 35%);
             font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: #fff;
-            margin-top: 4px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #e8ecf7;
             text-transform: uppercase;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
         }
-        .char-slot.locked { opacity: 0.4; }
+        .char-slot.locked { opacity: 0.55; filter: saturate(0.5); }
         .char-slot.locked .char-slot-name { color: #9aa8d0; }
 
+        /* Fichas dos jogadores (P1..P4) — cores como no Melee */
         #ready-player-list {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
         .ready-pcard {
+            --pc: #d64545; --pc2: #6e1a22; --pcl: #ff7a7a;
             position: relative;
-            width: 132px;
-            background: linear-gradient(165deg, #1c2a52 0%, #142145 55%, #0d1836 100%);
-            clip-path: polygon(0 12px, 12px 0, 100% 0, 100% 100%, 0 100%);
-            border: 2px solid #3a4d8f;
-            padding: 0 0 12px;
-            transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
-            overflow: hidden;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            width: 168px;
+            background: linear-gradient(170deg, var(--pc), var(--pc2));
+            border: 3px solid #c9d0e2;
+            border-radius: 6px;
+            padding: 22px 8px 8px;
+            box-shadow: 0 0 0 2px rgba(10,14,30,0.8), 0 8px 16px rgba(0,0,0,0.5);
+            transition: box-shadow 200ms ease, transform 200ms ease;
         }
+        .ready-pcard.p2 { --pc: #3f5cff; --pc2: #16227a; --pcl: #8fa2ff; }
+        .ready-pcard.p3 { --pc: #e9c21c; --pc2: #7a5f08; --pcl: #fff07a; }
+        .ready-pcard.p4 { --pc: #2fb84f; --pc2: #145a28; --pcl: #86f0a0; }
         .ready-pcard.is-ready {
-            border-color: #ffd60a;
-            box-shadow: 0 0 20px rgba(255,214,10,0.5), 0 8px 16px rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 2px rgba(10,14,30,0.8), 0 0 22px var(--pcl), 0 8px 16px rgba(0,0,0,0.5);
             transform: translateY(-4px);
         }
+        /* plaquinha dourada no canto (P1..P4) */
         .ready-pcard-tag {
-            position: relative;
-            display: block;
-            width: 100%;
-            text-align: center;
-            font-size: 11px;
+            position: absolute;
+            top: -3px; left: -8px;
+            padding: 3px 22px 3px 12px;
+            font-size: 14px;
             font-weight: 900;
-            letter-spacing: 2px;
-            color: #16234d;
-            background: #ffd60a;
-            padding: 4px 0 5px;
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 40%, 6px 0);
-            z-index: 2;
+            font-style: italic;
+            letter-spacing: 1px;
+            color: #3a2600;
+            background: linear-gradient(#ffe27a, #d69a12);
+            border: 2px solid #8a5c00;
+            clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+            z-index: 3;
         }
-        /* Faixa diagonal colorida atrás do personagem, estilo "spotlight" de ficha de jogo de luta */
         .ready-pcard-stage {
             position: relative;
             width: 100%;
-            height: 92px;
+            height: 140px;
             overflow: hidden;
-            background: #0a1024;
+            border-radius: 8px 8px 0 0;
+            border: 3px solid rgba(0,0,0,0.45);
+            background:
+                radial-gradient(ellipse at 50% 85%, var(--pcl) 0%, transparent 65%),
+                linear-gradient(170deg, var(--pc2), #05070f);
             perspective: 300px;
         }
         .ready-pcard-stage::before {
             content: '';
             position: absolute;
             inset: -20% -40%;
-            background: repeating-linear-gradient(
-                -35deg,
-                rgba(255,214,10,0.10) 0px, rgba(255,214,10,0.10) 10px,
-                transparent 10px, transparent 22px
-            );
+            background: repeating-linear-gradient(-35deg, rgba(255,255,255,0.10) 0 10px, transparent 10px 24px);
         }
         .ready-pcard.is-ready .ready-pcard-stage::before {
-            background: repeating-linear-gradient(
-                -35deg,
-                rgba(255,214,10,0.22) 0px, rgba(255,214,10,0.22) 10px,
-                transparent 10px, transparent 22px
-            );
+            background: repeating-linear-gradient(-35deg, rgba(255,255,255,0.22) 0 10px, transparent 10px 24px);
         }
-        /* Disco 3D giratório sob o personagem, estilo pedestal de exibição */
         .ready-pcard-disk {
             position: absolute;
             left: 50%;
-            bottom: -14px;
-            width: 70px;
-            height: 70px;
+            bottom: -18px;
+            width: 110px;
+            height: 110px;
             transform: translateX(-50%) rotateX(78deg);
             transform-style: preserve-3d;
             border-radius: 50%;
             background:
-                radial-gradient(circle at center, #d0d0d0 0%, #707070 35%, #404040 70%, #222222 100%),
+                radial-gradient(circle at center, #d0d0d0 0%, #707070 35%, #404040 70%, #222 100%),
                 repeating-conic-gradient(#555 0deg 15deg, #333 15deg 30deg);
             background-blend-mode: overlay;
-            border: 2px solid #888888;
-            outline: 1px dashed #aaaaaa;
+            border: 2px solid #888;
+            outline: 1px dashed #aaa;
             outline-offset: -6px;
-            box-shadow: 0 0 14px rgba(255,214,10,0.25), inset 0 0 8px rgba(0,0,0,0.8);
+            box-shadow: 0 0 16px var(--pcl), inset 0 0 8px rgba(0,0,0,0.8);
             animation: ready-pcard-disk-spin 6s linear infinite;
             z-index: 1;
-        }
-        .ready-pcard.is-ready .ready-pcard-disk {
-            box-shadow: 0 0 20px rgba(255,214,10,0.5), inset 0 0 8px rgba(0,0,0,0.8);
         }
         @keyframes ready-pcard-disk-spin {
             from { transform: translateX(-50%) rotateX(78deg) rotateZ(0deg); }
@@ -614,89 +791,111 @@
         .ready-pcard img {
             position: absolute;
             left: 50%;
-            bottom: 20px;
-            width: 62px;
-            height: 62px;
+            bottom: 26px;
+            width: 92px;
+            height: 92px;
             transform: translateX(-50%);
             object-fit: contain;
             image-rendering: pixelated;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.55));
+            filter: drop-shadow(0 5px 4px rgba(0,0,0,0.6));
             animation: ready-pcard-char-bob 2.4s ease-in-out infinite;
             z-index: 2;
         }
         @keyframes ready-pcard-char-bob {
             0%, 100% { transform: translateX(-50%) translateY(0); }
-            50%      { transform: translateX(-50%) translateY(-4px); }
+            50%      { transform: translateX(-50%) translateY(-5px); }
         }
+        /* placa com o nome, sobreposta à base do palco */
         .ready-pcard-name {
-            font-size: 12px;
-            font-weight: 700;
+            position: relative;
+            z-index: 3;
+            margin: -16px 14px 0;
+            padding: 3px 6px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1px;
             color: #fff;
-            margin: 8px 10px 0;
+            background: linear-gradient(#0b0f1f, #03050c);
+            border: 2px solid #b9c2d8;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: center;
         }
+        /* placa inferior com "P1" em marca d'água + status */
         .ready-pcard-status {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            margin: 7px 10px 0;
-            padding: 4px 0;
-            border-radius: 3px;
-            background: rgba(255,255,255,0.06);
-            color: #9aa8d0;
+            gap: 6px;
+            margin: -2px 0 0;
+            padding: 12px 0;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(#141a30, #070a18);
+            border: 3px solid rgba(0,0,0,0.5);
+            border-radius: 0 0 8px 8px;
+            color: #b9c2e0;
             text-transform: uppercase;
+            overflow: hidden;
         }
+        .ready-pcard-status::after {
+            content: 'P1';
+            position: absolute;
+            left: 8px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 34px; font-weight: 900; font-style: italic;
+            color: rgba(255,255,255,0.14);
+            pointer-events: none;
+        }
+        .ready-pcard.p2 .ready-pcard-status::after { content: 'P2'; }
+        .ready-pcard.p3 .ready-pcard-status::after { content: 'P3'; }
+        .ready-pcard.p4 .ready-pcard-status::after { content: 'P4'; }
         .ready-pcard-status::before {
             content: '';
-            width: 6px;
-            height: 6px;
+            width: 7px; height: 7px;
             border-radius: 50%;
             background: currentColor;
             box-shadow: 0 0 6px currentColor;
+            position: relative; z-index: 1;
         }
         .ready-pcard.is-ready .ready-pcard-status {
-            color: #16234d;
-            background: #ffd60a;
+            color: #14162a;
+            background: linear-gradient(#fff86a, #ffd800);
             animation: ready-pcard-status-pop 320ms ease;
         }
+        .ready-pcard.is-ready .ready-pcard-status::after { color: rgba(0,0,0,0.15); }
         @keyframes ready-pcard-status-pop {
             0%   { transform: scale(0.85); }
             55%  { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
-        /* "Aguardando" pisca sutilmente pra ficar visualmente inequívoco vs. "Pronto" sólido/dourado */
         .ready-pcard:not(.is-ready) .ready-pcard-status {
             animation: ready-pcard-waiting-pulse 1.6s ease-in-out infinite;
         }
         @keyframes ready-pcard-waiting-pulse {
-            0%, 100% { opacity: 0.65; }
+            0%, 100% { opacity: 0.7; }
             50%      { opacity: 1; }
         }
-        /* Selo de check verde que aparece no canto do card quando o jogador está pronto */
         .ready-pcard-check {
             position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 20px;
-            height: 20px;
+            top: 30px;
+            right: 14px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #2ecc71;
-            border: 2px solid #16234d;
+            border: 2px solid #fff;
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 900;
-            color: #16234d;
-            z-index: 3;
-            box-shadow: 0 0 8px rgba(46,204,113,0.7);
+            color: #0b2a14;
+            z-index: 4;
+            box-shadow: 0 0 10px rgba(46,204,113,0.8);
         }
         .ready-pcard.is-ready .ready-pcard-check {
             display: flex;
@@ -705,21 +904,45 @@
 
         #ready-overlay button.main-btn {
             width: auto;
-            min-width: 180px;
-            padding: 10px 30px;
-            border-radius: 3px;
-            border: 2px solid #ffd60a;
-            background: linear-gradient(#e8b400, #b58200);
-            color: #16234d;
-            font-size: 14px;
+            min-width: 200px;
+            padding: 12px 34px;
+            border-radius: 10px;
+            border: 3px solid #fff8a0;
+            background: linear-gradient(#fff86a, #ffd800);
+            color: #14162a;
+            font-size: 17px;
             font-weight: 900;
+            font-style: italic;
             letter-spacing: 1px;
             text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 0 14px rgba(255,220,0,0.5), 0 4px 8px rgba(0,0,0,0.5);
+            transition: filter 150ms ease, transform 120ms ease;
         }
-        #ready-overlay button.main-btn:hover { filter: brightness(1.1); }
+        #ready-overlay button.main-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
         #ready-overlay button.main-btn:active { transform: translateY(1px); }
+
+        #ready-count {
+            display: inline-block;
+            margin: -6px 0 16px;
+            padding: 3px 16px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ffe97a;
+            background: rgba(0,0,0,0.45);
+            border: 2px solid rgba(255,214,10,0.55);
+            border-radius: 999px;
+        }
+        .ready-pcard.empty { opacity: 0.4; filter: grayscale(0.75); transform: none; box-shadow: none; }
+        .ready-pcard.empty .ready-pcard-status { animation: none; }
+
+        @media (max-width: 560px) {
+            #char-select-grid { grid-template-columns: repeat(4, 1fr); }
+            .ready-logo { display: none; }
+            #ready-title { font-size: 16px; padding: 7px 18px; }
+            .ready-pcard { width: calc(50% - 6px); max-width: 168px; }
+        }
 
         /* ===== CONTADOR REGRESSIVO (3, 2, 1, LUTAR!) ===== */
         #countdown-overlay {
@@ -1452,6 +1675,29 @@
     </script>
 
     <div id="title-screen">
+        <div class="ts-mask"><div class="ts-rays"></div></div>
+        <div class="ts-scene"><div class="ts-sphere" id="ts-sphere"></div></div>
+        <div class="ts-vig"></div>
+        <script>
+        (function(){
+            const s=document.getElementById('ts-sphere'),R=300,rad=Math.PI/180;
+            function ring(w,t,cls){
+                const d=document.createElement('div');
+                d.className='ts-ring'+(cls?' '+cls:'');
+                d.style.width=d.style.height=w+'px';
+                d.style.marginLeft=d.style.marginTop=(-w/2)+'px';
+                d.style.transform=t;
+                s.appendChild(d);
+            }
+            for(let i=0;i<12;i++){
+                const c=i===1||i===7?'b':i===4||i===10?'r':i===2||i===8?'g':'';
+                ring(2*R,`rotateY(${i*15}deg)`,c);
+            }
+            for(let l=-75;l<=75;l+=15){
+                ring(2*R*Math.cos(l*rad),`translateY(${R*Math.sin(l*rad)}px) rotateX(90deg)`,l%30===0?'g':'');
+            }
+        })();
+        </script>
         <img src="game_logo.png" alt="Renan Toons Wacky Wars" class="title-screen-logo">
         <div style="position: absolute; bottom: 14%; width: 100%;">
             <div id="title-screen-press">TOQUE PARA COMEÇAR</div>
@@ -1460,6 +1706,7 @@
 
     <div id="lobby-overlay" style="display: none;">
         <div id="lobby-card">
+            <div class="lobby-head">Multijogador</div>
             <input type="text" id="lobby-nick" placeholder="Seu nome" maxlength="16">
             <div class="lobby-tabs">
                 <div id="lobby-tab-host" class="lobby-tab active">Criar Sala</div>
@@ -1486,7 +1733,12 @@
 
     <div id="ready-overlay">
         <div id="ready-inner">
-            <div id="ready-title">SELEÇÃO DE PERSONAGEM</div>
+            <div id="ready-head">
+                <span class="ready-logo">WACKY</span>
+                <span class="ready-vs">VS</span>
+                <div id="ready-title">SELEÇÃO DE PERSONAGEM</div>
+            </div>
+            <div id="ready-count">1/4 jogadores</div>
             <div id="char-select-grid">
                 <div class="char-slot playable" data-character="renanzinho">
                     <img src="Renanzinho Sprites/r_idle.png" alt="Renanzinho">
@@ -4946,18 +5198,27 @@
                 }
                 else if (data.type === 'leave') {
                     delete players[data.pid];
-                    if (this.role === 'host') this.broadcast(data, fromId);
+                    _removeFromRoster(data.pid);
+                    if (this.role === 'host') {
+                        this.broadcast(data, fromId);
+                        this.broadcastRoster();
+                    }
+                }
+                else if (data.type === 'roster') {
+                    if (this.role !== 'host') applyRoster(data);
                 }
                 else if (data.type === 'readyState') {
+                    if (!_hostNickMap[data.pid]) return; // ignora jogador que não está (mais) na sala
                     _readyState[data.pid] = data.ready;
                     renderReadyList();
-                    if (this.role === 'host') this.broadcast(data, fromId);
+                    if (this.role === 'host') this.broadcastRoster();
                 }
                 else if (data.type === 'characterSelect') {
+                    if (!_hostNickMap[data.pid]) return;
                     _characterMap[data.pid] = data.character;
                     if (players[data.pid]) players[data.pid].character = data.character;
                     renderReadyList();
-                    if (this.role === 'host') this.broadcast(data, fromId);
+                    if (this.role === 'host') this.broadcastRoster();
                 }
                 else if (data.type === 'readyCursor') {
                     updateReadyCursor(data.pid, data.x, data.y);
@@ -4984,7 +5245,30 @@
             removePlayer(id) {
                 delete players[id];
                 delete this.conns[id];
+                _removeFromRoster(id);
                 this.broadcast({ type: 'leave', pid: id });
+                this.broadcastRoster();
+            },
+
+            // O HOST é a fonte da verdade da sala: monta a lista completa (ordem, nomes,
+            // pronto e personagem de cada jogador) para todo mundo ver exatamente o mesmo.
+            buildRoster() {
+                const order = Object.keys(_hostNickMap);
+                const ready = {}, characters = {};
+                for (const pid of order) {
+                    ready[pid] = pid === myUserId ? !!amIReady : !!_readyState[pid];
+                    characters[pid] = pid === myUserId
+                        ? myPlayerState.character
+                        : (_characterMap[pid] || 'renanzinho');
+                }
+                return { order, nickMap: _hostNickMap, ready, characters };
+            },
+
+            broadcastRoster() {
+                if (this.role !== 'host') return;
+                this.broadcast(Object.assign({ type: 'roster' }, this.buildRoster()));
+                renderReadyList();
+                updateLobbyPlayerList();
             }
         };
 
@@ -5022,6 +5306,7 @@
                 document.querySelectorAll('#char-select-grid .char-slot.playable').forEach(el => el.classList.remove('selected'));
                 slotEl.classList.add('selected');
                 MP.broadcastToAll({ type: 'characterSelect', pid: myUserId, character: characterId });
+                if (MP.role === 'host') MP.broadcastRoster();
             });
         });
 
@@ -5074,13 +5359,13 @@
         }
 
         function renderReadyList() {
-            const pids = Object.keys(_readyState);
+            const pids = (MP.role === 'host' ? Object.keys(_hostNickMap) : _rosterOrder).filter(pid => _hostNickMap[pid]);
             const cards = pids.map((pid, i) => {
                 const name = nickFor(pid) + (pid === myUserId ? ' (você)' : '');
                 const ready = _readyState[pid];
                 const charId = (pid === myUserId ? myPlayerState.character : (_characterMap[pid] || (players[pid] && players[pid].character))) || 'renanzinho';
                 const iconSrc = (CHARACTERS[charId] || CHARACTERS.renanzinho).sprites.idle.src;
-                return `<div class="ready-pcard${ready ? ' is-ready' : ''}">
+                return `<div class="ready-pcard p${(i % 4) + 1}${ready ? ' is-ready' : ''}">
                     <div class="ready-pcard-check">✓</div>
                     <div class="ready-pcard-tag">P${i + 1}</div>
                     <div class="ready-pcard-stage">
@@ -5091,7 +5376,17 @@
                     <div class="ready-pcard-status">${ready ? 'Pronto' : 'Aguardando'}</div>
                 </div>`;
             });
+            for (let i = pids.length; i < MAX_PLAYERS; i++) {
+                cards.push(`<div class="ready-pcard empty p${i + 1}">
+                    <div class="ready-pcard-tag">P${i + 1}</div>
+                    <div class="ready-pcard-stage"></div>
+                    <div class="ready-pcard-name">---</div>
+                    <div class="ready-pcard-status">Vaga aberta</div>
+                </div>`);
+            }
             readyPlayerList.innerHTML = cards.join('');
+            const countEl = document.getElementById('ready-count');
+            if (countEl) countEl.textContent = `${pids.length}/${MAX_PLAYERS} jogadores`;
             const allReady = pids.length >= 2 && pids.every(pid => _readyState[pid]);
             readyStartBtn.style.display = (MP.role === 'host' && allReady) ? 'inline-block' : 'none';
         }
@@ -5102,10 +5397,11 @@
             _readyState[myUserId] = amIReady;
             renderReadyList();
             MP.broadcastToAll({ type: 'readyState', pid: myUserId, ready: amIReady });
+            if (MP.role === 'host') MP.broadcastRoster();
         });
 
         readyStartBtn.addEventListener('click', () => {
-            if (Object.keys(_readyState).length < 2) return;
+            if (Object.keys(_hostNickMap).length < 2) return;
             MP.broadcastToAll({ type: 'gameStart' });
             runCountdownThenBegin();
         });
@@ -5192,7 +5488,40 @@
 
         const lobbyStatus = document.getElementById('lobby-status');
         let _hostNickMap = {};
+        let _rosterOrder = []; // ordem dos jogadores (P1, P2...) definida pelo host
         let _characterMap = {}; // pid -> characterId escolhido na tela de espera (separado de players, que só existe na gameplay)
+
+        // Remove um jogador de toda a lista local (nome, pronto, personagem, cursor)
+        function _removeFromRoster(pid) {
+            delete _hostNickMap[pid];
+            delete _readyState[pid];
+            delete _characterMap[pid];
+            _rosterOrder = _rosterOrder.filter(x => x !== pid);
+            if (_readyCursorEls[pid]) { _readyCursorEls[pid].remove(); delete _readyCursorEls[pid]; }
+            renderReadyList();
+            updateLobbyPlayerList();
+        }
+
+        // Cliente: substitui a lista local pela lista oficial enviada pelo host
+        function applyRoster(r) {
+            if (!r || !r.order) return;
+            _hostNickMap = Object.assign({}, r.nickMap);
+            _rosterOrder = r.order.slice();
+            for (const pid of Object.keys(_readyState)) {
+                if (!_hostNickMap[pid]) delete _readyState[pid];
+            }
+            for (const pid of _rosterOrder) {
+                _readyState[pid] = (pid === myUserId) ? amIReady : !!(r.ready && r.ready[pid]);
+                if (pid !== myUserId && r.characters && r.characters[pid]) {
+                    _characterMap[pid] = r.characters[pid];
+                    if (players[pid]) players[pid].character = r.characters[pid];
+                }
+            }
+            for (const pid of Object.keys(_readyCursorEls)) {
+                if (!_hostNickMap[pid]) { _readyCursorEls[pid].remove(); delete _readyCursorEls[pid]; }
+            }
+            renderReadyList();
+        }
 
         // Traduz os códigos de erro do PeerJS para mensagens amigáveis em português,
         // já que por padrão eles vêm crus (ex.: "peer-unavailable", "network").
@@ -5256,7 +5585,7 @@
                     MP.conns[MP.hostId] = conn;
                     conn.on('open', () => {
                         _reconnectAttempts = 0;
-                        conn.send({ type: 'nick', nick: myPlayerState.name });
+                        conn.send({ type: 'nick', nick: myPlayerState.name, character: myPlayerState.character });
                         statusText.innerText = 'Reconectado!';
                         connectionDot.className = 'status-dot connected';
                         attachClientConnHandlers(conn, MP.hostId);
@@ -5311,7 +5640,7 @@
 
             MP.peer.on('connection', (conn) => {
                 // Sala cheia: recusa a conexão e avisa o cliente, sem adicioná-lo aos jogadores
-                const currentCount = Object.keys(_hostNickMap).length;
+                const currentCount = Math.max(Object.keys(_hostNickMap).length, Object.keys(MP.conns).length + 1);
                 if (currentCount >= MAX_PLAYERS) {
                     conn.on('open', () => {
                         conn.send({ type: 'roomFull' });
@@ -5323,15 +5652,14 @@
                 MP.conns[conn.peer] = conn;
                 conn.on('open', () => {
                     // Manda para o novo cliente o estado de todos os jogadores já na sala e da caixa de arma
-                    conn.send({ type: 'welcome', players: players, nickMap: _hostNickMap });
+                    conn.send({ type: 'welcome', players: players, nickMap: _hostNickMap, roster: MP.buildRoster() });
                 });
                 conn.on('data', (data) => {
                     if (data.type === 'nick') {
                         _hostNickMap[conn.peer] = data.nick;
                         _readyState[conn.peer] = false;
-                        updateLobbyPlayerList();
-                        renderReadyList();
-                        MP.broadcast({ type: 'nickUpdate', pid: conn.peer, nick: data.nick });
+                        _characterMap[conn.peer] = data.character || 'renanzinho';
+                        MP.broadcastRoster();
                     } else {
                         MP.onMsg(conn.peer, data);
                     }
@@ -5363,6 +5691,7 @@
                     }
                     _hostNickMap = data.nickMap || {};
                     for (const pid in _hostNickMap) _readyState[pid] = false;
+                    if (data.roster) applyRoster(data.roster);
                     startGame();
                 } else if (data.type === 'roomFull') {
                     setLobbyStatus(`Sala cheia! Máximo de ${MAX_PLAYERS} jogadores.`, 'error');
@@ -5402,7 +5731,7 @@
                 MP.conns[code] = conn;
 
                 conn.on('open', () => {
-                    conn.send({ type: 'nick', nick: myPlayerState.name });
+                    conn.send({ type: 'nick', nick: myPlayerState.name, character: myPlayerState.character });
                     setLobbyStatus('Conectado! Entrando no jogo...', 'ok');
                 });
 
