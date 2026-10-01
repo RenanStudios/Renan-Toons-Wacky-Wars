@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Renan Toons Wacky Wars</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         body, html {
@@ -1756,7 +1758,10 @@
                     <img src="Blui & Reddie Sprites/b_idle.png" alt="Blui e Reddie">
                     <div class="char-slot-name">Blui e Reddie</div>
                 </div>
-                <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
+                <div class="char-slot playable" data-character="doper">
+                    <img src="Doper Sprites/d_idle.png" alt="Doper">
+                    <div class="char-slot-name">Doper</div>
+                </div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
@@ -1960,8 +1965,39 @@
                     // X: cospe mini jelly balls pela boca (dano vem das bolinhas, não de hitbox melee)
                     spitJelly: { duration: 420, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 }
                 }
+            },
+            doper: {
+                sprites: {
+                    idle: loadSprite('Doper Sprites/d_idle.png'),
+                    walk: ['d_walk1.png', 'd_walk2.png', 'd_walk3.png', 'd_walk4.png'].map(src => loadSprite('Doper Sprites/' + src)),
+                    jump: loadSprite('Doper Sprites/d_walk3.png'),
+                    punch: [],
+                    kick: null,
+                    djump: null,
+                    bucket: null,
+                    throw: loadSprite('Doper Sprites/d_throw.png'),
+                    cup: loadSprite('Doper Sprites/d_cup.png'),
+                    push: loadSprite('Doper Sprites/d_push.png'),
+                    sax: loadSprite('Doper Sprites/d_sax.png'),
+                    note: loadSprite('Doper Sprites/d_note.png')
+                },
+                sizeScale: 1.2, // um pouco maior que os outros (vale para o desenho E para a hitbox)
+                attacks: {
+                    // Z: arremessa um copo (dano vem da explosão do copo, não de hitbox melee)
+                    throwCup: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 },
+                    // X: empurrão de gerente — corpo a corpo, dano baixo, knockback alto, ~100 ms de preparação e recuperação curta
+                    push: { duration: 240, activeStart: 100, activeEnd: 160, damage: 5, baseKnockback: 190, growth: 0.7, range: 62, sprite: null, next: null, comboWindow: 0 },
+                    // ↓ + X: toca o sax e solta uma nota musical voadora (dano vem da nota, não de hitbox melee)
+                    playSax: { duration: 450, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 600 }
+                }
             }
         };
+
+        // Fator de tamanho do personagem (1 = padrão). Escala a partir dos pés, então ele continua apoiado no chão.
+        function getSizeScale(p) {
+            const def = p && CHARACTERS[p.character];
+            return (def && def.sizeScale) || 1;
+        }
 
         const activeCharacter = CHARACTERS.renanzinho; // personagem único jogável por enquanto
 
@@ -2061,17 +2097,48 @@
         // Dash com soco (X): ~140 px de distância, desacelerando ao longo dos 250 ms
         const DASH_SPEED = 750;        // px/s no início do dash (cai até 50% no fim)
         const DASH_COOLDOWN = 1200;    // ms após o dash terminar até poder usar de novo
+        const PUSH_LUNGE_SPEED = 400;  // px/s no início do avanço do empurrão do Doper (cai a 0 até o fim da janela de acerto)
         // Balde na corda do Renanzinho (↓ + Z)
         const FLAIL_ROPE_LEN = 210;      // comprimento total da corda (alcance máximo ~ 200 px)
         const FLAIL_SEGMENTS = 14;       // segmentos da corda (física de Verlet)
-        const FLAIL_OUT_MS = 280;        // ida do balde (desacelera até esticar a corda)
-        const FLAIL_HOLD_MS = 70;        // pausa com a corda esticada
-        const FLAIL_IN_MS = 340;         // volta (recolhe a corda)
-        const FLAIL_COOLDOWN = 1000;     // ms entre arremessos
+        const FLAIL_COOLDOWN = 600;      // ms entre arremessos (só pode arremessar de novo depois que o balde voltar)
         const FLAIL_ROPE_GRAVITY = 1800; // px/s² só para a corda balançar
         const FLAIL_OUT_DAMAGE = 8, FLAIL_OUT_KB = 130, FLAIL_OUT_GROWTH = 0.8;
         const FLAIL_IN_DAMAGE = 4,  FLAIL_IN_KB = 70,   FLAIL_IN_GROWTH = 0.4;
         const FLAIL_HIT_RADIUS = 30;     // hitbox horizontal do balde
+        // Física do balde (corpo próprio: gravidade, corda que estica, quica e arrasta no chão)
+        const FLAIL_THROW_SPEED = 1150;   // px/s horizontal no arremesso
+        const FLAIL_THROW_VY = -170;      // leve impulso pra cima no arremesso
+        const FLAIL_BUCKET_GRAVITY = 1700;// px/s² no balde
+        const FLAIL_BUCKET_RADIUS = 15;   // raio de colisão do balde com o chão
+        const FLAIL_BOUNCE = 0.38;        // fração da velocidade vertical mantida ao quicar
+        const FLAIL_GROUND_FRICTION = 5.5;// atrito de deslize no chão (1/s)
+        const FLAIL_REST_MS = 300;        // tempo caído no chão antes de começar a recolher
+        const FLAIL_MAX_OUT_MS = 950;     // se não pousar (ex.: caiu da plataforma), recolhe mesmo assim
+        const FLAIL_REEL_START_SPEED = 380; // velocidade inicial de recolhimento da corda (px/s)
+        const FLAIL_REEL_ACCEL = 2600;    // aceleração do recolhimento
+        const FLAIL_REEL_MAX = 1250;      // velocidade máxima de recolhimento
+        const FLAIL_CATCH_DIST = 26;      // a que distância da mão o dono "pega" o balde
+        const FLAIL_LIFETIME = 3500;      // segurança: some depois disso, aconteça o que acontecer
+        const FLAIL_HIT_MIN_SPEED_OUT = 260; // balde mais lento que isso não machuca na ida
+        const FLAIL_HIT_MIN_SPEED_IN = 180;  // idem na volta (arrastando)
+
+        // --- Copo do Doper (Z): arremessado, quica no chão até parar; depois de parado, se um oponente encostar, estilhaça ---
+        let thrownCups = []; // { id, ownerId, x, y, vx, vy, rot, vr, onGround, armed, spawnTime, acc }
+        let cupShards = [];  // estilhaços de vidro criados no código (só visual)
+        const CUP_THROW_VX = 430;        // px/s horizontal no arremesso
+        const CUP_THROW_VY = -260;       // impulso pra cima
+        const CUP_GRAVITY = 1800;        // px/s²
+        const CUP_RADIUS = 12;           // meia altura do copo (contato com o chão)
+        const CUP_SPRITE_H = 26;         // altura desenhada do copo
+        const CUP_BOUNCE = 0.52;         // fração da velocidade vertical mantida ao quicar
+        const CUP_GROUND_FRICTION = 7;   // atrito de deslize/rolagem no chão (1/s)
+        const CUP_STOP_SPEED = 22;       // abaixo disso no chão, o copo para e fica armado
+        const CUP_DAMAGE = 7;
+        const CUP_KNOCKBACK = 170;
+        const CUP_EXPLOSION_RADIUS = 80; // px: quem estiver perto do copo quando ele estilhaça leva dano
+        const CUP_MAX_ACTIVE = 3;        // máximo de copos do mesmo dono no mapa (o mais antigo some)
+        const CUP_LIFETIME = 20000;      // ms: copo esquecido no chão some depois disso
 
         // --- Jelly balls do Blui e Reddie (ataque X): mini balões de gelatina com a física de corpo mole ---
         let jellyBalls = []; // { points, ownerId, color, spawnTime, hitIds, radius }
@@ -2255,7 +2322,74 @@
                 } catch (e) { /* áudio indisponível, ignora silenciosamente */ }
             }
 
-            return { playSwing, playHit, playJump, playFall };
+            // --- Balde batendo no chão: "tum" oco e curto (senoide grave com queda de pitch) ---
+            function playThud(power = 1) {
+                try {
+                    const c = getCtx();
+                    const t0 = c.currentTime;
+                    const osc = c.createOscillator();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(120 + power * 30, t0);
+                    osc.frequency.exponentialRampToValueAtTime(48, t0 + 0.1);
+                    const g = envGain(c, 0.0001, 0.001, t0, 0.001);
+                    g.gain.linearRampToValueAtTime(0.28 * Math.min(1, power), t0 + 0.008);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.13);
+                    osc.connect(g).connect(c.destination);
+                    osc.start(t0);
+                    osc.stop(t0 + 0.15);
+                } catch (e) { /* áudio indisponível, ignora silenciosamente */ }
+            }
+
+            // --- Copo quicando no chão: "tim" curto e agudo de vidro ---
+            function playTink(power = 1) {
+                try {
+                    const c = getCtx();
+                    const t0 = c.currentTime;
+                    for (const [f, v] of [[2400, 0.09], [3700, 0.05]]) {
+                        const osc = c.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(f * (0.95 + Math.random() * 0.1), t0);
+                        const g = envGain(c, 0.0001, 0.001, t0, 0.001);
+                        g.gain.linearRampToValueAtTime(v * Math.min(1, power), t0 + 0.004);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+                        osc.connect(g).connect(c.destination);
+                        osc.start(t0);
+                        osc.stop(t0 + 0.14);
+                    }
+                } catch (e) { /* áudio indisponível, ignora silenciosamente */ }
+            }
+
+            // --- Copo estilhaçando: estalo de ruído agudo + vários "tins" de cacos ---
+            function playGlass() {
+                try {
+                    const c = getCtx();
+                    const t0 = c.currentTime;
+                    const src = noiseSource(c);
+                    const hp = c.createBiquadFilter();
+                    hp.type = 'highpass';
+                    hp.frequency.value = 2500;
+                    const g = envGain(c, 0.0001, 0.001, t0, 0.001);
+                    g.gain.linearRampToValueAtTime(0.35, t0 + 0.004);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+                    src.connect(hp).connect(g).connect(c.destination);
+                    src.start(t0);
+                    src.stop(t0 + 0.25);
+                    for (let i = 0; i < 6; i++) {
+                        const ts = t0 + 0.02 + i * 0.045 + Math.random() * 0.03;
+                        const osc = c.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(2200 + Math.random() * 2600, ts);
+                        const og = envGain(c, 0.0001, 0.001, ts, 0.001);
+                        og.gain.linearRampToValueAtTime(0.06, ts + 0.003);
+                        og.gain.exponentialRampToValueAtTime(0.0001, ts + 0.1);
+                        osc.connect(og).connect(c.destination);
+                        osc.start(ts);
+                        osc.stop(ts + 0.12);
+                    }
+                } catch (e) { /* áudio indisponível, ignora silenciosamente */ }
+            }
+
+            return { playSwing, playHit, playJump, playFall, playThud, playTink, playGlass };
         })();
 
         // Vibração do controle (Gamepad API): dispara em qualquer gamepad conectado.
@@ -3019,6 +3153,13 @@
                         p.vy = 0;
                     }
 
+                    // Empurrão do Doper: pequeno avanço (~30 px) até o fim da janela de acerto, desacelerando
+                    if (p.attackName === 'push' && isAttacking && !inHitstun) {
+                        const pushDef = CHARACTERS.doper.attacks.push;
+                        const frac = Math.min(1, (now - p.attackStart) / pushDef.activeEnd);
+                        if (frac < 1) p.x += (p.facingLeft ? -1 : 1) * PUSH_LUNGE_SPEED * (1 - frac) * effectiveDelta;
+                    }
+
                     // Movimento por teclado é bloqueado durante hitstun (levando dano) ou enquanto ataca
                     if (!inHitstun && !isAttacking) {
                         let dir = 0;
@@ -3040,6 +3181,7 @@
                     const stage = getStageRect();
                     const groundY = stage.y - PLAYER_SIZE / 2;
                     const halfW = PLAYER_SIZE / 2;
+                    const halfWx = halfW * getSizeScale(p); // largura real do corpo (personagens maiores encostam mais cedo nas laterais)
                     const prevY = p.y;
                     if (p.vy === undefined) p.vy = 0;
                     p.vy += GRAVITY * effectiveDelta;
@@ -3073,12 +3215,12 @@
                     // (entre o topo e o fundo dela) e não está apoiado em cima dela.
                     const inPlatformHeightRange = (p.y + halfW) > stage.y && (p.y - halfW) < (stage.y + stage.height);
                     if (inPlatformHeightRange && !p.onGround) {
-                        const wasLeft = prevX + halfW <= stage.x;
-                        const wasRight = prevX - halfW >= stage.x + stage.width;
-                        if (wasLeft && p.x + halfW > stage.x) {
-                            p.x = stage.x - halfW;
-                        } else if (wasRight && p.x - halfW < stage.x + stage.width) {
-                            p.x = stage.x + stage.width + halfW;
+                        const wasLeft = prevX + halfWx <= stage.x;
+                        const wasRight = prevX - halfWx >= stage.x + stage.width;
+                        if (wasLeft && p.x + halfWx > stage.x) {
+                            p.x = stage.x - halfWx;
+                        } else if (wasRight && p.x - halfWx < stage.x + stage.width) {
+                            p.x = stage.x + stage.width + halfWx;
                         }
                     }
 
@@ -3153,10 +3295,14 @@
             drawNailClippers();
             updateBullets(deltaTime * 1000);
             drawBullets();
+            updateNotes(deltaTime * 1000);
+            drawNotes();
             updateFlails(deltaTime * 1000);
             drawFlails();
             updateJellyBalls(deltaTime * 1000);
             drawJellyBalls();
+            updateThrownCups(deltaTime * 1000);
+            drawThrownCups();
 
             for (const item of drawList) {
                 drawPlayer(item.player, item.isMoving);
@@ -3167,6 +3313,7 @@
             updateAndDrawParticles(deltaTime * 1000);
             drawClawEffects();
             updateAndDrawPolishSplashes(deltaTime * 1000);
+            updateAndDrawCupShards(deltaTime * 1000);
             updateAndDrawImpactLines(deltaTime * 1000);
             updateAndDrawDamagePopups(deltaTime * 1000);
 
@@ -3293,6 +3440,7 @@
         // Verifica se sobrou apenas 1 jogador (ou 0) não-eliminado: se sim, ele é o campeão
         // da partida e o jogo é travado até dar reset.
         function checkMatchEnd() {
+            if (!isRunning) return; // fora de partida (ex.: já voltou pra seleção): pacote atrasado de outro jogador não pode reabrir a tela de vitória
             const allIds = Object.keys(players);
             if (allIds.length === 0) return;
             const alive = allIds.filter(id => !players[id].eliminated);
@@ -3307,6 +3455,8 @@
         function restartMatch() {
             matchOver = false;
             championId = null;
+            thrownCups.length = 0;
+            cupShards.length = 0;
             for (const id of Object.keys(players)) {
                 const p = players[id];
                 p.lives = 3;
@@ -3517,7 +3667,7 @@
             const confirmedCount = allIds.filter(id => _playAgainState[id]).length;
             victoryStatusPanelEl.textContent = _playAgainState[myUserId]
                 ? `Aguardando outros jogadores... (${confirmedCount}/${allIds.length})`
-                : 'Pressione R para jogar novamente';
+                : (('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'Toque na tela para jogar novamente' : 'Pressione R para jogar novamente');
         }
 
         function hideVictoryScreen() {
@@ -3668,7 +3818,8 @@
                 const target = players[id];
                 const dx = Math.abs(target.x - p.x);
                 const dy = Math.abs(target.y - p.y);
-                if (dx < SHIELD_CONTACT_RANGE && dy < PLAYER_SIZE * 0.9) {
+                const tS = getSizeScale(target);
+                if (dx < SHIELD_CONTACT_RANGE * tS && dy < PLAYER_SIZE * 0.9 * tS) {
                     p.shieldHitIds.push(id);
                     const dir = target.x >= p.x ? 1 : -1;
                     applyHit(id, SHIELD_REFLECT_DAMAGE, SHIELD_REFLECT_KNOCKBACK, dir);
@@ -3681,8 +3832,9 @@
 
         // ==========================================
         // BALDE NA CORDA (Renanzinho, ↓ + Z)
-        // O balde sai na altura do meio do personagem, vai até esticar a corda e volta. A corda é uma
-        // cadeia de Verlet (com gravidade) presa na mão do dono, então balança e "chicoteia" de verdade.
+        // O balde é arremessado com gravidade, a corda estica e ele vira um pêndulo, cai no chão, quica,
+        // fica um instante caído e é recolhido arrastando até a mão do dono. A corda é uma cadeia de
+        // Verlet (com gravidade, apoiando no chão) presa na mão do dono.
         // Cada cliente simula a corda localmente (só visual); só o dono detecta acertos, como nas balas.
         // ==========================================
         let flails = []; // { id, ownerId, dir, spawnTime, pts, hitOut, hitIn }
@@ -3698,20 +3850,108 @@
             const a = flailAnchorFor(data.ownerId, data.dir) || { x: 0, y: 0 };
             const pts = [];
             for (let i = 0; i <= FLAIL_SEGMENTS; i++) pts.push({ x: a.x, y: a.y, px: a.x, py: a.y });
-            return { id: data.id, ownerId: data.ownerId, dir: data.dir, spawnTime: Date.now(), pts, hitOut: [], hitIn: [] };
+            return {
+                id: data.id, ownerId: data.ownerId, dir: data.dir, spawnTime: Date.now(), pts, hitOut: [], hitIn: [],
+                // corpo do balde
+                bx: a.x + data.dir * 18, by: a.y,
+                vx: data.dir * FLAIL_THROW_SPEED, vy: FLAIL_THROW_VY,
+                phase: 'out',            // 'out' = voando/caindo | 'reel' = sendo recolhido
+                maxLen: FLAIL_ROPE_LEN,  // comprimento atual da corda (encolhe no recolhimento)
+                reelSpeed: 0,
+                firstGroundAt: 0,
+                onGround: false
+            };
         }
 
-        // Posição do balde ao longo do tempo (deslocamento horizontal L a partir da mão)
-        function flailBucketOffset(t) {
-            const reach = FLAIL_ROPE_LEN * 0.97;
-            if (t < FLAIL_OUT_MS) {
-                const u = t / FLAIL_OUT_MS;
-                return { L: 18 + (reach - 18) * (1 - (1 - u) * (1 - u)), phase: 'out' };
+        // Um passo de física do balde: gravidade, corda (restrição de distância), chão e laterais da plataforma
+        function flailStepBucket(f, a, h) {
+            const R = FLAIL_BUCKET_RADIUS;
+            const prevBy = f.by;
+            f.vy += FLAIL_BUCKET_GRAVITY * h;
+
+            if (f.phase === 'reel') {
+                f.reelSpeed = Math.min(FLAIL_REEL_MAX, f.reelSpeed + FLAIL_REEL_ACCEL * h);
+                f.maxLen = Math.max(FLAIL_CATCH_DIST * 0.6, f.maxLen - f.reelSpeed * h);
             }
-            if (t < FLAIL_OUT_MS + FLAIL_HOLD_MS) return { L: reach, phase: 'out' };
-            const u = (t - FLAIL_OUT_MS - FLAIL_HOLD_MS) / FLAIL_IN_MS;
-            if (u >= 1) return null;
-            return { L: reach * (1 - u * u) + 18 * (u * u), phase: 'in' };
+
+            f.bx += f.vx * h;
+            f.by += f.vy * h;
+
+            // Corda: o balde não pode se afastar da mão além do comprimento da corda.
+            // Ao esticar, perde a velocidade que o afastaria (vira pêndulo); no recolhimento é puxado pra dentro.
+            let dx = f.bx - a.x, dy = f.by - a.y;
+            let d = Math.hypot(dx, dy) || 0.0001;
+            if (d > f.maxLen) {
+                const nx = dx / d, ny = dy / d;
+                f.bx = a.x + nx * f.maxLen;
+                f.by = a.y + ny * f.maxLen;
+                const vr = f.vx * nx + f.vy * ny;
+                const target = f.phase === 'reel' ? -f.reelSpeed : Math.min(0, vr * -0.12);
+                if (vr > target) {
+                    f.vx += (target - vr) * nx;
+                    f.vy += (target - vr) * ny;
+                }
+            }
+
+            // Chão: topo da plataforma principal e das flutuantes (só pousa vindo de cima)
+            f.onGround = false;
+            const stage = getStageRect();
+            const surfaces = [stage].concat(getFloatingPlatforms());
+            for (const sf of surfaces) {
+                if (f.bx > sf.x - R * 0.5 && f.bx < sf.x + sf.width + R * 0.5 && f.vy >= 0 &&
+                    prevBy + R <= sf.y + 2 && f.by + R >= sf.y) {
+                    f.by = sf.y - R;
+                    if (f.vy > 140) {
+                        if (f.vy > 260) SFX.playThud(Math.min(1.4, f.vy / 900));
+                        f.vy = -f.vy * FLAIL_BOUNCE;
+                        f.vx *= 0.8;
+                    } else {
+                        f.vy = 0;
+                    }
+                    f.onGround = true;
+                    if (!f.firstGroundAt) f.firstGroundAt = Date.now();
+                    break;
+                }
+            }
+            if (f.onGround) f.vx *= Math.exp(-FLAIL_GROUND_FRICTION * h); // desliza e vai parando
+
+            // Laterais da plataforma principal: o balde não atravessa o "tijolão"
+            if (f.by + R > stage.y + 2 && f.by - R < stage.y + stage.height) {
+                const l = stage.x, r = stage.x + stage.width;
+                if (f.bx > l - R && f.bx < r + R) {
+                    if (f.bx - (l - R) < (r + R) - f.bx) { f.bx = l - R; if (f.vx > 0) f.vx *= -0.3; }
+                    else { f.bx = r + R; if (f.vx < 0) f.vx *= -0.3; }
+                }
+            }
+        }
+
+        // Acertos: só o dono do balde detecta. O balde só machuca se estiver rápido o suficiente
+        // (um balde parado/rolando devagar no chão não dá dano).
+        function flailCheckHits(f, a) {
+            if (f.ownerId !== myUserId) return;
+            const isOut = f.phase === 'out';
+            const speed = Math.hypot(f.vx, f.vy);
+            if (speed < (isOut ? FLAIL_HIT_MIN_SPEED_OUT : FLAIL_HIT_MIN_SPEED_IN)) return;
+            const list = isOut ? f.hitOut : f.hitIn;
+            for (const id in players) {
+                if (id === f.ownerId || list.includes(id)) continue;
+                const target = players[id];
+                if (target.eliminated) continue;
+                const tS = getSizeScale(target);
+                const top = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * tS;
+                const bottom = target.y + PLAYER_SIZE / 2;
+                if (Math.abs(target.x - f.bx) < FLAIL_HIT_RADIUS * tS && f.by > top - 8 && f.by < bottom + 8) {
+                    list.push(id);
+                    const dmg = isOut ? FLAIL_OUT_DAMAGE : FLAIL_IN_DAMAGE;
+                    const kb = (isOut ? FLAIL_OUT_KB : FLAIL_IN_KB) + (target.damage || 0) * (isOut ? FLAIL_OUT_GROWTH : FLAIL_IN_GROWTH);
+                    // ida: empurra na direção em que o balde está voando; volta: puxa em direção ao dono
+                    const hdir = isOut ? (Math.abs(f.vx) > 60 ? Math.sign(f.vx) : f.dir) : (a.x >= target.x ? 1 : -1);
+                    applyHit(id, dmg, kb, hdir);
+                    MP.broadcastToAll({ type: 'hit', targetId: id, damage: dmg, knockback: kb, dir: hdir });
+                    SFX.playHit(isOut ? 'medium' : 'light');
+                    rumble(isOut ? 0.4 : 0.25, isOut ? 120 : 80);
+                }
+            }
         }
 
         function updateFlails(deltaMs) {
@@ -3720,18 +3960,36 @@
             for (let i = flails.length - 1; i >= 0; i--) {
                 const f = flails[i];
                 const t = now - f.spawnTime;
-                const off = flailBucketOffset(t);
                 const a = flailAnchorFor(f.ownerId, f.dir);
-                if (!off || !a) { flails.splice(i, 1); continue; }
+                if (!a || t > FLAIL_LIFETIME) { flails.splice(i, 1); continue; }
 
-                f.bx = a.x + f.dir * off.L;
-                f.by = a.y;
-                f.phase = off.phase;
+                // Fases: voando/caindo -> (caiu e descansou um instante) -> recolhendo a corda
+                if (f.phase === 'out' && ((f.firstGroundAt && now - f.firstGroundAt > FLAIL_REST_MS) || t > FLAIL_MAX_OUT_MS)) {
+                    f.phase = 'reel';
+                    f.reelSpeed = FLAIL_REEL_START_SPEED;
+                    const dNow = Math.hypot(f.bx - a.x, f.by - a.y);
+                    f.maxLen = Math.min(f.maxLen, dNow + 25); // tira a folga primeiro, sobra um pouco de corda frouxa no chão
+                }
+                if (f.phase === 'reel' && Math.hypot(f.bx - a.x, f.by - a.y) < FLAIL_CATCH_DIST) {
+                    flails.splice(i, 1); // o dono pegou o balde de volta
+                    continue;
+                }
 
-                // Corda mais frouxa na volta (balança), quase esticada na ida
-                const ropeLen = Math.min(FLAIL_ROPE_LEN, off.L * (off.phase === 'in' ? 1.25 : 1.04) + (off.phase === 'in' ? 20 : 10));
-                const seg = ropeLen / FLAIL_SEGMENTS;
+                // Física do balde em sub-passos (ele é rápido; evita atravessar chão/alvos)
+                const steps = 3, h = dt / steps;
+                for (let s = 0; s < steps; s++) {
+                    flailStepBucket(f, a, h);
+                    flailCheckHits(f, a);
+                }
+
+                // Corda (Verlet): comprimento "visual" paga a corda na ida e usa o comprimento real no recolhimento
                 const pts = f.pts;
+                const distNow = Math.hypot(f.bx - a.x, f.by - a.y);
+                const ropeLen = f.phase === 'reel'
+                    ? Math.max(f.maxLen, distNow)
+                    : Math.min(FLAIL_ROPE_LEN, distNow * 1.04 + 10);
+                const seg = ropeLen / FLAIL_SEGMENTS;
+                const stageR = getStageRect();
                 const damp = Math.pow(0.985, dt * 60);
                 for (let k = 1; k < FLAIL_SEGMENTS; k++) {
                     const q = pts[k];
@@ -3754,33 +4012,18 @@
                         p0.x += dx * diff * (w0 / wsum); p0.y += dy * diff * (w0 / wsum);
                         p1.x -= dx * diff * (w1 / wsum); p1.y -= dy * diff * (w1 / wsum);
                     }
+                    // A corda também apoia no chão da plataforma principal (deita em vez de atravessar)
+                    for (let k = 1; k < FLAIL_SEGMENTS; k++) {
+                        const q = pts[k];
+                        if (q.x > stageR.x && q.x < stageR.x + stageR.width && q.y > stageR.y - 2 && q.y < stageR.y + 12) {
+                            q.y = stageR.y - 2;
+                            q.px = q.x - (q.x - q.px) * 0.6; // atrito da corda no chão
+                        }
+                    }
                 }
                 pts[0].x = a.x; pts[0].y = a.y; pts[0].px = a.x; pts[0].py = a.y;
                 pts[FLAIL_SEGMENTS].x = f.bx; pts[FLAIL_SEGMENTS].y = f.by;
                 pts[FLAIL_SEGMENTS].px = f.bx; pts[FLAIL_SEGMENTS].py = f.by;
-
-                // Acertos: só o dono do balde detecta. Ida = golpe forte, volta = puxão mais fraco.
-                if (f.ownerId === myUserId) {
-                    const list = off.phase === 'out' ? f.hitOut : f.hitIn;
-                    for (const id in players) {
-                        if (id === f.ownerId || list.includes(id)) continue;
-                        const target = players[id];
-                        if (target.eliminated) continue;
-                        const top = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT;
-                        const bottom = target.y + PLAYER_SIZE / 2;
-                        if (Math.abs(target.x - f.bx) < FLAIL_HIT_RADIUS && f.by > top - 8 && f.by < bottom + 8) {
-                            list.push(id);
-                            const isOut = off.phase === 'out';
-                            const dmg = isOut ? FLAIL_OUT_DAMAGE : FLAIL_IN_DAMAGE;
-                            const kb = (isOut ? FLAIL_OUT_KB : FLAIL_IN_KB) + (target.damage || 0) * (isOut ? FLAIL_OUT_GROWTH : FLAIL_IN_GROWTH);
-                            const hdir = isOut ? f.dir : -f.dir; // na volta o balde puxa em direção ao dono
-                            applyHit(id, dmg, kb, hdir);
-                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: dmg, knockback: kb, dir: hdir });
-                            SFX.playHit(isOut ? 'medium' : 'light');
-                            rumble(isOut ? 0.4 : 0.25, isOut ? 120 : 80);
-                        }
-                    }
-                }
             }
         }
 
@@ -3830,6 +4073,7 @@
             if (p.attackUntil && now < p.attackUntil) return;
             if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
             if (p.flailCooldownUntil && now < p.flailCooldownUntil) return;
+            if (flails.some(fl => fl.ownerId === myUserId)) return; // o balde anterior ainda não voltou pra mão
 
             const def = CHARACTERS.renanzinho.attacks.bucketThrow;
             p.attackName = 'bucketThrow';
@@ -3847,6 +4091,96 @@
             SFX.playSwing(0.9);
             MP.sendState();
             MP.broadcastToAll({ type: 'flailThrow', flail: data });
+        }
+
+        // ==========================================
+        // SAX DO DOPER (↓ + X): nota musical voadora que ondula em linha reta e some ao acertar
+        // ==========================================
+        let notes = []; // { id, x, y0, y, dir, ownerId, spawnTime }
+        const NOTE_SPEED = 300;       // px/s, lenta (zoning leve)
+        const NOTE_LIFETIME = 1500;   // ms
+        const NOTE_DAMAGE = 4;
+        const NOTE_KNOCKBACK = 85;
+        const NOTE_WAVE_AMP = 16;     // px de ondulação vertical
+        const NOTE_HIT_RADIUS = 24;
+        const NOTE_PREP_MS = 300;     // preparação: a nota só sai depois desse tempo tocando
+
+        function playSax(p) {
+            if (!p || p.character !== 'doper') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.doper.attacks.playSax;
+            p.attackName = 'playSax';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+            SFX.playSwing(0.7);
+            MP.sendState();
+
+            setTimeout(() => {
+                const me = players[myUserId];
+                const t = Date.now();
+                // Cancela se foi interrompido (levou golpe) ou o golpe já acabou
+                if (!me || me.attackName !== 'playSax' || t >= me.attackUntil) return;
+                if (me.hitstunUntil && t < me.hitstunUntil) return;
+                const dir = me.facingLeft ? -1 : 1;
+                const y0 = me.y - PLAYER_SIZE * 0.3;
+                const note = {
+                    id: 'note_' + t + '_' + Math.floor(Math.random() * 100000),
+                    x: me.x + dir * 34 * getSizeScale(me),
+                    y0, y: y0, dir,
+                    spawnTime: t,
+                    ownerId: myUserId
+                };
+                notes.push(note);
+                MP.broadcastToAll({ type: 'noteShoot', note });
+            }, NOTE_PREP_MS);
+        }
+
+        function updateNotes(deltaMs) {
+            const deltaSec = deltaMs / 1000;
+            const now = Date.now();
+            for (let i = notes.length - 1; i >= 0; i--) {
+                const n = notes[i];
+                if (now - n.spawnTime >= NOTE_LIFETIME) { notes.splice(i, 1); continue; }
+                n.x += n.dir * NOTE_SPEED * deltaSec;
+                n.y = n.y0 + Math.sin((now - n.spawnTime) / 140) * NOTE_WAVE_AMP;
+
+                if (n.ownerId === myUserId) {
+                    for (const id in players) {
+                        if (id === n.ownerId) continue;
+                        const target = players[id];
+                        const tS = getSizeScale(target);
+                        if (Math.abs(target.x - n.x) < NOTE_HIT_RADIUS * tS && Math.abs(target.y - n.y) < PLAYER_SIZE * 0.9 * tS) {
+                            const dir = target.x >= n.x ? 1 : -1;
+                            applyHit(id, NOTE_DAMAGE, NOTE_KNOCKBACK, dir);
+                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: NOTE_DAMAGE, knockback: NOTE_KNOCKBACK, dir });
+                            MP.broadcastToAll({ type: 'noteRemove', noteId: n.id });
+                            notes.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawNotes() {
+            const sprite = CHARACTERS.doper.sprites.note;
+            if (!sprite || !sprite.complete || sprite.naturalWidth === 0) return;
+            const drawH = 30;
+            const drawW = drawH * (sprite.naturalWidth / sprite.naturalHeight);
+            for (const n of notes) {
+                ctx.save();
+                ctx.translate(n.x, n.y);
+                if (n.dir < 0) ctx.scale(-1, 1);
+                ctx.rotate(Math.sin((Date.now() - n.spawnTime) / 140) * 0.25); // balança junto com a onda
+                ctx.drawImage(sprite, -drawW / 2, -drawH / 2, drawW, drawH);
+                ctx.restore();
+            }
         }
 
         // Física da bala: linha reta simples, some depois de BULLET_LIFETIME
@@ -3867,7 +4201,8 @@
                     for (const id in players) {
                         if (id === b.ownerId || b.hitIds.includes(id)) continue;
                         const target = players[id];
-                        if (Math.abs(target.x - b.x) < (b.charged ? CHARGED_BULLET_HIT_RADIUS : 26) && Math.abs(target.y - b.y) < PLAYER_SIZE * (b.charged ? 1.05 : 0.9)) {
+                        const tS = getSizeScale(target);
+                        if (Math.abs(target.x - b.x) < (b.charged ? CHARGED_BULLET_HIT_RADIUS : 26) * tS && Math.abs(target.y - b.y) < PLAYER_SIZE * (b.charged ? 1.05 : 0.9) * tS) {
                             b.hitIds.push(id);
                             const dir = target.x >= b.x ? 1 : -1;
                             const dmg = b.charged ? CHARGED_BULLET_DAMAGE : BULLET_DAMAGE;
@@ -4081,8 +4416,9 @@
                         if (id === ball.ownerId || ball.hitIds.includes(id)) continue;
                         const target = players[id];
                         if (target.eliminated) continue;
-                        const targetCenterY = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT / 2;
-                        if (Math.abs(target.x - cc.x) < 22 + ball.radius && Math.abs(targetCenterY - cc.y) < SPRITE_HEIGHT / 2 + ball.radius * 0.5) {
+                        const tS = getSizeScale(target);
+                        const targetCenterY = target.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * tS) / 2;
+                        if (Math.abs(target.x - cc.x) < (22 * tS) + ball.radius && Math.abs(targetCenterY - cc.y) < (SPRITE_HEIGHT * tS) / 2 + ball.radius * 0.5) {
                             ball.hitIds.push(id);
                             const dir = target.x >= cc.x ? 1 : -1;
                             applyHit(id, JELLY_DAMAGE, JELLY_KNOCKBACK, dir);
@@ -4190,7 +4526,8 @@
                     for (const id in players) {
                         if (id === c.ownerId || c.hitIds.includes(id)) continue;
                         const target = players[id];
-                        if (Math.abs(target.x - c.x) < 34 && Math.abs(target.y - c.y) < PLAYER_SIZE * 0.9) {
+                        const tS = getSizeScale(target);
+                        if (Math.abs(target.x - c.x) < 34 * tS && Math.abs(target.y - c.y) < PLAYER_SIZE * 0.9 * tS) {
                             c.hitIds.push(id);
                             const dir = target.x >= c.x ? 1 : -1;
                             applyHit(id, CLIPPER_DAMAGE, CLIPPER_KNOCKBACK, dir);
@@ -4280,6 +4617,249 @@
         }
 
 
+        // ==========================================
+        // COPO DO DOPER (Z)
+        // O copo é arremessado, quica no chão até parar e fica "armado". Se um oponente encostar nele
+        // (depois de parado), ele estilhaça e dá dano em quem estiver perto. Cada cliente simula a física
+        // localmente (passo fixo, então fica quase idêntica); só o dono detecta o toque e avisa os outros.
+        // ==========================================
+        function throwCup(p) {
+            if (!p || p.character !== 'doper') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.doper.attacks.throwCup;
+            p.attackName = 'throwCup';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + ATTACK_COOLDOWN;
+            p.attackSquashTime = now;
+
+            // Limite de copos ativos: o mais antigo do dono some (sem estilhaçar)
+            const mine = thrownCups.filter(c => c.ownerId === myUserId);
+            if (mine.length >= CUP_MAX_ACTIVE) explodeCup(mine[0], true);
+
+            const dir = p.facingLeft ? -1 : 1;
+            const sc = getSizeScale(p);
+            const cup = {
+                id: 'cup_' + now + '_' + Math.floor(Math.random() * 100000),
+                ownerId: myUserId,
+                x: p.x + dir * 26 * sc,
+                y: p.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * sc) / 2, // altura da mão (meio do sprite)
+                vx: dir * CUP_THROW_VX,
+                vy: CUP_THROW_VY,
+                rot: 0,
+                vr: dir * 9,
+                onGround: false,
+                armed: false
+            };
+            thrownCups.push(makeCup(cup));
+            SFX.playSwing(0.9);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'cupThrow', cup });
+        }
+
+        function makeCup(data) {
+            return { ...data, spawnTime: Date.now(), acc: 0 };
+        }
+
+        // Um passo de física do copo: gravidade, quique no topo das plataformas, atrito e laterais da plataforma principal
+        function stepCup(c, h, stage, plats) {
+            const R = CUP_RADIUS;
+            const prevY = c.y;
+            c.vy += CUP_GRAVITY * h;
+            c.x += c.vx * h;
+            c.y += c.vy * h;
+            c.rot += c.vr * h;
+            c.onGround = false;
+
+            for (const sf of [stage].concat(plats)) {
+                if (c.x > sf.x && c.x < sf.x + sf.width && c.vy >= 0 && prevY + R <= sf.y + 2 && c.y + R >= sf.y) {
+                    c.y = sf.y - R;
+                    if (c.vy > 160) {
+                        SFX.playTink(c.vy / 700);
+                        c.vy = -c.vy * CUP_BOUNCE;
+                        c.vx *= 0.82;
+                        c.vr *= 0.7;
+                    } else {
+                        c.vy = 0;
+                    }
+                    c.onGround = true;
+                    break;
+                }
+            }
+            if (c.onGround) {
+                c.vx *= Math.exp(-CUP_GROUND_FRICTION * h);
+                c.vr = c.vx / R; // rola de lado enquanto desliza
+                if (Math.abs(c.vx) < CUP_STOP_SPEED && Math.abs(c.vy) < 1) {
+                    c.vx = 0; c.vy = 0; c.vr = 0;
+                    c.armed = true; // parou: agora qualquer oponente que encostar estilhaça o copo
+                }
+            }
+
+            // Laterais da plataforma principal: o copo não atravessa o "tijolão"
+            if (c.y + R > stage.y + 2 && c.y - R < stage.y + stage.height) {
+                const l = stage.x, r = stage.x + stage.width;
+                if (c.x > l - R && c.x < r + R) {
+                    if (c.x - (l - R) < (r + R) - c.x) { c.x = l - R; if (c.vx > 0) c.vx *= -0.4; }
+                    else { c.x = r + R; if (c.vx < 0) c.vx *= -0.4; }
+                }
+            }
+        }
+
+        function updateThrownCups(deltaMs) {
+            const now = Date.now();
+            const stage = getStageRect();
+            const plats = getFloatingPlatforms();
+            const H = 1 / 120;
+            for (let i = thrownCups.length - 1; i >= 0; i--) {
+                const c = thrownCups[i];
+                if (now - c.spawnTime > CUP_LIFETIME || c.y > WORLD_HEIGHT + 500 || c.x < -600 || c.x > WORLD_WIDTH + 600) {
+                    thrownCups.splice(i, 1);
+                    continue;
+                }
+                if (!c.armed) {
+                    c.acc += Math.min(deltaMs, 50) / 1000;
+                    while (c.acc >= H && !c.armed) { c.acc -= H; stepCup(c, H, stage, plats); }
+                } else {
+                    // parado: endireita o copo suavemente (em pé)
+                    const target = Math.round(c.rot / (Math.PI * 2)) * Math.PI * 2;
+                    c.rot += (target - c.rot) * Math.min(1, deltaMs / 80);
+                    // só o dono detecta o toque de oponentes
+                    if (c.ownerId === myUserId) {
+                        for (const id in players) {
+                            if (id === c.ownerId) continue;
+                            const target = players[id];
+                            if (target.eliminated) continue;
+                            const tS = getSizeScale(target);
+                            const top = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * tS;
+                            const bottom = target.y + PLAYER_SIZE / 2;
+                            if (Math.abs(target.x - c.x) < (PLAYER_SIZE / 2) * 0.85 * tS + 8 && c.y > top - 4 && c.y < bottom + 10) {
+                                explodeCup(c, false);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Estilhaça (ou só remove, se silent): dano em área nos oponentes do dono + estilhaços e som em todos os clientes
+        function explodeCup(c, silent) {
+            const idx = thrownCups.indexOf(c);
+            if (idx >= 0) thrownCups.splice(idx, 1);
+            if (!silent) {
+                spawnCupShards(c.x, c.y);
+                SFX.playGlass();
+            }
+            if (c.ownerId !== myUserId) return;
+            MP.broadcastToAll({ type: 'cupExplode', id: c.id, x: c.x, y: c.y, silent: !!silent });
+            if (silent) return;
+            for (const id in players) {
+                if (id === c.ownerId) continue; // o dono não leva dano do próprio copo
+                const target = players[id];
+                if (target.eliminated) continue;
+                const tS = getSizeScale(target);
+                const cy = target.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * tS) / 2; // centro do corpo
+                if (Math.hypot(target.x - c.x, cy - c.y) < CUP_EXPLOSION_RADIUS + (tS - 1) * PLAYER_SIZE / 2) {
+                    const dir = target.x >= c.x ? 1 : -1;
+                    applyHit(id, CUP_DAMAGE, CUP_KNOCKBACK, dir);
+                    MP.broadcastToAll({ type: 'hit', targetId: id, damage: CUP_DAMAGE, knockback: CUP_KNOCKBACK, dir });
+                    SFX.playHit('medium');
+                    rumble(0.4, 120);
+                }
+            }
+        }
+
+        // Estilhaços de vidro: triângulos irregulares girando, quicando no chão e sumindo
+        function spawnCupShards(x, y) {
+            const tints = ['rgba(205,236,255,0.9)', 'rgba(255,255,255,0.92)', 'rgba(165,212,245,0.88)'];
+            const count = 18 + Math.floor(Math.random() * 7);
+            for (let i = 0; i < count; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const speed = 160 + Math.random() * 400;
+                const size = 4 + Math.random() * 9;
+                const a0 = Math.random() * Math.PI * 2;
+                const pts = [];
+                for (let k = 0; k < 3; k++) {
+                    const a = a0 + k * (Math.PI * 2 / 3) + (Math.random() - 0.5) * 0.9;
+                    const r = size * (0.55 + Math.random() * 0.7);
+                    pts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r });
+                }
+                cupShards.push({
+                    x, y,
+                    vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed - 260,
+                    rot: Math.random() * Math.PI * 2, vr: (Math.random() - 0.5) * 18,
+                    pts, tint: tints[Math.floor(Math.random() * tints.length)],
+                    life: 0, maxLife: 1000 + Math.random() * 900
+                });
+            }
+        }
+
+        function updateAndDrawCupShards(deltaMs) {
+            const dt = deltaMs / 1000;
+            const stage = getStageRect();
+            for (let i = cupShards.length - 1; i >= 0; i--) {
+                const sh = cupShards[i];
+                sh.life += deltaMs;
+                if (sh.life >= sh.maxLife) { cupShards.splice(i, 1); continue; }
+                sh.vy += 1800 * dt;
+                sh.x += sh.vx * dt;
+                sh.y += sh.vy * dt;
+                sh.rot += sh.vr * dt;
+                if (sh.y >= stage.y - 2 && sh.y < stage.y + 14 && sh.x > stage.x && sh.x < stage.x + stage.width && sh.vy > 0) {
+                    sh.y = stage.y - 2;
+                    sh.vy *= -0.35;
+                    sh.vx *= 0.7;
+                    sh.vr *= 0.5;
+                }
+                const t = sh.life / sh.maxLife;
+                const alpha = t > 0.65 ? 1 - (t - 0.65) / 0.35 : 1;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.translate(sh.x, sh.y);
+                ctx.rotate(sh.rot);
+                ctx.beginPath();
+                ctx.moveTo(sh.pts[0].x, sh.pts[0].y);
+                ctx.lineTo(sh.pts[1].x, sh.pts[1].y);
+                ctx.lineTo(sh.pts[2].x, sh.pts[2].y);
+                ctx.closePath();
+                ctx.fillStyle = sh.tint;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawThrownCups() {
+            const sprite = CHARACTERS.doper.sprites.cup;
+            for (const c of thrownCups) {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate(c.rot);
+                if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+                    const drawH = CUP_SPRITE_H;
+                    const drawW = drawH * (sprite.naturalWidth / sprite.naturalHeight);
+                    ctx.drawImage(sprite, -drawW / 2, -drawH / 2, drawW, drawH);
+                } else {
+                    // fallback enquanto d_cup.png não carrega: copo simples de vidro
+                    ctx.beginPath();
+                    ctx.moveTo(-9, -CUP_RADIUS); ctx.lineTo(9, -CUP_RADIUS); ctx.lineTo(6, CUP_RADIUS); ctx.lineTo(-6, CUP_RADIUS);
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(190,225,250,0.8)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+
         // Inicia um golpe de melee para qualquer jogador (soco com combo em 2 hits, ou chute avulso)
         function startAttack(p, name) {
             if (!p) return;
@@ -4368,7 +4948,8 @@
                     const target = players[id];
                     const dx = Math.abs(target.x - hitboxX);
                     const dy = Math.abs(target.y - p.y);
-                    if (dx < def.range * 0.6 && dy < PLAYER_SIZE * 0.9) {
+                    const tS = getSizeScale(target);
+                    if (dx < def.range * 0.6 + (tS - 1) * PLAYER_SIZE / 2 && dy < PLAYER_SIZE * 0.9 * tS) {
                         p.hasHitThisAttack = true;
                         const knockback = def.baseKnockback + (target.damage || 0) * def.growth;
                         applyHit(id, def.damage, knockback, dir);
@@ -5145,8 +5726,12 @@
                 spriteOffsetX = 12; // ajuste fino: sprites de ataque encaixam melhor mais à direita
                 if (player.attackName === 'kick') {
                     currentSprite = cSprites.kick;
-                } else if (player.attackName === 'throwPolish' || player.attackName === 'spitJelly') {
+                } else if (player.attackName === 'throwPolish' || player.attackName === 'spitJelly' || player.attackName === 'throwCup') {
                     currentSprite = cSprites.throw;
+                } else if (player.attackName === 'push') {
+                    currentSprite = cSprites.push || cSprites.idle;
+                } else if (player.attackName === 'playSax') {
+                    currentSprite = cSprites.sax || cSprites.idle;
                 } else if (player.attackName === 'dash') {
                     currentSprite = cSprites.dash || cSprites.jump;
                     spriteOffsetX = 0;
@@ -5213,6 +5798,13 @@
                 scaleX = player._sx;
                 scaleY = player._sy;
             }
+            // Tamanho do personagem: escala a partir dos pés (não muda onde ele pisa)
+            const sizeS = getSizeScale(player);
+            if (sizeS !== 1) {
+                ctx.translate(0, PLAYER_SIZE / 2);
+                ctx.scale(sizeS, sizeS);
+                ctx.translate(0, -PLAYER_SIZE / 2);
+            }
             ctx.scale(scaleX, scaleY);
 
             if (currentSprite.complete && currentSprite.naturalWidth > 0) {
@@ -5273,13 +5865,18 @@
             }
 
             ctx.scale(1 / scaleX, 1 / scaleY); // desfaz o squash/stretch antes do texto abaixo
+            if (sizeS !== 1) { // desfaz a escala de tamanho também
+                ctx.translate(0, PLAYER_SIZE / 2);
+                ctx.scale(1 / sizeS, 1 / sizeS);
+                ctx.translate(0, -PLAYER_SIZE / 2);
+            }
             if (player.facingLeft) ctx.scale(-1, 1); // desfaz o espelhamento para o texto abaixo não inverter
 
             // Nome do jogador
             ctx.fillStyle = '#000000';
             ctx.font = 'bold 12px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(player.name, 0, -SPRITE_HEIGHT + PLAYER_SIZE/2 - 10);
+            ctx.fillText(player.name, 0, -SPRITE_HEIGHT * sizeS + PLAYER_SIZE/2 - 10);
 
             ctx.restore();
         }
@@ -5321,6 +5918,8 @@
                     }
                 } else if (me && me.character === 'blui') {
                     startAttack(me, 'punch1');
+                } else if (me && me.character === 'doper') {
+                    throwCup(me);
                 } else if (me && (!me.character || me.character === 'renanzinho') && keysPressed['ArrowDown']) {
                     startBucketThrow(me);
                 } else if (me && !me.onGround) {
@@ -5339,6 +5938,9 @@
                     startAttack(me, 'nail');
                 } else if (me && me.character === 'blui') {
                     spitJelly(me);
+                } else if (me && me.character === 'doper') {
+                    if (keysPressed['ArrowDown']) playSax(me);
+                    else startAttack(me, 'push');
                 } else {
                     startAttack(players[myUserId], 'kick');
                 }
@@ -5552,6 +6154,16 @@
                     if (data.bottle.ownerId !== myUserId) nailPolishBottles.push(data.bottle);
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'cupThrow') {
+                    if (data.cup.ownerId !== myUserId) thrownCups.push(makeCup(data.cup));
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'cupExplode') {
+                    const ci = thrownCups.findIndex(cc => cc.id === data.id);
+                    if (ci >= 0) thrownCups.splice(ci, 1);
+                    if (!data.silent) { spawnCupShards(data.x, data.y); SFX.playGlass(); }
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
                 else if (data.type === 'clipperThrow') {
                     if (data.clipper.ownerId !== myUserId) nailClippers.push(data.clipper);
                     if (this.role === 'host') this.broadcast(data, fromId);
@@ -5564,6 +6176,15 @@
                 }
                 else if (data.type === 'bulletShoot') {
                     if (data.bullet.ownerId !== myUserId) bullets.push(data.bullet);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'noteShoot') {
+                    if (data.note.ownerId !== myUserId) notes.push(data.note);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'noteRemove') {
+                    const idx = notes.findIndex(n => n.id === data.noteId);
+                    if (idx !== -1) notes.splice(idx, 1);
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
                 else if (data.type === 'flailThrow') {
@@ -6147,6 +6768,88 @@
             document.getElementById('lobby-host-section').classList.remove('open');
         });
 
+    </script>
+
+    <!-- Controles mobile: joystick + botões Z/X (só na luta). Reaproveita o teclado disparando KeyboardEvents. -->
+    <style>
+        #touch-controls { display: none; position: fixed; inset: 0; z-index: 150; pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        #touch-controls > * { pointer-events: auto; touch-action: none; }
+        #tc-stick { position: absolute; left: calc(24px + env(safe-area-inset-left, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.45); }
+        #tc-knob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; background: rgba(255,255,255,0.65); border: 2px solid rgba(255,255,255,0.9); }
+        .tc-btn { position: absolute; width: 74px; height: 74px; border-radius: 50%; background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.55); color: #fff; font: bold 26px sans-serif; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+        .tc-btn.down { background: rgba(255,255,255,0.5); }
+        #tc-z { right: calc(104px + env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+        #tc-x { right: calc(24px + env(safe-area-inset-right, 0px)); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+    </style>
+    <div id="touch-controls">
+        <div id="tc-stick"><div id="tc-knob"></div></div>
+        <div class="tc-btn" id="tc-z">Z</div>
+        <div class="tc-btn" id="tc-x">X</div>
+    </div>
+    <script>
+        (function () {
+            const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+            if (!isTouch) return;
+            const root = document.getElementById('touch-controls');
+            const stick = document.getElementById('tc-stick');
+            const knob = document.getElementById('tc-knob');
+
+            const held = {};
+            function setKey(code, down) {
+                if (!!held[code] === down) return;
+                held[code] = down;
+                window.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', { code, bubbles: true, cancelable: true }));
+            }
+
+            // Joystick: esquerda/direita andam, cima pula, baixo = seta pra baixo (↓+Z / ↓+X)
+            let stickId = null;
+            function moveStick(e) {
+                const r = stick.getBoundingClientRect();
+                const max = r.width / 2;
+                let dx = e.clientX - (r.left + max), dy = e.clientY - (r.top + max);
+                const len = Math.hypot(dx, dy);
+                if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+                knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+                setKey('ArrowLeft', dx < -max * 0.3);
+                setKey('ArrowRight', dx > max * 0.3);
+                setKey('ArrowUp', dy < -max * 0.55);
+                setKey('ArrowDown', dy > max * 0.55);
+            }
+            function releaseStick() {
+                stickId = null;
+                knob.style.transform = '';
+                ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].forEach(c => setKey(c, false));
+            }
+            stick.addEventListener('pointerdown', e => { e.preventDefault(); stickId = e.pointerId; stick.setPointerCapture(e.pointerId); moveStick(e); });
+            stick.addEventListener('pointermove', e => { if (e.pointerId === stickId) moveStick(e); });
+            stick.addEventListener('pointerup', e => { if (e.pointerId === stickId) releaseStick(); });
+            stick.addEventListener('pointercancel', e => { if (e.pointerId === stickId) releaseStick(); });
+
+            // Botões Z e X
+            function bindBtn(id, code) {
+                const el = document.getElementById(id);
+                const up = () => { el.classList.remove('down'); setKey(code, false); };
+                el.addEventListener('pointerdown', e => { e.preventDefault(); el.setPointerCapture(e.pointerId); el.classList.add('down'); setKey(code, true); });
+                el.addEventListener('pointerup', up);
+                el.addEventListener('pointercancel', up);
+            }
+            bindBtn('tc-z', 'KeyZ');
+            bindBtn('tc-x', 'KeyX');
+            root.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Só aparece na tela da luta (partida rodando e sem tela de vitória)
+            setInterval(() => {
+                const show = isRunning && !matchOver;
+                root.style.display = show ? 'block' : 'none';
+                if (!show) { releaseStick(); setKey('KeyZ', false); setKey('KeyX', false); }
+            }, 150);
+
+            // Tela de vitória: tocar na tela = apertar R
+            document.getElementById('victory-overlay').addEventListener('pointerdown', e => {
+                if (e.pointerType === 'mouse' || !matchOver) return;
+                requestPlayAgain();
+            });
+        })();
     </script>
 </body>
 </html>
