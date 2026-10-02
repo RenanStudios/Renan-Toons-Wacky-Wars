@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Renan Toons Wacky Wars</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
@@ -178,7 +178,7 @@
         }
         #lobby-overlay::before {
             content: '';
-            position: absolute;
+            position: fixed; /* fixed: não aumenta a área rolável do overlay */
             inset: -40px;
             background:
                 linear-gradient(rgba(140,160,255,0.16) 1px, transparent 1px) 0 0 / 38px 38px,
@@ -190,7 +190,7 @@
         @keyframes lobby-grid-move { to { background-position: 0 38px, 38px 0; } }
         #lobby-overlay::after {
             content: '';
-            position: absolute;
+            position: fixed;
             inset: 0;
             pointer-events: none;
             background:
@@ -276,6 +276,63 @@
             animation: tagline-blink 1.4s ease-in-out infinite;
         }
 
+
+        /* ===== TELA DE NOME: obrigatória antes de criar/entrar em sala ===== */
+        #name-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            display: none; align-items: center; justify-content: center;
+            overflow: hidden;
+            background:
+                radial-gradient(ellipse at 30% 60%, rgba(60,70,255,0.35) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 30%, rgba(90,60,220,0.25) 0%, transparent 50%),
+                linear-gradient(160deg, #060a26 0%, #0b1240 50%, #04061a 100%);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        #name-overlay::before {
+            content: ''; position: fixed; inset: -40px; pointer-events: none;
+            background:
+                linear-gradient(rgba(140,160,255,0.16) 1px, transparent 1px) 0 0 / 38px 38px,
+                linear-gradient(90deg, rgba(140,160,255,0.16) 1px, transparent 1px) 0 0 / 38px 38px;
+            transform: perspective(600px) rotateX(18deg) scale(1.15);
+            animation: lobby-grid-move 6s linear infinite;
+        }
+        #name-card {
+            position: relative; z-index: 1; box-sizing: border-box;
+            width: min(460px, 92vw); padding: 30px 26px 28px;
+            background: linear-gradient(160deg, rgba(10,16,60,0.85), rgba(5,8,34,0.92));
+            border: 4px solid #3f63ff; border-radius: 28px;
+            box-shadow: 0 0 0 2px rgba(10,14,50,0.9), 0 0 30px rgba(60,90,255,0.55), inset 0 0 40px rgba(50,80,255,0.25);
+            text-align: center;
+        }
+        #name-card h2 {
+            margin: 0 0 6px; font-size: 28px; font-weight: 900; font-style: italic; color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        #name-card p { margin: 0 0 18px; color: #9fb0ff; font-size: 14px; font-weight: 600; }
+        #name-input {
+            width: 100%; box-sizing: border-box; padding: 13px 14px; border-radius: 8px;
+            border: 2px solid #3f63ff; background: rgba(2,4,20,0.85);
+            font-size: 18px; font-weight: 700; color: #fff; text-align: center; outline: none;
+            box-shadow: inset 0 0 10px rgba(60,90,255,0.35);
+        }
+        #name-input:focus { border-color: #ffe600; box-shadow: 0 0 12px rgba(255,230,0,0.5), inset 0 0 10px rgba(60,90,255,0.35); }
+        #name-input::placeholder { color: #7f8bc4; font-weight: 600; }
+        #name-input.invalid { border-color: #ff6b6b; box-shadow: 0 0 14px rgba(255,80,80,0.6), inset 0 0 10px rgba(255,60,60,0.3); }
+        #name-btn-slot { margin-top: 16px; }
+        #name-btn {
+            width: 100%; padding: 13px; border: 0; border-radius: 10px; cursor: pointer;
+            background: #fff200; color: #14162a; font-size: 18px; font-weight: 900; font-style: italic;
+        }
+        #name-btn:hover { background: #ffe14d; }
+        #name-btn.juan-run { position: fixed; z-index: 200; margin: 0; transition: left 0.25s ease, top 0.25s ease; box-shadow: 0 4px 14px rgba(0,0,0,0.6); }
+        #name-error { min-height: 38px; margin-top: 12px; color: #ff6b6b; font-size: 14px; font-weight: 800; }
+        @keyframes name-shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px); } 40% { transform: translateX(10px); }
+            60% { transform: translateX(-7px); } 80% { transform: translateX(7px); }
+        }
+        #name-card.shake { animation: name-shake 0.4s ease; }
+
         #title-screen.hidden {
             animation: title-fade-out 0.4s ease forwards;
             pointer-events: none;
@@ -313,7 +370,7 @@
             font-family: Arial, Helvetica, sans-serif;
             display: grid;
             grid-template-columns: 220px 1fr;
-            grid-template-areas: "nick nick" "tabs panel";
+            grid-template-areas: "tabs panel";
             column-gap: 22px;
             row-gap: 20px;
             align-items: start;
@@ -366,7 +423,6 @@
             box-shadow: 0 0 12px rgba(255,230,0,0.5), inset 0 0 10px rgba(60,90,255,0.35);
         }
         #lobby-card input[type="text"]::placeholder { color: #7f8bc4; font-weight: 600; }
-        #lobby-nick { grid-area: nick; }
 
         /* Abas = itens de menu em "pílula", ativo em amarelo */
         .lobby-tabs {
@@ -479,7 +535,7 @@
         @media (max-width: 560px) {
             #lobby-card {
                 grid-template-columns: 1fr;
-                grid-template-areas: "nick" "tabs" "panel";
+                grid-template-areas: "tabs" "panel";
                 padding: 26px 16px 44px;
                 margin-top: 60px;
             }
@@ -946,6 +1002,38 @@
             .ready-pcard { width: calc(50% - 6px); max-width: 168px; }
         }
 
+        /* ===== Tela de seleção compacta (menos rolagem) ===== */
+        #ready-inner { padding: 12px 14px 20px; }
+        #ready-head { margin-bottom: 11px; gap: 12px; }
+        .ready-logo { font-size: 28px; }
+        .ready-vs { width: 38px; height: 38px; font-size: 17px; border-width: 2px; }
+        #ready-title { font-size: 18px; padding: 6px 26px; letter-spacing: 1px; }
+        #char-select-grid { max-width: 500px; gap: 5px; margin-bottom: 12px; }
+        .char-slot { border-width: 2px; }
+        .char-slot-name { font-size: 9px; letter-spacing: 0; }
+        #ready-player-list { gap: 8px; margin-bottom: 12px; }
+        .ready-pcard { width: 140px; padding: 19px 7px 7px; border-width: 2px; }
+        .ready-pcard-tag { font-size: 12px; padding: 3px 18px 3px 10px; }
+        .ready-pcard-stage { height: 112px; }
+        .ready-pcard-disk { width: 88px; height: 88px; bottom: -15px; }
+        .ready-pcard img { width: 74px; height: 74px; bottom: 20px; }
+        .ready-pcard-name { font-size: 12px; margin: -14px 12px 0; padding: 3px 5px; }
+        .ready-pcard-status { padding: 9px 0; font-size: 11px; }
+        .ready-pcard-status::after { font-size: 28px; }
+        .ready-pcard-check { top: 26px; right: 12px; width: 22px; height: 22px; font-size: 12px; }
+        #ready-count { margin: 0 0 11px; padding: 3px 14px; font-size: 12px; }
+        #ready-overlay button.main-btn { min-width: 175px; padding: 10px 28px; font-size: 15px; border-width: 2px; }
+        @media (max-width: 560px) {
+            #char-select-grid { max-width: 100%; }
+            .ready-pcard { width: calc(25% - 5px); min-width: 80px; }
+            .ready-pcard-stage { height: 80px; }
+            .ready-pcard-disk { width: 62px; height: 62px; }
+            .ready-pcard img { width: 52px; height: 52px; bottom: 14px; }
+            .ready-pcard-name { font-size: 10px; margin: -11px 4px 0; }
+            .ready-pcard-status::after { font-size: 19px; }
+            .ready-pcard-tag { font-size: 9px; padding: 1px 10px 1px 6px; }
+        }
+
         /* ===== CONTADOR REGRESSIVO (3, 2, 1, LUTAR!) ===== */
         #countdown-overlay {
             position: fixed;
@@ -991,6 +1079,23 @@
             80%  { transform: scale(1.05) rotate(0deg); opacity: 1; }
             100% { transform: scale(1.4) rotate(0deg); opacity: 0; }
         }
+
+        /* Cursor de outros jogadores: luva + etiqueta colorida por jogador */
+        .rc-cursor { position: absolute; width: 0; height: 0; transition: left 0.07s linear, top 0.07s linear; }
+        .rc-cursor .rc-glove {
+            position: absolute; left: -13px; top: -4px;
+            filter: drop-shadow(0 3px 3px rgba(0,0,0,0.5)); transform-origin: 13px 4px;
+            animation: rcBob 1.1s ease-in-out infinite;
+        }
+        @keyframes rcBob { 50% { transform: translateY(-3px) rotate(-4deg); } }
+        .rc-cursor .rc-tag {
+            position: absolute; top: 30px; left: 14px; display: flex; align-items: center; gap: 5px;
+            padding: 2px 8px 2px 2px; background: #14162a; border: 2px solid var(--rc); border-radius: 4px;
+            transform: skewX(-8deg); white-space: nowrap; box-shadow: 0 3px 6px rgba(0,0,0,0.45);
+        }
+        .rc-cursor .rc-port { background: var(--rc); color: #fff; font-size: 11px; font-weight: 900; padding: 1px 5px; border-radius: 2px; }
+        .rc-cursor .rc-tag img { height: 18px; image-rendering: pixelated; }
+        .rc-cursor .rc-name { color: #fff; font-size: 12px; font-weight: 800; text-transform: uppercase; }
 
         #ready-cursors {
             position: absolute;
@@ -1101,110 +1206,158 @@
             opacity: 0;
         }
 
-        #victory-text {
-            position: fixed;
-            top: 12%;
-            left: 50%;
-            transform: translate(-50%, -20px);
-            z-index: 400;
-            font-size: 42px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #fff;
-            text-shadow: 0 0 15px rgba(255,210,80,0.9), 0 4px 6px rgba(0,0,0,0.5);
-            opacity: 0;
+        #victory-overlay { --v-accent: #ffb52e; }
+
+        /* Raios de luz girando atrás do campeão */
+        #victory-rays {
+            position: absolute; left: 50%; top: 55%;
+            width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax;
+            background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.75) 0 5deg, transparent 5deg 15deg);
+            -webkit-mask-image: radial-gradient(circle closest-side, #000 10%, transparent 100%);
+            mask-image: radial-gradient(circle closest-side, #000 10%, transparent 100%);
+            opacity: 0; transition: opacity 1.2s ease;
+            animation: vRaysSpin 40s linear infinite;
             pointer-events: none;
+        }
+        #victory-overlay.cine #victory-rays, #victory-overlay.impact #victory-rays { opacity: 0.5; }
+        #victory-overlay.impact #victory-rays { opacity: 0.8; animation-duration: 22s; }
+        @keyframes vRaysSpin { to { transform: rotate(360deg); } }
+
+        /* Aro de luz no chão sob o campeão */
+        #victory-ring {
+            position: absolute; left: 0; top: 0; width: 340px; height: 340px; border-radius: 50%;
+            border: 6px solid var(--v-accent);
+            background: radial-gradient(circle, color-mix(in srgb, var(--v-accent) 55%, transparent) 0%, transparent 70%);
+            box-shadow: 0 0 40px var(--v-accent);
+            transform: translate(-50%, -50%) rotateX(90deg) translateZ(2px);
+            opacity: 0.85; animation: vRingPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes vRingPulse { 50% { opacity: 0.45; box-shadow: 0 0 70px var(--v-accent); } }
+
+        #victory-champion .v-sprite img { transform-origin: 50% 100%; }
+        #victory-overlay.impact .v-sprite {
+            filter: drop-shadow(0 0 18px var(--v-accent)) drop-shadow(0 6px 8px rgba(0,0,0,0.35));
+        }
+        #victory-overlay.impact #victory-champion .v-sprite img { animation: vHop 0.9s ease-in-out infinite; }
+        @keyframes vHop {
+            0%, 100% { transform: translateY(0) scale(1.04, 0.94); }
+            45%      { transform: translateY(-16px) scale(0.97, 1.05); }
+        }
+        #victory-champion-name { transition: opacity 0.3s; }
+        #victory-overlay.impact #victory-champion-name { opacity: 0; }
+
+        #victory-confetti { position: fixed; inset: 0; z-index: 390; pointer-events: none; }
+
+        /* Barras cinematográficas */
+        .v-bar { position: fixed; left: 0; right: 0; height: 9vh; background: #000; z-index: 380; transform: scaleY(0); transition: transform 0.6s ease; pointer-events: none; }
+        #vbar-top { top: 0; transform-origin: top; }
+        #vbar-bot { bottom: 0; transform-origin: bottom; }
+        #victory-overlay.cine .v-bar { transform: scaleY(1); }
+
+        #victory-flash {
+            position: fixed; inset: 0; pointer-events: none; z-index: 350;
+            background: radial-gradient(circle at center, rgba(255,255,255,0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.45) 100%);
+            opacity: 0; transition: opacity 0.7s ease;
+        }
+        #victory-burst { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 360; }
+        #victory-overlay.impact #victory-burst { animation: vBurst 0.7s ease-out; }
+        @keyframes vBurst { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+        #victory-overlay.impact #victory-scene { animation: vShake 0.5s ease-out; }
+        @keyframes vShake {
+            0%, 100% { transform: translate(0, 0); }
+            15% { transform: translate(-14px, 8px); } 30% { transform: translate(12px, -9px); }
+            50% { transform: translate(-8px, 5px); }  70% { transform: translate(5px, -3px); }
         }
 
-        /* Painel dos perdedores: some por padrão, aparece com fade-in só após a animação de vitória */
-        #loser-panel {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: row;
-            gap: 14px;
-            z-index: 300;
+        /* Banner "VITÓRIA!" + placa do campeão */
+        #victory-banner {
+            position: fixed; top: 7%; left: 50%; transform: translateX(-50%);
+            z-index: 400; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            pointer-events: none; width: max-content; max-width: 96vw;
+        }
+        #victory-text {
+            font-size: clamp(48px, 11vw, 120px); font-weight: 900; font-style: italic; line-height: 1;
+            letter-spacing: 3px; padding: 0 12px;
+            background: linear-gradient(to bottom, #fffbe0 0%, #ffe45c 45%, #ffa400 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            -webkit-text-stroke: 9px #14162a; paint-order: stroke fill;
+            filter: drop-shadow(0 5px 0 #14162a) drop-shadow(0 0 22px var(--v-accent));
             opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.6s ease, transform 0.6s ease;
         }
-        #loser-panel.visible {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        #victory-overlay.impact #victory-text { animation: vbSlam 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+        @keyframes vbSlam {
+            0%   { opacity: 0; transform: scale(3.4) rotate(-7deg) skewX(-8deg); }
+            55%  { opacity: 1; transform: scale(0.93) rotate(1deg) skewX(-8deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0) skewX(-8deg); }
         }
-        #loser-panel:not(.visible) {
-            transform: translateX(-50%) translateY(12px);
+        #victory-plate {
+            display: flex; align-items: center; gap: 14px; padding: 6px 28px 6px 6px;
+            background: linear-gradient(90deg, #14162a, #263373);
+            border-left: 10px solid var(--v-accent); border-radius: 4px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+            color: #fff; font-size: clamp(18px, 4vw, 30px); font-weight: 900; font-style: italic;
+            text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 3px rgba(0,0,0,0.6);
+            transform: skewX(-8deg); opacity: 0;
         }
+        #victory-plate b {
+            display: inline-flex; justify-content: center; align-items: center;
+            min-width: 1.9em; height: 1.9em; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff6b0, #ffc800 60%, #b87a00);
+            color: #3a2600; text-shadow: none; box-shadow: 0 0 14px rgba(255,200,0,0.8);
+        }
+        #victory-overlay.impact #victory-plate { animation: vpIn 0.5s 0.35s ease-out both; }
+        @keyframes vpIn {
+            from { opacity: 0; transform: translateX(-140px) skewX(-8deg); }
+            to   { opacity: 1; transform: translateX(0) skewX(-8deg); }
+        }
+
+        /* Painel de colocações (perdedores) */
+        #loser-panel {
+            position: fixed; bottom: 4vh; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: row; gap: 14px; z-index: 300;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        #loser-panel.visible { opacity: 1; }
 
         .loser-square {
-            width: 72px;
-            height: 90px;
-            border-radius: 10px;
-            border: 3px solid #8c7335;
-            border-top-color: #dfc881;
-            border-left-color: #dfc881;
-            border-bottom-color: #59481e;
-            border-right-color: #59481e;
-            background: linear-gradient(135deg, rgba(40,45,55,0.9), rgba(15,15,20,0.95));
-            box-shadow: 3px 4px 10px rgba(0,0,0,0.6), inset 0px 5px 15px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
+            width: 84px; height: 104px; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+            background: linear-gradient(160deg, rgba(38,51,115,0.92), rgba(12,14,30,0.96));
+            border: 2px solid rgba(255,255,255,0.35); border-bottom: 5px solid #8c93b8; border-radius: 6px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.55);
+            transform: skewX(-6deg);
+            opacity: 0; animation: vcardIn 0.45s calc(var(--i, 0) * 0.14s) cubic-bezier(0.2, 1.2, 0.4, 1) both;
+        }
+        @keyframes vcardIn {
+            from { opacity: 0; transform: translateY(60px) skewX(-6deg); }
+            to   { opacity: 1; transform: translateY(0) skewX(-6deg); }
         }
         .loser-square::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at top, rgba(255,255,255,0.25) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 2;
+            content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+            background: radial-gradient(circle at top, rgba(255,255,255,0.2) 0%, transparent 60%);
         }
         .loser-square img {
-            max-width: 70%;
-            max-height: 68%;
-            image-rendering: pixelated;
-            position: relative;
-            z-index: 1;
-            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5));
+            max-width: 68%; max-height: 62%; image-rendering: pixelated; position: relative; z-index: 1;
+            transform: skewX(6deg); filter: grayscale(0.65) brightness(0.85) drop-shadow(0 3px 4px rgba(0,0,0,0.5));
+        }
+        .loser-square .loser-rank {
+            position: absolute; top: 4px; left: 6px; z-index: 3; transform: skewX(6deg);
+            font-size: 15px; font-weight: 900; font-style: italic; color: #dfe4ff; text-shadow: 0 2px 3px rgba(0,0,0,0.8);
         }
         .loser-square .loser-name {
-            position: relative;
-            z-index: 1;
-            font-size: 10px;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-            padding-bottom: 3px;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            position: relative; z-index: 1; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8); padding-bottom: 4px; max-width: 94%;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: skewX(6deg);
         }
 
         #victory-status-panel {
-            position: fixed;
-            top: 8%;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 400;
-            background: rgba(0,0,0,0.4);
-            color: #fff;
-            font-size: 15px;
-            font-weight: bold;
-            padding: 10px 22px;
-            border-radius: 20px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-            text-align: center;
-            white-space: nowrap;
+            position: fixed; bottom: calc(4vh + 122px); left: 50%; transform: translateX(-50%);
+            z-index: 400; background: rgba(10,12,30,0.6); color: #fff; font-size: 15px; font-weight: 800;
+            letter-spacing: 1px; padding: 9px 24px; border-radius: 4px; border-bottom: 3px solid var(--v-accent);
+            opacity: 0; pointer-events: none; text-align: center; white-space: nowrap; transition: opacity 0.5s ease;
         }
-        #victory-status-panel.visible { opacity: 1; }
+        #victory-status-panel.visible { opacity: 1; animation: vPrompt 1.4s ease-in-out infinite; }
+        @keyframes vPrompt { 50% { opacity: 0.55; } }
 
     </style>
 
@@ -1602,15 +1755,126 @@
             function init() {
                 const titleScreen = document.getElementById('title-screen');
                 const lobbyOverlay = document.getElementById('lobby-overlay');
+                const nameOverlay = document.getElementById('name-overlay');
+                const nameCard = document.getElementById('name-card');
+                const nameInput = document.getElementById('name-input');
+                const nameBtn = document.getElementById('name-btn');
+                const nameError = document.getElementById('name-error');
+                const nameBtnSlot = document.getElementById('name-btn-slot');
 
                 function goToLobby() {
                     titleScreen.removeEventListener('click', goToLobby);
                     titleScreen.classList.add('hidden');
                     setTimeout(() => {
                         titleScreen.style.display = 'none';
-                        lobbyOverlay.style.display = 'flex';
+                        nameOverlay.style.display = 'flex';
+                        nameInput.focus();
                     }, 400); // aguarda o fade-out da tela de título
                 }
+
+                // Mensagens irônicas para quem tenta seguir sem nome (ou só com espaços)
+                const IRONIC = [
+                    'EI! EU PEDI UM NOME!',
+                    'Você pretende continuar sem colocar um nome?',
+                    'Vamos tentar de novo. Desta vez, DIGITE ALGUMA COISA.',
+                    'Não. Um espaço vazio não conta como nome.',
+                    'Isso não é um nome. Tente novamente.',
+                    'Você está fazendo isso de propósito, não está?',
+                    'Eu literalmente pedi seu nome.',
+                    'Coloque um nome. Não é tão difícil.'
+                ];
+                let ironicIdx = -1;
+
+                // Easter egg: nome com queijo = Juan (o Carecudo). O botão foge 5 vezes.
+                const JUAN = [
+                    'QUEIJO?! Juan, é você?',
+                    'Detectamos queijo. Juan identificado.',
+                    'Nome contendo queijo. Só pode ser o Juan.',
+                    'Você colocou queijo no nome? Tá na cara que é o Juan.',
+                    'Sistema: 99,9% de chance de ser Juan.',
+                    'Queijo detectado. Carecudo localizado.',
+                    'Ah, não... o Juan chegou.',
+                    'Juan, pare de tentar esconder sua identidade.',
+                    'Você realmente achou que eu não reconheceria o queijo?',
+                    'Identidade confirmada: Juan.',
+                    '🧀 = Juan. Não faço as regras.',
+                    'Detectando queijo... Detectando queijo... Juan encontrado.',
+                    'O algoritmo reconheceu seu verdadeiro nome: Juan.'
+                ];
+                const JUAN_MOVES = 5;
+                let juanIdx = -1, juanMoves = 0;
+
+                function isJuanName(name) {
+                    const n = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    return n.includes('queijo') || name.includes('\u{1F9C0}'); // 🧀
+                }
+
+                function moveBtnAway() {
+                    if (!nameBtn.classList.contains('juan-run')) {
+                        const r = nameBtn.getBoundingClientRect();
+                        nameBtnSlot.style.height = r.height + 'px'; // mantém o espaço no card
+                        nameBtn.style.width = r.width + 'px';
+                        nameBtn.style.left = r.left + 'px';
+                        nameBtn.style.top = r.top + 'px';
+                        nameBtn.classList.add('juan-run');
+                        void nameBtn.offsetWidth; // permite a transição a partir da posição atual
+                    }
+                    const w = nameBtn.offsetWidth, h = nameBtn.offsetHeight;
+                    const maxL = Math.max(8, window.innerWidth - w - 8);
+                    const maxT = Math.max(8, window.innerHeight - h - 8);
+                    nameBtn.style.left = (8 + Math.random() * (maxL - 8)) + 'px';
+                    nameBtn.style.top = (8 + Math.random() * (maxT - 8)) + 'px';
+                }
+
+                function resetBtn() {
+                    nameBtn.classList.remove('juan-run');
+                    nameBtn.style.left = nameBtn.style.top = nameBtn.style.width = '';
+                    nameBtnSlot.style.height = '';
+                    juanMoves = 0;
+                }
+
+                function tryConfirmName() {
+                    const name = nameInput.value.trim();
+                    if (!name) {
+                        // aleatório, mas nunca repete a mesma frase duas vezes seguidas
+                        let next;
+                        do { next = Math.floor(Math.random() * IRONIC.length); } while (next === ironicIdx && IRONIC.length > 1);
+                        ironicIdx = next;
+                        nameError.style.color = '';
+                        nameError.textContent = IRONIC[ironicIdx];
+                        nameInput.classList.add('invalid');
+                        nameCard.classList.remove('shake');
+                        void nameCard.offsetWidth; // reinicia a animação
+                        nameCard.classList.add('shake');
+                        nameInput.value = '';
+                        nameInput.focus();
+                        return;
+                    }
+                    if (isJuanName(name) && juanMoves < JUAN_MOVES) {
+                        let next;
+                        do { next = Math.floor(Math.random() * JUAN.length); } while (next === juanIdx && JUAN.length > 1);
+                        juanIdx = next;
+                        nameError.style.color = '#ffd60a';
+                        nameError.textContent = JUAN[juanIdx];
+                        nameInput.classList.remove('invalid');
+                        juanMoves++;
+                        moveBtnAway();
+                        return;
+                    }
+                    nameError.textContent = '';
+                    nameInput.classList.remove('invalid');
+                    resetBtn();
+                    myPlayerState.name = name;
+                    nameOverlay.style.display = 'none';
+                    lobbyOverlay.style.display = 'flex';
+                }
+
+                nameBtn.addEventListener('click', tryConfirmName);
+                nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryConfirmName(); });
+                nameInput.addEventListener('input', () => {
+                    if (nameInput.value.trim()) { nameInput.classList.remove('invalid'); nameError.textContent = ''; }
+                    if (!isJuanName(nameInput.value)) resetBtn();
+                });
 
                 titleScreen.addEventListener('click', goToLobby);
             }
@@ -1706,10 +1970,19 @@
         </div>
     </div>
 
+    <div id="name-overlay">
+        <div id="name-card">
+            <h2>Qual é o seu nome?</h2>
+            <p>Escolha como você vai aparecer para os outros jogadores.</p>
+            <input type="text" id="name-input" placeholder="Seu nome" maxlength="16" autocomplete="off">
+            <div id="name-error"></div>
+            <div id="name-btn-slot"><button id="name-btn">Continuar</button></div>
+        </div>
+    </div>
+
     <div id="lobby-overlay" style="display: none;">
         <div id="lobby-card">
             <div class="lobby-head">Multijogador</div>
-            <input type="text" id="lobby-nick" placeholder="Seu nome" maxlength="16">
             <div class="lobby-tabs">
                 <div id="lobby-tab-host" class="lobby-tab active">Criar Sala</div>
                 <div id="lobby-tab-join" class="lobby-tab">Entrar</div>
@@ -1762,7 +2035,10 @@
                     <img src="Doper Sprites/d_idle.png" alt="Doper">
                     <div class="char-slot-name">Doper</div>
                 </div>
-                <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
+                <div class="char-slot playable" data-character="hofy">
+                    <img src="Hofy Sprites/h_idle.png" alt="Hofy">
+                    <div class="char-slot-name">Hofy</div>
+                </div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
@@ -1794,9 +2070,11 @@
 
     <!-- ===== TELA DE VITÓRIA 2.5D (estilo Smash Bros) ===== -->
     <div id="victory-overlay" style="display:none;">
+        <div id="victory-rays"></div>
         <div id="victory-scene">
             <div id="victory-world">
                 <div id="victory-ground"></div>
+                <div id="victory-ring"></div>
 
                 <div id="victory-champion" class="v-billboard v-character" data-anchor="bottom" data-x="0" data-y="0" data-z="0">
                     <div class="v-sprite">
@@ -1808,7 +2086,14 @@
         </div>
 
         <div id="victory-flash"></div>
-        <div id="victory-text">VITÓRIA!</div>
+        <div id="victory-burst"></div>
+        <canvas id="victory-confetti"></canvas>
+        <div class="v-bar" id="vbar-top"></div><div class="v-bar" id="vbar-bot"></div>
+
+        <div id="victory-banner">
+            <div id="victory-text">VITÓRIA!</div>
+            <div id="victory-plate"><b>1º</b><span id="victory-plate-name"></span></div>
+        </div>
 
         <!-- Painel dos perdedores: quantidade dinâmica, aparece só após a animação -->
         <div id="loser-panel"></div>
@@ -1844,7 +2129,7 @@
         const PARALLAX_FOLLOW_FRACTION = 0.4; // fração do movimento da câmera que o parallax de fundo acompanha (dá sensação de distância)
 
         const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false });
         const statusText = document.getElementById('status-text');
         const connectionDot = document.getElementById('connection-dot');
         let isRunning = false;
@@ -1989,6 +2274,30 @@
                     push: { duration: 240, activeStart: 100, activeEnd: 160, damage: 5, baseKnockback: 190, growth: 0.7, range: 62, sprite: null, next: null, comboWindow: 0 },
                     // ↓ + X: toca o sax e solta uma nota musical voadora (dano vem da nota, não de hitbox melee)
                     playSax: { duration: 450, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 600 }
+                }
+            },
+            // Hofy: dançarina e gerente do bar, namorada do Doper.
+            // Z: cantar (nota atravessante). X: taca o microfone. Sem pulo duplo.
+            hofy: {
+                sprites: {
+                    idle: loadSprite('Hofy Sprites/h_idle.png'),
+                    walk: ['h_walk1.png', 'h_walk2.png', 'h_walk3.png', 'h_walk4.png'].map(src => loadSprite('Hofy Sprites/' + src)),
+                    jump: loadSprite('Hofy Sprites/h_walk3.png'),
+                    punch: [],
+                    kick: null,
+                    djump: null,
+                    bucket: null,
+                    sing: loadSprite('Hofy Sprites/h_sing.png'),
+                    note: loadSprite('Hofy Sprites/h_note.png'),
+                    throw: loadSprite('Hofy Sprites/h_throw.png'),
+                    mic: loadSprite('Hofy Sprites/h_mic.png')
+                },
+                sizeScale: 1.1, // um pouco menor que o Doper (vale para o desenho E para a hitbox)
+                attacks: {
+                    // Z: canta e solta uma nota que ondula e ATRAVESSA os oponentes (dano vem da nota, não de hitbox melee)
+                    // X: taca o microfone, que desliza pelo chão até acertar alguém ou cair no abismo (dano vem do microfone)
+                    throwMic: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 500 },
+                    sing: { duration: 480, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 700 }
                 }
             }
         };
@@ -2389,7 +2698,28 @@
                 } catch (e) { /* áudio indisponível, ignora silenciosamente */ }
             }
 
-            return { playSwing, playHit, playJump, playFall, playThud, playTink, playGlass };
+            // Fanfarra de vitória: arpejo em dó maior + acorde final + prato
+            function playVictory() {
+                try {
+                    const c = getCtx(), t0 = c.currentTime;
+                    const tone = (f, d, len, type, vol) => {
+                        const o = c.createOscillator(), g = c.createGain();
+                        o.type = type; o.frequency.value = f;
+                        g.gain.setValueAtTime(0.0001, t0 + d);
+                        g.gain.linearRampToValueAtTime(vol, t0 + d + 0.01);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + len);
+                        o.connect(g).connect(c.destination);
+                        o.start(t0 + d); o.stop(t0 + d + len + 0.05);
+                    };
+                    [[523.25, 0], [659.25, 0.12], [783.99, 0.24], [1046.5, 0.36]].forEach(([f, d]) => tone(f, d, 0.35, 'square', 0.08));
+                    [1046.5, 1318.5, 1568].forEach(f => tone(f, 0.5, 1.3, 'sawtooth', 0.05));
+                    const n = noiseSource(c), g = envGain(c, 0.25, 0.0001, t0, 0.9), hp = c.createBiquadFilter();
+                    hp.type = 'highpass'; hp.frequency.value = 3000;
+                    n.connect(hp).connect(g).connect(c.destination); n.start(t0); n.stop(t0 + 1);
+                } catch (e) { /* áudio indisponível */ }
+            }
+
+            return { playSwing, playHit, playJump, playFall, playThud, playTink, playGlass, playVictory };
         })();
 
         // Vibração do controle (Gamepad API): dispara em qualquer gamepad conectado.
@@ -2649,7 +2979,7 @@
                 ctx.translate(tr.x, tr.y);
                 if (tr.facingLeft) ctx.scale(-1, 1);
                 // Tinge de azul/ciano sutil pra diferenciar do personagem "real"
-                ctx.filter = 'saturate(0.4) hue-rotate(160deg)';
+                if (!DORFIC_LITE) ctx.filter = 'saturate(0.4) hue-rotate(160deg)';
                 ctx.drawImage(tr.sprite, -drawW/2, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
                 ctx.restore();
             }
@@ -2917,9 +3247,9 @@
         // Mapas disponíveis: cada um define seu próprio fundo (drawBackground) e cor/estilo
         // do palco (drawStageFill). Geometria do palco (getStageRect) é igual em todos.
         const MAPS = [
-            { name: 'Cubos', drawBackground: drawParallaxBackground, drawStageFill: drawCubesStageFill },
-            { name: 'Colinas', drawBackground: drawHillsBackground, drawStageFill: drawHillsStageFill },
-            { name: 'DORFic', drawBackground: drawDorficBackground, drawStageFill: drawDorficStageFill }
+            { name: 'Cubos', thumb: 'linear-gradient(160deg,#cdeaf9 0%,#a3d4ee 45%,#7fabda 100%)', drawBackground: drawParallaxBackground, drawStageFill: drawCubesStageFill },
+            { name: 'Colinas', thumb: 'linear-gradient(180deg,#5fb0f0 0%,#a8dcf5 55%,#4fae4a 56%,#2f7d32 100%)', drawBackground: drawHillsBackground, drawStageFill: drawHillsStageFill },
+            { name: 'DORFic', thumb: 'linear-gradient(180deg,#ffb400 0%,#ff8a00 30%,#f4620a 58%,#ec4308 100%)', drawBackground: drawDorficBackground, drawStageFill: drawDorficStageFill }
         ];
         let currentMapIndex = 0;
 
@@ -2963,8 +3293,14 @@
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Força o tamanho CSS = tamanho do bitmap (evita jogo achatado + faixa branca no mobile,
+            // quando a altura do CSS (100%) difere de innerHeight por causa da barra do navegador)
+            canvas.style.width = canvas.width + 'px';
+            canvas.style.height = canvas.height + 'px';
         }
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         // ==========================================
@@ -2989,6 +3325,7 @@
             // beginGameplay()/restartMatch() quando uma nova partida começa.
             if (matchOver) return;
             
+            if (DORFIC_LITE && timestamp - lastTime < 14) { requestAnimationFrame(gameLoop); return; }
             const deltaTime = Math.min((timestamp - lastTime) / 1000, 0.05); // Tempo em segundos, limitado para evitar saltos de física
             lastTime = timestamp;
 
@@ -3297,6 +3634,8 @@
             drawBullets();
             updateNotes(deltaTime * 1000);
             drawNotes();
+            updateMics(deltaTime * 1000);
+            drawMics();
             updateFlails(deltaTime * 1000);
             drawFlails();
             updateJellyBalls(deltaTime * 1000);
@@ -3409,6 +3748,7 @@
 
             if (p.lives <= 0) {
                 p.eliminated = true;
+                p.eliminatedAt = Date.now();
                 p.damage = 0;
                 // Tira o jogador eliminado de cena (fora da área jogável, sem física)
                 p.x = -9999;
@@ -3456,11 +3796,12 @@
             matchOver = false;
             championId = null;
             thrownCups.length = 0;
+            thrownMics.length = 0;
             cupShards.length = 0;
             for (const id of Object.keys(players)) {
                 const p = players[id];
                 p.lives = 3;
-                p.eliminated = false;
+                p.eliminated = false; p.eliminatedAt = 0;
                 p.damage = 0;
             }
             if (players[myUserId]) {
@@ -3513,7 +3854,59 @@
         const victoryChampionImg = document.getElementById('victory-champion-img');
         const victoryChampionName = document.getElementById('victory-champion-name');
         const victoryFlashEl = document.getElementById('victory-flash');
-        const victoryTextEl = document.getElementById('victory-text');
+        const victoryPlateName = document.getElementById('victory-plate-name');
+        const victoryConfettiCv = document.getElementById('victory-confetti');
+        let vConfetti = [], vConfettiRaf = null;
+
+        function victoryAccent(key) {
+            const map = { renanzinho: '#ffb52e', aggie: '#ff4fa0' };
+            if (map[key]) return map[key];
+            let h = 0; for (const ch of String(key)) h = (h * 31 + ch.charCodeAt(0)) % 360;
+            return `hsl(${h} 85% 58%)`;
+        }
+
+        function startVictoryConfetti(accent) {
+            const cv = victoryConfettiCv, c = cv.getContext('2d');
+            cv.width = window.innerWidth; cv.height = window.innerHeight;
+            const cols = [accent, '#ffd60a', '#ffffff', '#ff5fa2', '#4cc9f0'];
+            const mk = (burst, i) => ({
+                x: burst ? cv.width / 2 + (Math.random() - 0.5) * cv.width * 0.3 : Math.random() * cv.width,
+                y: burst ? cv.height * 0.45 : -12,
+                vx: burst ? (Math.random() - 0.5) * 16 : (Math.random() - 0.5) * 2,
+                vy: burst ? -8 - Math.random() * 14 : 2 + Math.random() * 2,
+                w: 6 + Math.random() * 8, h: 4 + Math.random() * 6,
+                r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.4, c: cols[i % cols.length]
+            });
+            vConfetti = []; for (let i = 0; i < 160; i++) vConfetti.push(mk(true, i));
+            let last = performance.now(), n = 0;
+            (function step(now) {
+                const dt = Math.min(2, (now - last) / 16.67); last = now;
+                c.clearRect(0, 0, cv.width, cv.height);
+                if (vConfetti.length < 130 && Math.random() < 0.5) vConfetti.push(mk(false, n++));
+                vConfetti = vConfetti.filter(p => p.y < cv.height + 20);
+                for (const p of vConfetti) {
+                    p.vy = Math.min(p.vy + 0.35 * dt, 5); p.vx *= 0.995;
+                    p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+                    c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.scale(1, Math.cos(p.r * 2));
+                    c.fillStyle = p.c; c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); c.restore();
+                }
+                vConfettiRaf = requestAnimationFrame(step);
+            })(last);
+        }
+        function stopVictoryConfetti() {
+            if (vConfettiRaf) cancelAnimationFrame(vConfettiRaf);
+            vConfettiRaf = null; vConfetti = [];
+            victoryConfettiCv.getContext('2d').clearRect(0, 0, victoryConfettiCv.width, victoryConfettiCv.height);
+        }
+
+        // Momento do "impacto": flash branco, tremor, banner, fanfarra e confete
+        function victoryImpact() {
+            victoryFlashEl.style.opacity = '0';
+            victoryOverlay.classList.remove('cine');
+            victoryOverlay.classList.add('impact');
+            SFX.playVictory();
+            startVictoryConfetti(victoryOverlay.style.getPropertyValue('--v-accent') || '#ffb52e');
+        }
         const loserPanelEl = document.getElementById('loser-panel');
         const victoryStatusPanelEl = document.getElementById('victory-status-panel');
 
@@ -3551,17 +3944,21 @@
             const charDef = CHARACTERS[(champ && champ.character) || 'renanzinho'] || CHARACTERS.renanzinho;
             victoryChampionImg.src = (charDef.sprites.idle && charDef.sprites.idle.src) || '';
             victoryChampionName.textContent = champ ? champ.name : '???';
+            victoryPlateName.textContent = champ ? champ.name : 'Empate';
+            victoryOverlay.style.setProperty('--v-accent', victoryAccent((champ && champ.character) || 'renanzinho'));
+            victoryOverlay.classList.remove('cine', 'impact');
+            stopVictoryConfetti();
 
             victoryOverlay.style.display = 'block';
             loserPanelEl.classList.remove('visible');
             loserPanelEl.innerHTML = '';
             victoryStatusPanelEl.classList.remove('visible');
             victoryFlashEl.style.opacity = '0';
-            victoryTextEl.style.opacity = '0';
-            victoryTextEl.style.transform = 'translate(-50%, -20px)';
 
             vRotX = -15; vRotY = 45; vCamZ = 0;
             updateVictoryCamera();
+            void victoryOverlay.offsetWidth; // força reflow para as barras animarem
+            victoryOverlay.classList.add('cine');
 
             const orbitStartRotY = vRotY;
             const orbitRotX = -22;
@@ -3603,18 +4000,14 @@
 
                         updateVictoryCamera();
 
-                        if (tz > 0.7) {
-                            const flashT = (tz - 0.7) / 0.3;
-                            victoryFlashEl.style.opacity = flashT;
-                            victoryTextEl.style.opacity = flashT;
-                            victoryTextEl.style.transform = `translate(-50%, ${-20 + (1 - flashT) * 20}px)`;
-                        }
+                        if (tz > 0.7) victoryFlashEl.style.opacity = (tz - 0.7) / 0.3;
 
                         if (tz < 1) {
                             vAnimFrameId = requestAnimationFrame(zoomStep);
                         } else {
                             vAnimFrameId = null;
                             // Animação de vitória concluída: só agora entram os perdedores + status
+                            victoryImpact();
                             showLoserPanel();
                             updateVictoryStatusPanel();
                             victoryStatusPanelEl.classList.add('visible');
@@ -3632,10 +4025,13 @@
         // 4 jogadores -> 3 quadrados, etc.).
         function showLoserPanel() {
             const allIds = Object.keys(players);
-            const losers = allIds.filter(id => id !== championId);
+            let losers = allIds.filter(id => id !== championId);
+            // Se soubermos quando cada um foi eliminado, o último a cair fica em 2º
+            const hasOrder = losers.length > 0 && losers.every(id => players[id] && players[id].eliminatedAt);
+            if (hasOrder) losers.sort((a, b) => players[b].eliminatedAt - players[a].eliminatedAt);
 
             loserPanelEl.innerHTML = '';
-            losers.forEach(id => {
+            losers.forEach((id, idx) => {
                 const p = players[id];
                 if (!p) return;
                 const charDef = CHARACTERS[p.character] || CHARACTERS.renanzinho;
@@ -3643,6 +4039,12 @@
 
                 const sq = document.createElement('div');
                 sq.className = 'loser-square';
+                sq.style.setProperty('--i', idx);
+
+                const rank = document.createElement('div');
+                rank.className = 'loser-rank';
+                rank.textContent = hasOrder ? `${idx + 2}º` : 'KO';
+                sq.appendChild(rank);
 
                 const img = document.createElement('img');
                 img.src = spriteSrc;
@@ -3676,6 +4078,8 @@
                 vAnimFrameId = null;
             }
             victoryOverlay.style.display = 'none';
+            victoryOverlay.classList.remove('cine', 'impact');
+            stopVictoryConfetti();
             loserPanelEl.classList.remove('visible');
             loserPanelEl.innerHTML = '';
             victoryStatusPanelEl.classList.remove('visible');
@@ -4141,24 +4545,70 @@
             }, NOTE_PREP_MS);
         }
 
+        // Nota da Hofy (Z): maior, mais lenta, onda mais larga e ATRAVESSA os oponentes (acerta cada um uma vez)
+        const HNOTE = { speed: 230, lifetime: 2000, damage: 3, knockback: 75, waveAmp: 30, waveDiv: 170, hitRadius: 34, prepMs: 350, drawH: 46 };
+        const DNOTE = { speed: NOTE_SPEED, lifetime: NOTE_LIFETIME, damage: NOTE_DAMAGE, knockback: NOTE_KNOCKBACK, waveAmp: NOTE_WAVE_AMP, waveDiv: 140, hitRadius: NOTE_HIT_RADIUS, drawH: 30 };
+        const noteCfg = (n) => n.kind === 'hofy' ? HNOTE : DNOTE;
+
+        function singNote(p) {
+            if (!p || p.character !== 'hofy') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.hofy.attacks.sing;
+            p.attackName = 'sing';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+            SFX.playSwing(0.6);
+            MP.sendState();
+
+            setTimeout(() => {
+                const me = players[myUserId];
+                const t = Date.now();
+                // Cancela se foi interrompida (levou golpe) ou o golpe já acabou
+                if (!me || me.attackName !== 'sing' || t >= me.attackUntil) return;
+                if (me.hitstunUntil && t < me.hitstunUntil) return;
+                const dir = me.facingLeft ? -1 : 1;
+                const y0 = me.y - PLAYER_SIZE * 0.35;
+                const note = {
+                    id: 'hnote_' + t + '_' + Math.floor(Math.random() * 100000),
+                    kind: 'hofy',
+                    x: me.x + dir * 34 * getSizeScale(me),
+                    y0, y: y0, dir,
+                    spawnTime: t,
+                    ownerId: myUserId,
+                    hitIds: []
+                };
+                notes.push(note);
+                MP.broadcastToAll({ type: 'noteShoot', note });
+            }, HNOTE.prepMs);
+        }
+
         function updateNotes(deltaMs) {
             const deltaSec = deltaMs / 1000;
             const now = Date.now();
             for (let i = notes.length - 1; i >= 0; i--) {
                 const n = notes[i];
-                if (now - n.spawnTime >= NOTE_LIFETIME) { notes.splice(i, 1); continue; }
-                n.x += n.dir * NOTE_SPEED * deltaSec;
-                n.y = n.y0 + Math.sin((now - n.spawnTime) / 140) * NOTE_WAVE_AMP;
+                const cfg = noteCfg(n);
+                if (now - n.spawnTime >= cfg.lifetime) { notes.splice(i, 1); continue; }
+                n.x += n.dir * cfg.speed * deltaSec;
+                n.y = n.y0 + Math.sin((now - n.spawnTime) / cfg.waveDiv) * cfg.waveAmp;
 
                 if (n.ownerId === myUserId) {
                     for (const id in players) {
                         if (id === n.ownerId) continue;
+                        if (n.kind === 'hofy' && n.hitIds && n.hitIds.includes(id)) continue;
                         const target = players[id];
                         const tS = getSizeScale(target);
-                        if (Math.abs(target.x - n.x) < NOTE_HIT_RADIUS * tS && Math.abs(target.y - n.y) < PLAYER_SIZE * 0.9 * tS) {
+                        if (Math.abs(target.x - n.x) < cfg.hitRadius * tS && Math.abs(target.y - n.y) < PLAYER_SIZE * 0.9 * tS) {
                             const dir = target.x >= n.x ? 1 : -1;
-                            applyHit(id, NOTE_DAMAGE, NOTE_KNOCKBACK, dir);
-                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: NOTE_DAMAGE, knockback: NOTE_KNOCKBACK, dir });
+                            applyHit(id, cfg.damage, cfg.knockback, dir);
+                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: cfg.damage, knockback: cfg.knockback, dir });
+                            if (n.kind === 'hofy') { n.hitIds.push(id); continue; } // atravessa: segue voando
                             MP.broadcastToAll({ type: 'noteRemove', noteId: n.id });
                             notes.splice(i, 1);
                             break;
@@ -4169,16 +4619,229 @@
         }
 
         function drawNotes() {
-            const sprite = CHARACTERS.doper.sprites.note;
-            if (!sprite || !sprite.complete || sprite.naturalWidth === 0) return;
-            const drawH = 30;
-            const drawW = drawH * (sprite.naturalWidth / sprite.naturalHeight);
             for (const n of notes) {
+                const hofy = n.kind === 'hofy';
+                const sprite = (hofy ? CHARACTERS.hofy : CHARACTERS.doper).sprites.note;
+                if (!sprite || !sprite.complete || sprite.naturalWidth === 0) continue;
+                const cfg = noteCfg(n);
+                const drawH = cfg.drawH;
+                const drawW = drawH * (sprite.naturalWidth / sprite.naturalHeight);
+                const age = Date.now() - n.spawnTime;
+                if (hofy) {
+                    // Eco da voz: 2 cópias translúcidas ficam para trás, seguindo a mesma onda
+                    for (let k = 2; k >= 1; k--) {
+                        const ta = age - k * 90;
+                        if (ta < 0) continue;
+                        ctx.save();
+                        ctx.globalAlpha = 0.28 / k;
+                        ctx.translate(n.x - n.dir * cfg.speed * (k * 90) / 1000, n.y0 + Math.sin(ta / cfg.waveDiv) * cfg.waveAmp);
+                        if (n.dir < 0) ctx.scale(-1, 1);
+                        ctx.drawImage(sprite, -drawW / 2, -drawH / 2, drawW, drawH);
+                        ctx.restore();
+                    }
+                }
                 ctx.save();
                 ctx.translate(n.x, n.y);
                 if (n.dir < 0) ctx.scale(-1, 1);
-                ctx.rotate(Math.sin((Date.now() - n.spawnTime) / 140) * 0.25); // balança junto com a onda
+                ctx.rotate(Math.sin(age / cfg.waveDiv) * 0.25); // balança junto com a onda
+                if (hofy) {
+                    const pulse = 1 + 0.08 * Math.sin(age / 60);
+                    ctx.shadowColor = 'rgba(255,90,170,0.9)'; // brilho rosa pulsante
+                    ctx.shadowBlur = 16;
+                    ctx.scale(pulse, pulse);
+                }
                 ctx.drawImage(sprite, -drawW / 2, -drawH / 2, drawW, drawH);
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // MICROFONE DA HOFY (X): arremessado, cai numa superfície e DESLIZA em velocidade constante até acertar
+        // alguém ou cair no abismo (também acerta em pleno ar). Cada cliente simula a física localmente
+        // (passo fixo); só o dono detecta o acerto e avisa os outros.
+        // ==========================================
+        let thrownMics = []; // { id, ownerId, x, y, vx, vy, rot, vr, dir, onGround, landed, spawnTime, acc }
+        const MIC_RADIUS = 9;
+        const MIC_THROW_VX = 640;      // px/s
+        const MIC_THROW_VY = -140;
+        const MIC_GRAVITY = 2400;
+        const MIC_LIFETIME = 5000;     // ms (segurança)
+        const MIC_DAMAGE = 6;
+        const MIC_KNOCKBACK = 150;
+
+        function throwMic(p) {
+            if (!p || p.character !== 'hofy') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.hofy.attacks.throwMic;
+            p.attackName = 'throwMic';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+
+            const dir = p.facingLeft ? -1 : 1;
+            const sc = getSizeScale(p);
+            const mic = {
+                id: 'mic_' + now + '_' + Math.floor(Math.random() * 100000),
+                ownerId: myUserId,
+                x: p.x + dir * 28 * sc,
+                y: p.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * sc * 0.35, // altura da mão
+                vx: dir * MIC_THROW_VX,
+                vy: MIC_THROW_VY,
+                rot: 0, vr: 16, dir,
+                onGround: false, landed: false
+            };
+            thrownMics.push(makeMic(mic));
+            SFX.playSwing(0.9);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'micThrow', mic });
+        }
+
+        function makeMic(data) {
+            return { ...data, spawnTime: Date.now(), acc: 0 };
+        }
+
+        function removeMic(m, broadcast) {
+            const i = thrownMics.indexOf(m);
+            if (i >= 0) thrownMics.splice(i, 1);
+            if (broadcast && m.ownerId === myUserId) MP.broadcastToAll({ type: 'micRemove', id: m.id });
+        }
+
+        // Um passo de física: gravidade, pouso no topo de qualquer plataforma e deslize sem atrito
+        function micGroundRadius() {
+            const spr = CHARACTERS.hofy.sprites.mic;
+            if (spr && spr.complete && spr.naturalWidth > 0) {
+                return Math.max(MIC_RADIUS, micDrawSize(spr).h / 2);
+            }
+            return MIC_RADIUS;
+        }
+
+        function stepMic(m, h, stage, plats) {
+            const R = micGroundRadius();
+            const prevY = m.y;
+            m.vy += MIC_GRAVITY * h;
+            m.x += m.vx * h;
+            m.y += m.vy * h;
+            m.onGround = false;
+            for (const sf of [stage].concat(plats)) {
+                if (m.x > sf.x && m.x < sf.x + sf.width && m.vy >= 0 && prevY + R <= sf.y + 2 && m.y + R >= sf.y) {
+                    m.y = sf.y - R;
+                    m.vy = 0;
+                    m.onGround = true;
+                    if (!m.landed) { m.landed = true; SFX.playTink(0.5); }
+                    break;
+                }
+            }
+            if (m.onGround) {
+                // deitado, deslizando: endireita a rotação rapidamente e não perde velocidade
+                let r = m.rot % (Math.PI * 2);
+                if (r > Math.PI) r -= Math.PI * 2; else if (r < -Math.PI) r += Math.PI * 2;
+                m.rot = r * 0.8; m.vr = 0;
+            } else {
+                m.rot += m.vr * h;
+            }
+            // Bateu na lateral da plataforma principal: o microfone "tilinta" e some
+            if (m.y + R > stage.y + 2 && m.y - R < stage.y + stage.height) {
+                if (m.x > stage.x - R && m.x < stage.x + stage.width + R && !m.onGround) {
+                    const l = stage.x, r2 = stage.x + stage.width;
+                    if ((m.vx > 0 && m.x < (l + r2) / 2) || (m.vx < 0 && m.x > (l + r2) / 2)) m.dead = true;
+                }
+            }
+        }
+
+        function updateMics(deltaMs) {
+            const now = Date.now();
+            const stage = getStageRect();
+            const plats = getFloatingPlatforms();
+            const H = 1 / 120;
+            for (let i = thrownMics.length - 1; i >= 0; i--) {
+                const m = thrownMics[i];
+                if (now - m.spawnTime > MIC_LIFETIME || m.y > WORLD_HEIGHT + 500 || m.x < -600 || m.x > WORLD_WIDTH + 600) {
+                    thrownMics.splice(i, 1);
+                    continue;
+                }
+                m.acc += Math.min(deltaMs, 50) / 1000;
+                while (m.acc >= H && !m.dead) { m.acc -= H; stepMic(m, H, stage, plats); }
+                if (m.dead) { SFX.playTink(0.8); removeMic(m, true); continue; }
+
+                // só o dono detecta o acerto
+                if (m.ownerId === myUserId) {
+                    for (const id in players) {
+                        if (id === m.ownerId) continue;
+                        const target = players[id];
+                        if (target.eliminated) continue;
+                        const tS = getSizeScale(target);
+                        const top = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * tS;
+                        const bottom = target.y + PLAYER_SIZE / 2;
+                        if (Math.abs(target.x - m.x) < (PLAYER_SIZE / 2) * 0.85 * tS + 10 && m.y > top - 4 && m.y < bottom + 10) {
+                            const dir = m.vx >= 0 ? 1 : -1;
+                            applyHit(id, MIC_DAMAGE, MIC_KNOCKBACK, dir);
+                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: MIC_DAMAGE, knockback: MIC_KNOCKBACK, dir });
+                            SFX.playHit('medium');
+                            rumble(0.4, 120);
+                            removeMic(m, true);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tamanho do microfone na tela: usa a MESMA escala da Hofy (pixel do sprite do microfone
+        // = pixel do sprite dela), então ele aparece no tamanho real em que foi desenhado.
+        function micDrawSize(micSprite) {
+            const hofy = CHARACTERS.hofy;
+            const ref = hofy.sprites.idle;
+            let scale = 1;
+            if (ref && ref.complete && ref.naturalHeight > 0) {
+                scale = (SPRITE_HEIGHT * (hofy.sizeScale || 1)) / ref.naturalHeight;
+            }
+            return { w: micSprite.naturalWidth * scale, h: micSprite.naturalHeight * scale };
+        }
+
+        // Desenho procedural (não depende de sprite): cabo escuro com faixa rosa e cabeça prateada
+        function drawMics() {
+            const micSprite = CHARACTERS.hofy.sprites.mic;
+            const micReady = micSprite && micSprite.complete && micSprite.naturalWidth > 0;
+            for (const m of thrownMics) {
+                if (micReady) {
+                    const { w: drawW, h: drawH } = micDrawSize(micSprite);
+                    ctx.save();
+                    ctx.translate(m.x, m.y);
+                    ctx.scale(m.dir, 1);
+                    if (m.onGround) { // riscos de velocidade atrás
+                        ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                        for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(-drawW / 2 - 4 - Math.abs(k) * 6, k * 5); ctx.lineTo(-drawW / 2 - 16 - Math.abs(k) * 6, k * 5); ctx.stroke(); }
+                    }
+                    ctx.rotate(m.rot);
+                    ctx.shadowColor = 'rgba(255,90,170,0.8)'; ctx.shadowBlur = 8;
+                    ctx.drawImage(micSprite, -drawW / 2, -drawH / 2, drawW, drawH);
+                    ctx.restore();
+                    continue;
+                }
+                ctx.save();
+                ctx.translate(m.x, m.y);
+                ctx.scale(m.dir, 1);
+                if (m.onGround) { // riscos de velocidade atrás
+                    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                    for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(-22 - Math.abs(k) * 6, k * 5); ctx.lineTo(-34 - Math.abs(k) * 6, k * 5); ctx.stroke(); }
+                }
+                ctx.rotate(m.rot);
+                ctx.shadowColor = 'rgba(255,90,170,0.8)'; ctx.shadowBlur = 8;
+                ctx.fillStyle = '#1f2233'; ctx.strokeStyle = '#0b0c16'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.roundRect(-18, -4, 22, 8, 4); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#ff5aa8'; ctx.fillRect(-6, -4, 5, 8);
+                ctx.shadowBlur = 0;
+                const g = ctx.createRadialGradient(8, -3, 1, 10, 0, 10);
+                g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#9aa3b8');
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(10, 0, 8.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.strokeStyle = 'rgba(60,66,90,0.7)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(10, -8); ctx.lineTo(10, 8); ctx.moveTo(2, 0); ctx.lineTo(18, 0); ctx.stroke();
                 ctx.restore();
             }
         }
@@ -5303,6 +5966,8 @@
         // gameLoop, então o movimento final na tela é DORFIC_PARALLAX[camada] * câmera:
         // quanto mais longe, menos a camada se mexe.
         // ==========================================================================
+        // Em celular/toque, o mapa usa uma versão mais leve (menos pontos no chão, sem shadowBlur)
+        const DORFIC_LITE = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
         const DORFIC_PARALLAX = {
             sky: 0.01,
             rays: 0.02,
@@ -5378,7 +6043,7 @@
 
                 ctx.globalAlpha = glow;
                 ctx.shadowColor = 'rgba(255,235,150,0.9)';
-                ctx.shadowBlur = 14;
+                ctx.shadowBlur = DORFIC_LITE ? 0 : 14;
                 ctx.fillStyle = grad;
                 ctx.fill();
                 ctx.restore();
@@ -5392,8 +6057,8 @@
             const nearY = WORLD_HEIGHT * 1.1;
             const D = 230;             // "distância de perspectiva" (px do plano)
             const zMax = 3.6;          // além disso o chão já sumiu (máscara)
-            const pitchX = 56;         // espaço horizontal entre pontos (plano)
-            const rowStep = 14;        // espaço entre fileiras (fileiras alternam de cor e de deslocamento)
+            const pitchX = DORFIC_LITE ? 112 : 56;         // espaço horizontal entre pontos (plano)
+            const rowStep = DORFIC_LITE ? 28 : 14;        // espaço entre fileiras (fileiras alternam de cor e de deslocamento)
             const phase = ((now / 5000) * rowStep * 2) % (rowStep * 2);
             const dMax = (zMax - 1) * D;
             const xMin = -0.3 * WORLD_WIDTH, xMax = 1.3 * WORLD_WIDTH;
@@ -5553,12 +6218,12 @@
 
             // Brilho externo (0 0 40px rgba(255,220,120,.8)) + sombra projetada, desenhados uma vez atrás da placa
             ctx.save();
-            ctx.shadowColor = 'rgba(255,220,120,0.8)';
-            ctx.shadowBlur = 40;
+            ctx.shadowColor = DORFIC_LITE ? 'transparent' : 'rgba(255,220,120,0.8)';
+            ctx.shadowBlur = DORFIC_LITE ? 0 : 40;
             ctx.fillStyle = '#e8590c';
             ctx.fillRect(x, y, w, h);
-            ctx.shadowColor = 'rgba(110,20,0,0.45)';
-            ctx.shadowBlur = 30;
+            ctx.shadowColor = DORFIC_LITE ? 'transparent' : 'rgba(110,20,0,0.45)';
+            ctx.shadowBlur = DORFIC_LITE ? 0 : 30;
             ctx.shadowOffsetY = 18;
             ctx.fillRect(x, y, w, h);
             ctx.restore();
@@ -5638,8 +6303,8 @@
 
             // Anel central luminoso (versão achatada para caber na face de 40px)
             ctx.save();
-            ctx.shadowColor = 'rgba(255,235,150,0.9)';
-            ctx.shadowBlur = 12;
+            ctx.shadowColor = DORFIC_LITE ? 'transparent' : 'rgba(255,235,150,0.9)';
+            ctx.shadowBlur = DORFIC_LITE ? 0 : 12;
             ctx.strokeStyle = 'rgba(255,240,190,0.85)';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
@@ -5726,12 +6391,14 @@
                 spriteOffsetX = 12; // ajuste fino: sprites de ataque encaixam melhor mais à direita
                 if (player.attackName === 'kick') {
                     currentSprite = cSprites.kick;
-                } else if (player.attackName === 'throwPolish' || player.attackName === 'spitJelly' || player.attackName === 'throwCup') {
+                } else if (player.attackName === 'throwPolish' || player.attackName === 'spitJelly' || player.attackName === 'throwCup' || player.attackName === 'throwMic') {
                     currentSprite = cSprites.throw;
                 } else if (player.attackName === 'push') {
                     currentSprite = cSprites.push || cSprites.idle;
                 } else if (player.attackName === 'playSax') {
                     currentSprite = cSprites.sax || cSprites.idle;
+                } else if (player.attackName === 'sing') {
+                    currentSprite = cSprites.sing || cSprites.idle;
                 } else if (player.attackName === 'dash') {
                     currentSprite = cSprites.dash || cSprites.jump;
                     spriteOffsetX = 0;
@@ -5920,6 +6587,8 @@
                     startAttack(me, 'punch1');
                 } else if (me && me.character === 'doper') {
                     throwCup(me);
+                } else if (me && me.character === 'hofy') {
+                    singNote(me); // Hofy: sem pulo duplo
                 } else if (me && (!me.character || me.character === 'renanzinho') && keysPressed['ArrowDown']) {
                     startBucketThrow(me);
                 } else if (me && !me.onGround) {
@@ -5941,6 +6610,8 @@
                 } else if (me && me.character === 'doper') {
                     if (keysPressed['ArrowDown']) playSax(me);
                     else startAttack(me, 'push');
+                } else if (me && me.character === 'hofy') {
+                    throwMic(me);
                 } else {
                     startAttack(players[myUserId], 'kick');
                 }
@@ -6154,6 +6825,15 @@
                     if (data.bottle.ownerId !== myUserId) nailPolishBottles.push(data.bottle);
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'micThrow') {
+                    if (data.mic.ownerId !== myUserId) thrownMics.push(makeMic(data.mic));
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'micRemove') {
+                    const mi = thrownMics.findIndex(m => m.id === data.id);
+                    if (mi >= 0) thrownMics.splice(mi, 1);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
                 else if (data.type === 'cupThrow') {
                     if (data.cup.ownerId !== myUserId) thrownCups.push(makeCup(data.cup));
                     if (this.role === 'host') this.broadcast(data, fromId);
@@ -6332,15 +7012,16 @@
             if (!_mapSelectEl) {
                 _mapSelectEl = document.createElement('div');
                 _mapSelectEl.id = 'map-select';
-                _mapSelectEl.style.cssText = 'margin: 12px 0; text-align:center;';
+                _mapSelectEl.style.cssText = 'margin: 9px 0; text-align:center;';
                 readyBtn.parentNode.insertBefore(_mapSelectEl, readyBtn);
             }
             const isHost = MP.role === 'host';
-            _mapSelectEl.innerHTML = '<div style="color:#fff; font-size:13px; margin-bottom:6px;">Mapa</div>' +
+            _mapSelectEl.innerHTML = '<div style="color:#fff; font-size:12px; margin-bottom:4px;">Mapa</div>' +
                 MAPS.map((m, i) => `<button type="button" data-mapindex="${i}" class="map-select-btn"
-                    style="margin:0 4px; padding:6px 12px; border-radius:6px; border:2px solid ${i === currentMapIndex ? '#ffd400' : '#555'};
-                    background:#333; color:#fff; font-weight:bold; cursor:${isHost ? 'pointer' : 'default'}; opacity:${isHost ? '1' : '0.7'};"
-                    ${isHost ? '' : 'disabled'}>${m.name}</button>`).join('');
+                    style="margin:0 4px; padding:0; width:82px; height:54px; border-radius:6px; border:2px solid ${i === currentMapIndex ? '#ffd400' : '#555'};
+                    background:${m.thumb || '#333'}; color:#fff; font-weight:bold; cursor:${isHost ? 'pointer' : 'default'}; opacity:${isHost ? '1' : '0.7'};
+                    display:inline-flex; align-items:flex-end; justify-content:center; overflow:hidden; box-shadow:${i === currentMapIndex ? '0 0 10px #ffd400' : 'none'};"
+                    ${isHost ? '' : 'disabled'}><span style="width:100%; padding:2px 0; background:rgba(0,0,0,0.55); font-size:11px;">${m.name}</span></button>`).join('');
             if (isHost) {
                 _mapSelectEl.querySelectorAll('.map-select-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -6438,16 +7119,32 @@
             step();
         }
 
+        // Cursor dos outros jogadores: luva apontando (estilo Smash), na cor da "porta" de cada um
+        const RC_PORT_COLORS = ['#e8403a', '#2f7de1', '#f2c200', '#2fb34a'];
+        const RC_GLOVE_SVG = '<svg class="rc-glove" width="40" height="46" viewBox="0 0 40 46">' +
+            '<g stroke="#14162a" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">' +
+            '<rect x="9" y="3" width="9" height="24" rx="4.5" fill="#fff"/>' +
+            '<path d="M8 22 H34 a3 3 0 0 1 3 3 V35 a8 8 0 0 1 -8 8 H16 a8 8 0 0 1 -8 -8 Z" fill="#fff"/>' +
+            '<path d="M18 24 v6 M25 24 v6 M31 24 v6" fill="none" stroke-width="2"/>' +
+            '<ellipse cx="7" cy="32" rx="5" ry="7" transform="rotate(20 7 32)" fill="#fff"/>' +
+            '<rect x="13" y="38" width="20" height="6" rx="2" fill="var(--rc)"/></g></svg>';
+
         // Move o cursor visual correspondente a um jogador dentro da ready-screen
         function updateReadyCursor(pid, x, y) {
             let el = _readyCursorEls[pid];
             if (!el) {
                 el = document.createElement('div');
-                el.style.cssText = 'position:absolute; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:14px solid #ffd23f; transform-origin:0 0;';
-                const label = document.createElement('div');
-                label.style.cssText = 'position:absolute; top:14px; left:10px; font-size:12px; color:#fff; background:#000a; padding:1px 5px; border-radius:4px; white-space:nowrap;';
-                label.textContent = nickFor(pid);
-                el.appendChild(label);
+                el.className = 'rc-cursor';
+                const idx = Math.max(0, Object.keys(_hostNickMap).indexOf(pid));
+                const col = RC_PORT_COLORS[idx % RC_PORT_COLORS.length];
+                el.style.setProperty('--rc', col);
+                const charDef = CHARACTERS[_characterMap[pid]] || CHARACTERS.renanzinho;
+                const face = (charDef && charDef.sprites && charDef.sprites.idle && charDef.sprites.idle.src) || '';
+                el.innerHTML = RC_GLOVE_SVG +
+                    '<div class="rc-tag"><span class="rc-port">P' + (idx + 1) + '</span>' +
+                    (face ? '<img src="' + face + '" alt="">' : '') +
+                    '<span class="rc-name"></span></div>';
+                el.querySelector('.rc-name').textContent = nickFor(pid);
                 readyCursors.appendChild(el);
                 _readyCursorEls[pid] = el;
             }
@@ -6616,8 +7313,6 @@
         // --- HOST ---
         document.getElementById('lobby-host-btn').addEventListener('click', () => {
             if (lobbyHostBtn.disabled) return; // previne double-click
-            const nick = document.getElementById('lobby-nick').value.trim();
-            if (nick) myPlayerState.name = nick;
             setLobbyBtnBusy(lobbyHostBtn, true, 'Criando sala...', 'Criar Sala');
             setLobbyStatus('Criando sala...', 'warn');
 
@@ -6746,8 +7441,6 @@
 
         document.getElementById('lobby-join-btn').addEventListener('click', () => {
             if (lobbyJoinBtn.disabled) return; // previne double-click
-            const nick = document.getElementById('lobby-nick').value.trim();
-            if (nick) myPlayerState.name = nick;
             const code = document.getElementById('lobby-join-code').value.trim().toUpperCase();
             if (!code) { setLobbyStatus('Digite o código da sala.', 'warn'); return; }
             setLobbyBtnBusy(lobbyJoinBtn, true, 'Conectando...', 'Entrar na Sala');
