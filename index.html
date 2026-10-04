@@ -2407,6 +2407,8 @@
         let lastTime = 0;
         const cameraState = { focusX: 800, focusY: 450, zoom: 1 }; // WORLD_WIDTH/2, WORLD_HEIGHT/2 iniciais
         let myUserId = null;
+        // Dono "local" de um projétil: o jogador local OU um bot da luta de demonstração (que roda no mesmo cliente)
+        function isOwnerLocal(id) { return id === myUserId || !!(players[id] && players[id].demoBot); }
 
         // Armazena todos os jogadores na sala (incluindo você)
         const players = {};
@@ -4314,6 +4316,7 @@
 
             // Atualizar posições dos jogadores (sem desenhar ainda, para poder ordenar por profundidade)
             const drawList = []; // itens a desenhar nesta ordem: jogadores, ordenados por Y
+            if (typeof DEMO !== 'undefined' && DEMO.active && !matchOver) DEMO.tick(now);
 
             if (!matchOver) {
             for (const id in players) {
@@ -4334,12 +4337,13 @@
                 // Roda para TODOS os jogadores (não só o local), já que applyHit seta esse valor
                 // localmente em cada peer — sem decair aqui, o knockback de jogadores remotos ficava
                 // "preso" para sempre (o rastro de movimento nunca parava de aparecer, por exemplo).
-                if (p.knockbackVx && id !== myUserId) {
+                if (p.knockbackVx && id !== myUserId && !p.demoBot) {
                     p.knockbackVx *= Math.max(0, 1 - effectiveDelta * 3.2);
                     if (Math.abs(p.knockbackVx) < 5) p.knockbackVx = 0;
                 }
 
-                if (id === myUserId) {
+                const _demoSwap = p.demoBot ? DEMO.enter(id) : null;
+                if (id === myUserId || p.demoBot) {
                     const prevX = p.x;
                     // Knockback horizontal: decai suavemente enquanto ativo (dá a sensação de ser "empurrado")
                     if (p.knockbackVx) {
@@ -4490,6 +4494,7 @@
 
                     // Processa o golpe atual: ativa a hitbox na janela certa e verifica acerto nos oponentes
                     updateAttack(p, now);
+                    if (_demoSwap) DEMO.leave(_demoSwap);
                 } else {
                     isMoving = p.isMoving || false;
                     // Interpolação suave em direção à última posição recebida pela rede,
@@ -4613,6 +4618,7 @@
         // Verifica se sobrou apenas 1 jogador (ou 0) não-eliminado: se sim, ele é o campeão
         // da partida e o jogo é travado até dar reset.
         function checkMatchEnd() {
+            if (typeof DEMO !== 'undefined' && DEMO.active) { DEMO.onElimination(); return; }
             if (!isRunning) return; // fora de partida (ex.: já voltou pra seleção): pacote atrasado de outro jogador não pode reabrir a tela de vitória
             const allIds = Object.keys(players);
             if (allIds.length === 0) return;
@@ -5167,7 +5173,7 @@
         // Acertos: só o dono do balde detecta. O balde só machuca se estiver rápido o suficiente
         // (um balde parado/rolando devagar no chão não dá dano).
         function flailCheckHits(f, a) {
-            if (f.ownerId !== myUserId) return;
+            if (!isOwnerLocal(f.ownerId)) return;
             const isOut = f.phase === 'out';
             const speed = Math.hypot(f.vx, f.vy);
             if (speed < (isOut ? FLAIL_HIT_MIN_SPEED_OUT : FLAIL_HIT_MIN_SPEED_IN)) return;
@@ -5433,7 +5439,7 @@
                 n.x += n.dir * cfg.speed * deltaSec;
                 n.y = n.y0 + Math.sin((now - n.spawnTime) / cfg.waveDiv) * cfg.waveAmp;
 
-                if (n.ownerId === myUserId) {
+                if (isOwnerLocal(n.ownerId)) {
                     for (const id in players) {
                         if (id === n.ownerId) continue;
                         if (n.kind === 'hofy' && n.hitIds && n.hitIds.includes(id)) continue;
@@ -5604,7 +5610,7 @@
                 if (m.dead) { SFX.playTink(0.8); removeMic(m, true); continue; }
 
                 // só o dono detecta o acerto
-                if (m.ownerId === myUserId) {
+                if (isOwnerLocal(m.ownerId)) {
                     for (const id in players) {
                         if (id === m.ownerId) continue;
                         const target = players[id];
@@ -5695,7 +5701,7 @@
                 if (now - b.spawnTime >= BULLET_LIFETIME) { bullets.splice(i, 1); continue; }
                 b.x += b.dir * BULLET_SPEED * deltaSec;
 
-                if (b.ownerId === myUserId) {
+                if (isOwnerLocal(b.ownerId)) {
                     for (const id in players) {
                         if (id === b.ownerId || b.hitIds.includes(id)) continue;
                         const target = players[id];
@@ -5908,7 +5914,7 @@
                 }
 
                 // Dano: só o dono da bolinha processa (mesmo padrão das balas), propagado por rede
-                if (ball.ownerId === myUserId) {
+                if (isOwnerLocal(ball.ownerId)) {
                     const cc = jellyCentroid(ball);
                     for (const id in players) {
                         if (id === ball.ownerId || ball.hitIds.includes(id)) continue;
@@ -6020,7 +6026,7 @@
                 }
 
                 // Dano: só o dono processa a colisão (mesmo padrão dos outros ataques), propaga por rede
-                if (c.ownerId === myUserId) {
+                if (isOwnerLocal(c.ownerId)) {
                     for (const id in players) {
                         if (id === c.ownerId || c.hitIds.includes(id)) continue;
                         const target = players[id];
@@ -6097,7 +6103,7 @@
         function explodePolishBottle(b) {
             b.exploded = true;
             spawnPolishSplash(b.x, b.y, b.color);
-            if (b.ownerId === myUserId) {
+            if (isOwnerLocal(b.ownerId)) {
                 for (const id in players) {
                     if (id === b.ownerId) continue; // não leva dano da própria explosão
                     const target = players[id];
@@ -6105,7 +6111,7 @@
                     const dy = target.y - b.y;
                     if (Math.hypot(dx, dy) < POLISH_EXPLOSION_RADIUS) {
                         const dir = dx >= 0 ? 1 : -1;
-                        if (id === myUserId) {
+                        if (id === myUserId || (players[id] && players[id].demoBot)) {
                             applyHit(id, POLISH_DAMAGE, POLISH_KNOCKBACK, dir);
                         }
                         MP.broadcastToAll({ type: 'hit', targetId: id, damage: POLISH_DAMAGE, knockback: POLISH_KNOCKBACK, dir });
@@ -6405,7 +6411,7 @@
                     const target = Math.round(c.rot / (Math.PI * 2)) * Math.PI * 2;
                     c.rot += (target - c.rot) * Math.min(1, deltaMs / 80);
                     // só o dono detecta o toque de oponentes
-                    if (c.ownerId === myUserId) {
+                    if (isOwnerLocal(c.ownerId)) {
                         for (const id in players) {
                             if (id === c.ownerId) continue;
                             const target = players[id];
@@ -6431,7 +6437,7 @@
                 spawnCupShards(c.x, c.y);
                 SFX.playGlass();
             }
-            if (c.ownerId !== myUserId) return;
+            if (!isOwnerLocal(c.ownerId)) return;
             MP.broadcastToAll({ type: 'cupExplode', id: c.id, x: c.x, y: c.y, silent: !!silent });
             if (silent) return;
             for (const id in players) {
@@ -8672,6 +8678,571 @@
             document.getElementById('lobby-host-section').classList.remove('open');
         });
 
+    </script>
+
+    <!-- ==========================================
+         LUTA DE DEMONSTRAÇÃO (attract mode)
+         Parado na tela de título por IDLE_MS -> dois bots lutam por DEMO_MS e volta pro título.
+         Usa o motor real do jogo (golpes, dano, KO, HUD); nada é enviado pela rede.
+         ========================================== -->
+    <style>
+        #demo-overlay { position: fixed; inset: 0; z-index: 102; display: none; cursor: pointer; touch-action: none; }
+        #demo-overlay.on { display: block; }
+        #demo-label {
+            position: absolute; top: 4%; left: 0; width: 100%; text-align: center; pointer-events: none;
+            font: 900 clamp(24px, 5vw, 54px) 'Arial Black', Impact, sans-serif; letter-spacing: .14em; color: #fff;
+            -webkit-text-stroke: 2px rgba(10,14,40,.85); paint-order: stroke fill;
+            text-shadow: 0 4px 0 rgba(10,14,40,.55), 0 0 18px rgba(255,255,255,.35);
+            animation: demo-blink 1.2s steps(1) infinite;
+        }
+        #demo-sub {
+            position: absolute; top: calc(4% + clamp(34px, 6.4vw, 70px)); left: 0; width: 100%; text-align: center; pointer-events: none;
+            font: 800 clamp(11px, 1.6vw, 16px) 'Arial Black', Impact, sans-serif; letter-spacing: .2em; color: #fff;
+            text-shadow: 0 2px 0 rgba(10,14,40,.7), 0 0 8px rgba(10,14,40,.6);
+        }
+        @keyframes demo-blink { 0%, 62% { opacity: 1; } 63%, 100% { opacity: 0; } }
+        #demo-fade { position: fixed; inset: 0; z-index: 103; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s ease; }
+        #demo-fade.on { opacity: 1; }
+        #title-screen.demo-away { visibility: hidden; }
+        body.demo-on #touch-controls { display: none !important; }
+    </style>
+    <div id="demo-overlay"><div id="demo-label">DEMONSTRAÇÃO</div><div id="demo-sub">TOQUE OU PRESSIONE QUALQUER TECLA</div></div>
+    <div id="demo-fade"></div>
+    <script>
+    const DEMO = (function () {
+        const IDLE_MS = 15000;   // tempo parado na tela de título até começar a demonstração
+        const DEMO_MS = 60000;   // duração da luta de demonstração
+        const FADE_MS = 450;     // fade preto na entrada e na saída
+
+        const titleEl = document.getElementById('title-screen');
+        const introEl = document.getElementById('logo-intro-overlay');
+        const overlay = document.getElementById('demo-overlay');
+        const fadeEl = document.getElementById('demo-fade');
+
+        // ======================================================================
+        // KITS: o que cada personagem sabe fazer, com papel tático e janela de uso.
+        //   role: poke (golpe rápido) | kill (finalizador) | zone (projétil reto) | trap (área/armadilha) | defense
+        //   min/max: distância horizontal útil; tol: diferença vertical tolerada; run: avanço do golpe (checa a borda do palco)
+        // ======================================================================
+        const alive = (t, until) => !!until && t < until;
+        const idle = (p, t) => !alive(t, p.hitstunUntil) && !alive(t, p.attackUntil) && !alive(t, p.attackCooldownUntil);
+        const meleeOk = (p, t) => idle(p, t) && !p.isDoubleJumping;
+        const countMine = (arr, id, f) => arr.filter(x => x.ownerId === id && (!f || f(x))).length;
+
+        const KITS = {
+            renanzinho: { style: 'brawler', djump: true, moves: [
+                { id: 'punch', role: 'poke', melee: true, min: 0, max: 62, tol: 60, ready: meleeOk, use: p => startAttack(p, 'punch1') },
+                { id: 'kick', role: 'kill', melee: true, min: 0, max: 74, tol: 60, ready: meleeOk, use: p => startAttack(p, 'kick') },
+                { id: 'bucket', role: 'zone', min: 85, max: 195, tol: 70, evalMs: 1200,
+                  ready: (p, t, b) => meleeOk(p, t) && !alive(t, p.flailCooldownUntil) && !flails.some(f => f.ownerId === b.id),
+                  use: p => startBucketThrow(p) }
+            ] },
+            aggie: { style: 'balanced', moves: [
+                { id: 'nail', role: 'poke', melee: true, min: 0, max: 62, tol: 60, ready: meleeOk, use: p => startAttack(p, 'nail') },
+                { id: 'polish', role: 'trap', min: 130, max: 330, tol: 170, evalMs: 3400,
+                  ready: (p, t, b) => meleeOk(p, t) && countMine(nailPolishBottles, b.id, x => !x.exploded) < 2,
+                  use: p => throwPolish(p) },
+                { id: 'clipper', role: 'zone', min: 110, max: 400, tol: 55, evalMs: 1500,
+                  ready: (p, t) => !alive(t, p.hitstunUntil) && !alive(t, p.attackUntil) && !alive(t, p.clipperCooldownUntil),
+                  use: p => throwClipper(p) }
+            ] },
+            blui: { style: 'balanced', moves: [
+                { id: 'punch', role: 'poke', melee: true, min: 0, max: 62, tol: 60, ready: meleeOk, use: p => startAttack(p, 'punch1') },
+                { id: 'jelly', role: 'zone', min: 70, max: 330, tol: 90, evalMs: 1500, ready: meleeOk, use: p => spitJelly(p) }
+            ] },
+            doper: { style: 'balanced', moves: [
+                { id: 'push', role: 'kill', melee: true, min: 0, max: 62, tol: 60, ready: meleeOk, use: p => startAttack(p, 'push') },
+                { id: 'cup', role: 'trap', min: 150, max: 380, tol: 150, evalMs: 2600,
+                  ready: (p, t, b) => meleeOk(p, t) && countMine(thrownCups, b.id) < 2, use: p => throwCup(p) },
+                { id: 'sax', role: 'zone', min: 110, max: 430, tol: 55, evalMs: 1800, ready: meleeOk, use: p => playSax(p) }
+            ] },
+            hofy: { style: 'zoner', moves: [
+                { id: 'sing', role: 'zone', min: 90, max: 460, tol: 55, evalMs: 1800, ready: meleeOk, use: p => singNote(p) },
+                { id: 'mic', role: 'zone', min: 130, max: 520, tol: 38, evalMs: 1500, ready: meleeOk, use: p => throwMic(p) }
+            ] },
+            fooshlooket: { style: 'trapper', djump: true, moves: [
+                { id: 'ball', role: 'kill', melee: true, min: 60, max: 210, tol: 50, run: 260, evalMs: 1600, ready: meleeOk, use: p => startAttack(p, 'ball') },
+                { id: 'water', role: 'trap', min: 90, max: 220, tol: 150, evalMs: 4000,
+                  ready: (p, t) => meleeOk(p, t) && !alive(t, p.waterCooldownUntil), use: p => throwWater(p) }
+            ] },
+            renanAntigo: { style: 'balanced', moves: [
+                { id: 'shot', role: 'zone', charge: true, min: 120, max: 640, tol: 55, evalMs: 1200,
+                  ready: (p, t) => !alive(t, p.hitstunUntil) && !alive(t, p.attackUntil) && !alive(t, p.bulletCooldownUntil) && !p.chargeStart,
+                  use: () => {} },
+                { id: 'dash', role: 'kill', melee: true, dash: true, min: 50, max: 190, tol: 50, run: 190, evalMs: 900,
+                  ready: (p, t) => meleeOk(p, t) && !alive(t, p.dashCooldownUntil) && (p.onGround || !p.airDashUsed),
+                  use: p => startDash(p) },
+                { id: 'shield', role: 'defense', defense: true, min: 0, max: 9999, tol: 9999,
+                  ready: (p, t) => idle(p, t) && !alive(t, p.shieldCooldownUntil), use: p => activateShield(p) }
+            ] }
+        };
+        // Estilo = pesos por papel + distância preferida no "neutro"
+        const STYLES = {
+            brawler: { poke: 1.3, kill: 1.2, zone: 0.7, trap: 0.6, pref: 70 },
+            zoner:   { poke: 0.8, kill: 1.0, zone: 1.5, trap: 1.3, pref: 240 },
+            trapper: { poke: 1.0, kill: 1.1, zone: 1.0, trap: 1.8, pref: 170 },
+            balanced:{ poke: 1.0, kill: 1.0, zone: 1.0, trap: 1.0, pref: 140 }
+        };
+        const MELEE_NAMES = { punch1: 1, punch2: 1, kick: 1, nail: 1, push: 1, dash: 1, ball: 1 };
+        const COLORS = ['#e53935', '#1e88e5'];
+
+        let idleSince = performance.now();
+
+        function titleVisible() {
+            return !document.hidden && !isRunning &&
+                titleEl.style.display !== 'none' && !titleEl.classList.contains('hidden') &&
+                (!introEl || introEl.classList.contains('intro-done'));
+        }
+        const rnd = (a, b) => a + Math.random() * (b - a);
+
+        const D = {
+            active: false, ending: false, endedAt: 0, bots: [], timers: [], prevMap: 0,
+
+            later(ms, fn) { this.timers.push(setTimeout(fn, ms)); },
+
+            // Troca temporária de "quem é o jogador local" (myUserId + teclas) para rodar a física/golpes
+            // do bot com o MESMO código do jogador real (startJump, updateAttack, etc.)
+            enter(id) {
+                const prev = { uid: myUserId, keys: Object.assign({}, keysPressed) };
+                myUserId = id;
+                for (const k in keysPressed) delete keysPressed[k];
+                const b = this.bots.find(x => x.id === id);
+                if (b) Object.assign(keysPressed, b.keys);
+                return prev;
+            },
+            leave(prev) {
+                myUserId = prev.uid;
+                for (const k in keysPressed) delete keysPressed[k];
+                Object.assign(keysPressed, prev.keys);
+            },
+
+            start() {
+                if (this.active || !titleVisible()) return;
+                this.active = true; this.ending = false;
+                fadeEl.classList.add('on');
+                this.later(FADE_MS, () => { this.setup(); fadeEl.classList.remove('on'); });
+                this.later(FADE_MS + DEMO_MS, () => this.end());
+            },
+
+            setup() {
+                const st = getStageRect();
+                this.prevMap = currentMapIndex;
+                const maps = MAPS.map((m, i) => i).filter(i => MAPS[i].name !== 'Vector'); // Vector depende do relógio do host
+                currentMapIndex = maps[Math.floor(Math.random() * maps.length)];
+
+                const pool = Object.keys(KITS);
+                for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+                const ids = pool.slice(0, 2);
+                const t0 = Date.now();
+                this.bots = ids.map((ch, i) => ({
+                    id: 'demo_' + (i + 1), character: ch, keys: {}, style: KITS[ch].style,
+                    skill: rnd(0.62, 0.88), reactMs: rnd(110, 240),          // "habilidade" e tempo de reação de cada CPU
+                    nextAct: t0 + rnd(900, 1500), retreatUntil: 0, crossUntil: 0, crossDir: 1, nextJump: 0, nextDodge: 0,
+                    forceRushUntil: 0, lastProgress: t0 + 1500, lastOppDmg: 0, engaged: true, engageUntil: 0, prefJ: 0,
+                    seenAtkStart: 0, reacted: true, oppAtkAt: 0, lastThreat: null, dodgeNow: false,
+                    recent: [], pending: [], stats: {}, charge: null, disabled: {}, lastMoveId: null, errLogged: false
+                }));
+                this.bots.forEach((b, i) => {
+                    const side = i === 0 ? -1 : 1;
+                    players[b.id] = {
+                        x: st.x + st.width / 2 + side * 190, y: st.y - PLAYER_SIZE / 2 - 1,
+                        vy: 0, knockbackVx: 0, onGround: true, isJumping: false, doubleJumpUsed: false, isDoubleJumping: false,
+                        color: COLORS[i], name: 'CPU ' + (i + 1), damage: 0, character: b.character,
+                        lives: 3, eliminated: false, facingLeft: side > 0,
+                        lastUpdate: Date.now(), demoBot: true
+                    };
+                });
+
+                matchOver = false; championId = null;
+                hudReset();
+                cameraState.focusX = WORLD_WIDTH / 2; cameraState.focusY = WORLD_HEIGHT / 2; cameraState.zoom = 1;
+                cameraFX.freezeUntil = 0;
+                document.body.classList.add('demo-on');
+                titleEl.classList.add('demo-away');
+                overlay.classList.add('on');
+                isRunning = true;
+                lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            },
+
+            // ======================================================================
+            // IA DAS CPUs
+            //  - lê o estado (distância, dano, cooldowns, projéteis, borda do palco)
+            //  - escolhe um MODO: neutral / rush / finish / safe / wait / edgeguard
+            //  - posiciona-se (espaçamento, controle de centro, não pisa em poça/copo, recupera ao cair)
+            //  - escolhe o golpe por pontuação (alcance, papel, dano do oponente, repetição e o que vem funcionando)
+            // ======================================================================
+            tick(now) {
+                if (this.ending) return;
+                for (let i = 0; i < this.bots.length; i++) {
+                    const b = this.bots[i];
+                    const p = players[b.id], o = players[this.bots[1 - i].id];
+                    if (!p || !o) continue;
+                    p.lastUpdate = now;
+                    const keys = {};
+                    b.keys = keys;
+                    if (p.eliminated || o.eliminated) continue;
+                    try {
+                        this.brain(b, p, o, now, keys);
+                    } catch (err) {
+                        // um golpe que quebrou é desativado; a CPU continua lutando com o resto
+                        if (b.lastMoveId) b.disabled[b.lastMoveId] = true;
+                        if (!b.errLogged) { b.errLogged = true; console.warn('[demo ai]', err); }
+                        if (p.chargeStart) p.chargeStart = 0;
+                        b.charge = null;
+                    }
+                }
+            },
+
+            // Registra se cada golpe usado realmente tirou dano (aprendizado simples dentro da luta)
+            learn(b, o, now) {
+                const od = o.damage || 0;
+                if (od < b.lastOppDmg) b.lastOppDmg = od;          // oponente renasceu
+                if (od > b.lastOppDmg) b.lastProgress = now;
+                b.lastOppDmg = od;
+                for (let k = b.pending.length - 1; k >= 0; k--) {
+                    const e = b.pending[k];
+                    if (now - e.t < e.ms) continue;
+                    const s = b.stats[e.id] || (b.stats[e.id] = { n: 0, s: 0 });
+                    s.n++; if (od > e.dmg0 + 0.01) s.s++;
+                    b.pending.splice(k, 1);
+                }
+            },
+
+            // Projétil inimigo vindo na direção do bot (menor tempo até alinhar em X)
+            threat(b, p) {
+                let best = null;
+                const look = (ref, x, y, vx, kind) => {
+                    if (!isFinite(x) || !isFinite(y) || !vx) return;
+                    if (Math.abs(y - p.y) > 75) return;
+                    const dxp = p.x - x;
+                    if (dxp * vx <= 0) return;
+                    const t = dxp / vx;
+                    if (t < 0 || t > 0.6) return;
+                    if (!best || t < best.t) best = { t, ref, kind };
+                };
+                for (const q of bullets) if (q.ownerId !== b.id) look(q, q.x, q.y, q.dir * BULLET_SPEED, 'bullet');
+                for (const q of notes) if (q.ownerId !== b.id) look(q, q.x, q.y, q.dir * ((typeof noteCfg === 'function' && noteCfg(q).speed) || NOTE_SPEED), 'note');
+                for (const q of thrownMics) if (q.ownerId !== b.id && !q.dead) look(q, q.x, q.y, q.vx || 0, 'mic');
+                for (const q of nailClippers) if (q.ownerId !== b.id) look(q, q.x, q.y, q.vx !== undefined ? q.vx : (q.dir || 0) * CLIPPER_SPEED, 'clipper');
+                for (const q of thrownCups) if (q.ownerId !== b.id && !q.onGround) look(q, q.x, q.y, q.vx || 0, 'cup');
+                for (const q of waterSpits) if (q.ownerId !== b.id) look(q, q.x, q.y, q.vx || 0, 'spit');
+                return best;
+            },
+
+            brain(b, p, o, now, keys) {
+                const kit = KITS[p.character], okit = KITS[o.character] || { moves: [] };
+                const st = getStageRect();
+                const groundY = st.y - PLAYER_SIZE / 2;
+                const cx = st.x + st.width / 2;
+                const stunned = alive(now, p.hitstunUntil);
+                const attacking = alive(now, p.attackUntil);
+                const dx = o.x - p.x, adx = Math.abs(dx), dy = o.y - p.y;
+                const sgn = dx >= 0 ? 1 : -1;
+                const keyFor = s => (s < 0 ? 'ArrowLeft' : 'ArrowRight');
+                const overStage = p.x > st.x && p.x < st.x + st.width;
+                const lost = !overStage && p.y > groundY - 40;
+                const oppLost = !(o.x > st.x && o.x < st.x + st.width) && o.y > groundY - 40;
+                const jump = () => { const sw = this.enter(b.id); startJump(); this.leave(sw); };
+                const djump = () => { const sw = this.enter(b.id); startDoubleJump(); this.leave(sw); };
+
+                // ---------- 1) Recuperação: caiu fora do palco ----------
+                if (lost) {
+                    keys[keyFor(cx - p.x)] = true;
+                    if (!stunned && !p.onGround && p.vy > 0 && kit.djump && !p.doubleJumpUsed) djump();
+                    // Renan Antigo usa o dash aéreo como recuperação
+                    const dash = kit.moves.find(m => m.dash);
+                    if (dash && !stunned && !p.onGround && dash.ready(p, now, b) && Math.abs(cx - p.x) < st.width / 2 + 170) {
+                        p.facingLeft = cx < p.x;
+                        const sw = this.enter(b.id); dash.use(p, b); this.leave(sw);
+                    }
+                    return;
+                }
+
+                this.learn(b, o, now);
+
+                // ---------- 2) Leitura do oponente ----------
+                const oppAtkName = alive(now, o.attackUntil) ? o.attackName : null;
+                if (oppAtkName && b.seenAtkStart !== o.attackStart) { b.seenAtkStart = o.attackStart; b.reacted = false; b.oppAtkAt = now; }
+                const oppMeleeAtk = !!(oppAtkName && MELEE_NAMES[oppAtkName]);
+                const oppRecover = !alive(now, o.attackUntil) && !!o.attackCooldownUntil && o.attackCooldownUntil - now > 110;
+                const oppStun = alive(now, o.hitstunUntil);
+                const oppShield = !!o.isShielding;
+                const myDmg = p.damage || 0, oDmg = o.damage || 0;
+                const myMelee = kit.moves.filter(m => m.melee);
+                const myReach = myMelee.length ? Math.max(...myMelee.map(m => m.max)) : 0;
+                let oReach = 0;
+                for (const m of okit.moves) if (m.melee) oReach = Math.max(oReach, m.max);
+                const sty = STYLES[b.style];
+
+                // Carregando tiro (Renan Antigo): fica parado, de frente, e solta no tempo escolhido
+                if (b.charge) {
+                    p.facingLeft = dx < 0;
+                    if (stunned) { p.chargeStart = 0; b.charge = null; }
+                    else if (now >= b.charge.until) {
+                        const held = now - (p.chargeStart || now);
+                        p.chargeStart = 0; b.charge = null;
+                        const sw = this.enter(b.id); shootBullet(p, held >= CHARGE_FULL_MS); this.leave(sw);
+                        b.nextAct = now + rnd(120, 300);
+                    }
+                    return;
+                }
+                if (p.isShielding) return; // escudo ativo: fica quieto
+
+                // ---------- 3) Modo ----------
+                let mode = 'neutral';
+                if (oppLost) mode = 'edgeguard';
+                else if (oppShield) mode = 'wait';
+                else if (oppStun || (oppRecover && adx < 170) || now < b.forceRushUntil) mode = 'rush';
+                else if (myDmg > 100 && myDmg > oDmg + 35) mode = 'safe';
+                else if (oDmg > 90) mode = 'finish';
+                // anti-empate: se ninguém causa dano há tempo, força a pressão
+                if (now - b.lastProgress > 6500 && now > b.forceRushUntil) { b.forceRushUntil = now + 2500; b.lastProgress = now; }
+
+                // Ritmo no neutro: alterna entre PRESSIONAR (entra no alcance e golpeia) e PROVOCAR (fica na ponta do alcance do
+                // oponente, esperando ele errar), com distância preferida variando um pouco para não ser previsível
+                if (now > b.engageUntil) {
+                    b.engaged = Math.random() < (b.style === 'brawler' ? 0.75 : 0.5);
+                    b.engageUntil = now + (b.engaged ? rnd(1600, 3200) : rnd(700, 1500));
+                    b.prefJ = rnd(-35, 35);
+                }
+                let pref = sty.pref + b.prefJ;
+                if (mode === 'rush' || mode === 'finish') pref = myReach ? myReach * 0.8 : Math.min(pref, 150);
+                else if (mode === 'safe') pref = Math.max(pref, oReach + 90, 200);
+                else if (mode === 'wait') pref = 90;
+                else if (myReach) pref = b.engaged ? myReach * 0.85 : Math.max(pref, oReach + 30);
+
+                // ---------- 4) Reação a golpe corpo a corpo do oponente ----------
+                if (oppMeleeAtk && !b.reacted && now - b.oppAtkAt >= b.reactMs && !stunned && !attacking) {
+                    b.reacted = true;
+                    if (adx < oReach + 40 && Math.abs(dy) < 80 && Math.random() < b.skill) {
+                        const sh = kit.moves.find(m => m.defense && m.ready(p, now, b));
+                        if (sh && Math.random() < 0.65) {
+                            b.lastMoveId = sh.id;
+                            const sw = this.enter(b.id); sh.use(p, b); this.leave(sw);
+                            b.lastMoveId = null;
+                            return;
+                        }
+                        b.retreatUntil = now + rnd(300, 520);
+                    }
+                }
+
+                // ---------- 5) Esquiva de projéteis / áreas de dano ----------
+                const thr = this.threat(b, p);
+                if (thr && thr.ref !== b.lastThreat) { b.lastThreat = thr.ref; b.dodgeNow = Math.random() < b.skill; }
+                if (thr && b.dodgeNow && !stunned && !attacking && p.onGround && now > b.nextDodge && thr.t < 0.38) {
+                    b.nextDodge = now + 650; b.dodgeNow = false;
+                    const sh = kit.moves.find(m => m.defense && m.ready(p, now, b));
+                    if (sh && thr.kind !== 'mic' && Math.random() < 0.4) {
+                        b.lastMoveId = sh.id;
+                        const sw = this.enter(b.id); sh.use(p, b); this.leave(sw);
+                        b.lastMoveId = null;
+                        return;
+                    }
+                    jump();
+                }
+                // esmalte armado no chão perto: sai da área antes de explodir
+                let flee = 0;
+                for (const q of nailPolishBottles) {
+                    if (q.ownerId === b.id || q.exploded || !q.onGround) continue;
+                    if (Math.abs(q.x - p.x) < POLISH_EXPLOSION_RADIUS + 15 && Math.abs(q.y - p.y) < 90 && now - q.landTime > POLISH_EXPLODE_DELAY - 1100) flee = p.x >= q.x ? 1 : -1;
+                }
+
+                // ---------- 6) Movimento ----------
+                const edgeSafe = s => { const nx = p.x + s * 45; return nx > st.x + 25 && nx < st.x + st.width - 25; };
+                const hazardBlocks = s => {
+                    if (!p.onGround) return false;
+                    const nx = p.x + s * 45, feet = p.y + PLAYER_SIZE / 2;
+                    for (const q of waterPuddles) {              // poça do oponente: não pisa
+                        if (q.ownerId === b.id || Math.abs(p.x - q.x) < WATER_PUDDLE_W / 2) continue;
+                        if (Math.abs(nx - q.x) < WATER_PUDDLE_W / 2 + 4 && Math.abs(feet - q.y) < 12) return true;
+                    }
+                    for (const c of thrownCups) {                // copo armado do oponente: não encosta
+                        if (c.ownerId === b.id || !c.onGround) continue;
+                        if (Math.abs(nx - c.x) < 42 && Math.abs(c.y - p.y) < 50 && Math.abs(p.x - c.x) >= 42) return true;
+                    }
+                    return false;
+                };
+                const canStep = s => edgeSafe(s) && !hazardBlocks(s);
+                const step = (s, chase) => { if (canStep(s) || (chase && dy < -80 && !hazardBlocks(s))) keys[keyFor(s)] = true; };
+
+                if (mode === 'edgeguard') {
+                    // espera na ponta do palco, do lado em que o oponente caiu
+                    const tx = o.x < cx ? st.x + 60 : st.x + st.width - 60;
+                    if (Math.abs(p.x - tx) > 18) step(tx > p.x ? 1 : -1, false);
+                } else if (flee) {
+                    step(flee, false);
+                } else if (now < b.crossUntil) {
+                    keys[keyFor(b.crossDir)] = true;               // pulo por cima do oponente (saindo do canto)
+                } else {
+                    let moveSign = 0;
+                    if (now < b.retreatUntil) moveSign = -sgn;
+                    else {
+                        const err = adx - pref;
+                        if (err > 30) moveSign = sgn;
+                        else if (err < -30 && mode !== 'rush' && mode !== 'finish') moveSign = -sgn;
+                        else if (mode === 'neutral' && Math.abs(p.x - cx) > 140) {
+                            const toC = cx > p.x ? 1 : -1;          // controle de centro
+                            if (!(toC === sgn && adx < pref + 10)) moveSign = toC;
+                        }
+                    }
+                    if (moveSign) {
+                        if (moveSign === -sgn && !canStep(moveSign) && adx < pref + 20 && !stunned) {
+                            // encurralado: se tem golpe corpo a corpo, enfrenta; senão pula por cima
+                            if (myReach) { b.retreatUntil = 0; b.forceRushUntil = Math.max(b.forceRushUntil, now + 1200); }
+                            else if (p.onGround && now > b.nextJump) {
+                                b.nextJump = now + 1800; b.crossUntil = now + 700; b.crossDir = sgn; jump();
+                            }
+                        } else step(moveSign, moveSign === sgn);
+                    }
+                }
+
+                // Pular até a plataforma onde o oponente está
+                if (!stunned && p.onGround && !attacking && mode !== 'safe' && o.onGround && dy < -90 && adx < 170 && now > b.nextJump) {
+                    b.nextJump = now + rnd(1400, 2400); jump();
+                }
+                // Salto de aproximação (pressão) com golpe aéreo, só quando está pressionando
+                if (!stunned && p.onGround && !attacking && (mode === 'rush' || mode === 'finish') && myReach &&
+                    adx > myReach + 20 && adx < myReach + 90 && Math.abs(dy) < 50 && now > b.nextJump && Math.random() < 0.02) {
+                    b.nextJump = now + rnd(1600, 2600); jump();
+                }
+
+                if (stunned) return;
+
+                // Combo do Renanzinho: encadeia soco -> soco -> chute enquanto os golpes acertam
+                if (attacking && p.character === 'renanzinho' && p.hasHitThisAttack) {
+                    if (p.attackName === 'punch1') startAttack(p, 'punch1');
+                    else if (p.attackName === 'punch2') startAttack(p, 'kick');
+                }
+
+                // ---------- 7) Escolha do golpe ----------
+                if (attacking || now < b.nextAct || mode === 'wait') return;
+                const dir = sgn;
+                // o golpe empurra para o lado em que o bot está virado: bom se o oponente está entre ele e a borda
+                const pushesToEdge = (o.x - cx) * dir > 0;
+                const killF = (oDmg < 40 ? 0.6 : oDmg < 80 ? 1.0 : oDmg < 110 ? 1.8 : 3.0) * (pushesToEdge ? 1.5 : 1);
+                const nearOppEdge = Math.abs(o.x - cx) > st.width * 0.32;
+                let best = null, bestS = 0.3;
+                for (const m of kit.moves) {
+                    if (m.defense || b.disabled[m.id] || !m.ready(p, now, b)) continue;
+                    const tol = (oppLost && !m.melee) ? m.tol * 1.7 : m.tol;
+                    if (adx < m.min || adx > m.max || Math.abs(dy) > tol) continue;
+                    if (m.run) { const nx = p.x + dir * m.run; if (nx < st.x + 15 || nx > st.x + st.width - 15) continue; }
+                    if (oppLost && m.melee) continue;                    // não pula atrás de quem caiu
+                    let s = sty[m.role] || 1;
+                    if (m.role === 'poke') {
+                        if (oppStun) s *= 2.2;
+                        if (oppMeleeAtk && adx < oReach + 10) s *= 0.5;   // evita trocar golpe à toa
+                    } else if (m.role === 'kill') {
+                        s *= killF;
+                        if (oppStun) s *= 1.4;
+                        if (oppMeleeAtk && adx < oReach + 10) s *= 0.5;
+                    } else if (m.role === 'zone') {
+                        s *= (myReach && adx < myReach + 30) ? 0.6 : 1.5;
+                        if (oppLost) s *= 2;
+                        if (mode === 'safe') s *= 1.4;
+                    } else if (m.role === 'trap') {
+                        if (adx < 120) s *= 0.5;
+                        if (nearOppEdge) s *= 1.5;
+                        if (mode === 'rush' || mode === 'finish') s *= 0.6;
+                        if (oppLost) s *= 1.8;
+                    }
+                    // repetição: não spamma o mesmo golpe
+                    let rep = 0;
+                    for (const r of b.recent) if (r.id === m.id && now - r.t < 3000) rep++;
+                    s *= Math.pow(0.7, rep);
+                    // o que vem funcionando nesta luta pesa mais
+                    const ms = b.stats[m.id];
+                    s *= 0.55 + ((ms ? (ms.s + 1) / (ms.n + 2) : 0.5) * 0.9);
+                    s *= rnd(0.85, 1.15);
+                    if (s > bestS) { bestS = s; best = m; }
+                }
+                if (!best) return;
+
+                p.facingLeft = dx < 0;
+                b.lastMoveId = best.id;
+                if (best.charge) {
+                    const full = adx > 260 && !oppMeleeAtk && Math.random() < 0.55;
+                    p.chargeStart = now;
+                    b.charge = { until: now + (full ? CHARGE_FULL_MS + 40 : rnd(70, 150)) };
+                } else {
+                    if (best.dash) { delete keys.ArrowLeft; delete keys.ArrowRight; keys[keyFor(dir)] = true; }
+                    const sw = this.enter(b.id); best.use(p, b); this.leave(sw);
+                }
+                b.lastMoveId = null;
+                b.recent.push({ id: best.id, t: now }); if (b.recent.length > 4) b.recent.shift();
+                b.pending.push({ id: best.id, t: now, ms: best.evalMs || 900, dmg0: oDmg });
+                b.nextAct = now + rnd(120, 380);
+            },
+
+            // Na demo ninguém é eliminado de vez: o bot volta pro palco e a luta continua até o tempo acabar
+            onElimination() {
+                const st = getStageRect();
+                for (const b of this.bots) {
+                    const p = players[b.id];
+                    if (!p || !p.eliminated) continue;
+                    p.eliminated = false; p.eliminatedAt = 0; p.lives = 3; p.damage = 0;
+                    p.x = st.x + st.width / 2; p.y = st.y - PLAYER_SIZE / 2; p.vy = 0; p.knockbackVx = 0;
+                    p.onGround = true; p.hitstunUntil = 0; p.attackName = null; p.attackUntil = 0;
+                }
+            },
+
+            end() {
+                if (!this.active || this.ending) return;
+                this.ending = true;
+                this.timers.forEach(clearTimeout); this.timers = [];
+                fadeEl.classList.add('on');
+                setTimeout(() => this.cleanup(), FADE_MS);
+            },
+
+            cleanup() {
+                for (const id of Object.keys(players)) if (players[id].demoBot) delete players[id];
+                this.bots = [];
+                for (const arr of [nailPolishBottles, nailClippers, bullets, notes, thrownMics, flails, jellyBalls,
+                                   thrownCups, cupShards, waterSpits, waterPuddles, fallingBuckets, hitParticles,
+                                   clawEffects, polishSplashes, damagePopups, impactLines, motionTrails]) arr.length = 0;
+                isRunning = false; matchOver = false; championId = null;
+                currentMapIndex = this.prevMap;
+                cameraFX.freezeUntil = 0;
+                hudReset();
+                for (const k in keysPressed) delete keysPressed[k];
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                titleEl.classList.remove('demo-away');
+                overlay.classList.remove('on');
+                document.body.classList.remove('demo-on');
+                fadeEl.classList.remove('on');
+                this.active = false; this.ending = false;
+                this.endedAt = performance.now();
+                idleSince = performance.now();
+            }
+        };
+
+        // Mover o mouse NÃO conta (nem pra iniciar, nem pra encerrar a demo). Qualquer outra interação encerra a demo (e é engolida, pra não "clicar" no título por trás) ou zera o contador de inatividade
+        function onInput(e) {
+            if (D.active) {
+                e.stopPropagation();
+                D.end();
+                return;
+            }
+            // clique/toque logo depois de sair da demo (soltar o botão) não deve avançar o título
+            if ((e.type === 'click' || e.type === 'touchend' || e.type === 'mouseup') && performance.now() - D.endedAt < 700) {
+                e.stopPropagation();
+                return;
+            }
+            idleSince = performance.now();
+        }
+        ['mousedown', 'mouseup', 'click', 'keydown', 'wheel', 'touchstart', 'touchend', 'pointerdown']
+            .forEach(t => window.addEventListener(t, onInput, { capture: true, passive: true }));
+
+        setInterval(() => {
+            if (D.active) return;
+            if (!titleVisible()) { idleSince = performance.now(); return; }
+            if (performance.now() - idleSince >= IDLE_MS) D.start();
+        }, 500);
+
+        return D;
+    })();
     </script>
 
     <!-- Controles mobile: joystick + botões Z/X (só na luta). Reaproveita o teclado disparando KeyboardEvents. -->
