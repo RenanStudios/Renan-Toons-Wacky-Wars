@@ -5,16 +5,17 @@ Jogo de luta multiplayer online no estilo **Super Smash Bros.**, feito em um ún
 ## ✨ Recursos
 
 - **Multiplayer P2P** via WebRTC ([PeerJS](https://peerjs.com/)), sem servidor próprio: um jogador cria a sala e os outros entram com o código.
-- **7 personagens jogáveis**, cada um com estilo próprio (veja abaixo).
+- **8 personagens jogáveis**, cada um com estilo próprio (veja abaixo).
 - **4 mapas** com cenários e mecânicas diferentes: *Cubos*, *Colinas*, *DORFic* e *Vector*.
 - **Combate estilo Smash**: dano em %, knockback crescente, hitstun, hitstop, tremor de câmera, faíscas, linhas de impacto e raio em golpes quase fatais.
 - **3 vidas** por jogador; o último de pé vence.
 - **Tela de vitória 2.5D** com o campeão em destaque.
 - **Luta de demonstração:** parado na tela de título por ~15 segundos, duas CPUs lutam por 60 segundos usando o motor real do jogo (veja [Luta de demonstração](#-luta-de-demonstração)).
-- **Galeria de personagens** no menu de modo de jogo, com sprite em destaque e a história de cada lutador.
+- **Galeria de personagens** no menu de modo de jogo, com sprite em destaque e a história de cada lutador (navegação pelas setinhas).
 - **Controles de toque** para celular e tablet (joystick + botões).
 - **Vibração de controle** (Gamepad API) em golpes fortes, quando o navegador suporta.
-- **Efeitos sonoros sintetizados** com a Web Audio API (nenhum arquivo de áudio necessário).
+- **Efeitos sonoros sintetizados** com a Web Audio API (nenhum arquivo de áudio é necessário para os efeitos).
+- **Voz dos personagens:** ao escolher um personagem na seleção, toca o áudio com o nome dele (arquivos na pasta `Audios`).
 - Intro animada da logo *Renan Studios* (com botão de pular), tela de título, menu de modo de jogo e sala de espera com seleção de personagem e cursores.
 - Mundo com tamanho fixo (1600×900) escalado para qualquer janela, então a física é idêntica para todos os jogadores.
 
@@ -63,6 +64,7 @@ Os controles só aparecem durante a luta.
 | **Doper** | Arremessa um copo que quica até parar; depois de parado, estilhaça se um oponente encostar, causando dano em área (até 3 copos no mapa) | – | **Empurrão de gerente:** golpe curto com um pequeno avanço, dano baixo e knockback alto | Toca o sax e solta uma nota musical voadora que ondula e causa dano |
 | **Hofy** | **Canta** e solta uma nota que ondula e **atravessa** os oponentes | – | **Taca o microfone**, que desliza pelo chão até acertar alguém ou cair no abismo | – |
 | **FooshLooket** | *No chão:* **cospe água** em arco; onde o jato pousa vira uma poça. *No ar:* **pulo duplo** | – | Vira uma **bola** e quica para a frente, causando dano ao acertar | – |
+| **Dan** | **Desenha** uma forma (linha, curva, quadrado ou círculo) que ganha vida e ataca por ~2 s, atravessando os oponentes | – | **Giro com o pincel** (estilo *spin attack*): acerta em volta dele, dos dois lados, e dá pra andar devagar durante o giro | – |
 
 ### Detalhes e curiosidades
 
@@ -70,6 +72,10 @@ Os controles só aparecem durante a luta.
 - **Doper** (gerente do Blue Note Bar) é o maior do elenco; **Hofy** (dançarina, cantora e namorada do Doper) é um pouco menor que ele.
 - **Hofy** não tem pulo duplo.
 - **FooshLooket:** quem pisa na poça escorrega, leva dano, dá uma cambalhota e é jogado para fora dela (o dono não tropeça). Cada FooshLooket só mantém **uma poça** por vez (a nova apaga a antiga) e o cuspe tem recarga de ~3 s, sem travar o ataque **X**. O pulo duplo dele não solta balde.
+- **Dan** é o único com **animação de idle** (6 frames) e sprites próprios de pulo: um para quando sobe e outro para quando cai. Ele não tem pulo duplo.
+  - **Desenho (Z):** a forma sorteada é traçada na frente dele e, depois de ganhar vida, avança com um movimento próprio (a linha é rápida e reta, a curva ondula, o quadrado gira devagar e o círculo rola dando pulinhos). Cada oponente é atingido uma vez por desenho.
+  - **Giro (X):** o Dan gira duas voltas com um rastro de tinta colorido ao redor do corpo; a hitbox é circular e cada oponente é atingido uma vez por giro.
+  - Na história, ele é um humanoide criado no *Macromedia Flash 8* para um site flash dos anos 2000 e líder do grupo **The White Ones** (com Suzan, Jim, Davis e Lila).
 - **Renanzinho** é o único com combo de três golpes (soco, soco e chute); os demais personagens misturam golpes simples com projéteis e armadilhas.
 
 ## 🗺️ Mapas
@@ -81,6 +87,7 @@ Os controles só aparecem durante a luta.
   - **3 plataformas móveis:** duas sobem e descem em contrafase, e uma varre o topo do cenário e **carrega quem estiver em cima**.
   - **2 caixas de som** no palco funcionam como **trampolins**: pisar nelas lança o jogador para cima e restaura o pulo duplo e o dash aéreo.
   - O movimento das plataformas é sincronizado pelo **relógio do host**, então todos veem a mesma coisa.
+  - Em **dispositivos de toque**, o fundo é simplificado para manter o FPS: as camadas são juntadas numa só (sem parallax individual nem pulso das caixas de som) e o palco fica sem a sombra suave.
 
 Somente o host escolhe o mapa na sala de espera.
 
@@ -101,16 +108,18 @@ As CPUs usam o **moveset completo** de cada personagem e tomam decisões em vez 
 - **Escolha de golpe por pontuação:** considera alcance, papel do golpe (*poke*, finalizador, zona, armadilha), dano do oponente, repetição recente e o que vem acertando na luta.
 - **Estilos por personagem** (brigão, zoner, armadilheiro, equilibrado), além de tempo de reação e habilidade aleatórios para cada CPU.
 - **Leitura do jogo:** esquivam de projéteis, fogem de esmaltes prestes a explodir, evitam pisar em poças e copos armados, reagem a golpes do oponente (escudo ou recuo) e voltam ao palco com pulo duplo ou dash quando caem.
+- O **Dan** ainda não tem kit de CPU, então não aparece nas lutas de demonstração.
 
 ## 🚀 Executando
 
-O jogo é o arquivo `index.html`, mas ele carrega imagens de pastas ao lado dele. Mantenha esta estrutura:
+O jogo é o arquivo `index.html`, mas ele carrega imagens e áudios de pastas ao lado dele. Mantenha esta estrutura:
 
 ```
 index.html
 game_logo.png
 rs_logo.png
 icon.png
+Audios/
 Renanzinho Sprites/
 Aggie Sprites/
 Renan Antigo Sprites/
@@ -118,6 +127,7 @@ Blui & Reddie Sprites/
 Doper Sprites/
 Hofy Sprites/
 FooshLooket Sprites/
+Dan Sprites/
 ```
 
 Para jogar localmente, sirva a pasta com um servidor estático:
@@ -142,6 +152,8 @@ Para jogar online com amigos, hospede a pasta em qualquer serviço de hospedagem
 - **Renderização:** Canvas 2D, com câmera que acompanha e dá zoom nos jogadores, parallax de fundo e sprites animados.
 - **Física:** gravidade, pulo, pulo duplo e colisão com o palco e com plataformas flutuantes em coordenadas fixas do mundo.
 - **Personagens:** registro `CHARACTERS` no código, com sprites e definições de ataque (`duration`, `damage`, `baseKnockback`, `growth`, `range`, `cooldown`). Atributos opcionais como `sizeScale` (tamanho do desenho e da hitbox) e `moveSpeedMultiplier` (velocidade) ajustam cada lutador. Há **11 vagas "Em Breve"** na seleção.
+  - Sprites opcionais: `idleFrames` (idle animado, como o do Dan) e `jumpFall` (sprite de queda, usado quando o personagem está descendo; `jump` vale para a subida).
+- **Desenho do Dan:** a posição de cada desenho é calculada só pela idade dele, então todos os clientes veem o mesmo movimento; a forma sorteada vai junto na mensagem de rede (`danDrawing`).
 - **Demonstração:** o objeto `DEMO` reaproveita a física e os golpes do jogador real, trocando temporariamente quem é o "jogador local". Cada personagem tem um *kit* (`KITS`) que descreve seus golpes, alcance, papel tático e condições de uso.
 
 ## 🧩 Adicionando um personagem
@@ -149,9 +161,10 @@ Para jogar online com amigos, hospede a pasta em qualquer serviço de hospedagem
 1. Adicione uma pasta de sprites (`idle`, `walk`, etc.).
 2. Registre o personagem em `CHARACTERS` com seus sprites e `attacks`.
 3. Adicione um `.char-slot.playable` com `data-character` na tela de seleção.
-4. Implemente os comandos de `Z`/`X` no handler de `keydown`.
+4. Implemente os comandos de `Z`/`X` no handler de `keydown` (um personagem sem tratamento próprio cai na regra padrão do Renanzinho, com soco, chute e pulo duplo).
 5. Adicione uma entrada na lista da **Galeria** (nome, sprite, descrição e selo).
-6. *(Opcional)* Registre um kit em `KITS` para o personagem poder aparecer nas lutas de demonstração.
+6. *(Opcional)* Adicione o áudio com o nome do personagem em `Audios` e registre-o em `CHAR_SELECT_AUDIO`.
+7. *(Opcional)* Registre um kit em `KITS` para o personagem poder aparecer nas lutas de demonstração.
 
 ## 📄 Créditos
 
