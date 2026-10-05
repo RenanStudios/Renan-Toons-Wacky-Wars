@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ão ta<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -2178,7 +2178,8 @@
             ['Blui e Reddie', 'Blui & Reddie Sprites/b_idle.png', 'Uma dupla de bolas gelatinosas e grandes amigos, vindos de um grupo de várias outras bolas gelatinosas e coloridas. Blui pode se transformar no que quiser, e Reddie cria uma mão que estica o quanto for preciso.', 'Bolas gelatinosas', 'Amigos inseparáveis', 'DUPLA'],
             ['Doper', 'Doper Sprites/d_idle.png', 'Gerente e bartender do Bar Blue Note, na cidade de Urbânia. Namorado da Hofy, ele sempre acaba no meio das situações mais caóticas que acontecem no bar. Nenhum dia de trabalho é tranquilo.', 'Bar Blue Note, Urbânia', 'Gerente e bartender', 'BAR'],
             ['Hofy', 'Hofy Sprites/h_idle.png', 'Dançarina, cantora e gerente do Bar Blue Note, em Urbânia. Namorada do Doper, ela o acompanha em todas as desventuras do bar e está sempre disposta a topar qualquer coisa.', 'Dançarina e cantora', 'Gerente do Blue Note', 'BAR'],
-            ['FooshLooket', 'FooshLooket Sprites/f_idle.png', 'Uma criatura de uma espécie aquática famosa pela astúcia e inteligência, capaz de construir vilarejos e sociedades submarinas inteiras. Este é o Vermelho, mas existem também o Azul, o Verde, o Amarelo e todas as cores que você imaginar.', 'Criatura aquática', 'Cor: Vermelho', 'AQUÁTICO']
+            ['FooshLooket', 'FooshLooket Sprites/f_idle.png', 'Uma criatura de uma espécie aquática famosa pela astúcia e inteligência, capaz de construir vilarejos e sociedades submarinas inteiras. Este é o Vermelho, mas existem também o Azul, o Verde, o Amarelo e todas as cores que você imaginar.', 'Criatura aquática', 'Cor: Vermelho', 'AQUÁTICO'],
+            ['Dan', 'Dan Sprites/da_idle1.png', 'Um ser humanoide criado no Macromedia Flash 8 para um site flash dos anos 2000. Líder do grupo The White Ones, ao lado de Suzan, Jim, Davis e Lila, ele vive num mundo em que a internet é um universo imenso e cada site é um lugar único.', 'Criado no Flash 8', 'Líder dos The White Ones', 'FLASH']
         ];
         const $ = id => document.getElementById(id);
         let idx = 0;
@@ -2199,13 +2200,6 @@
             [-1, 1].forEach(k => { new Image().src = LIST[(idx + k + LIST.length) % LIST.length][1]; }); // pré-carrega vizinhos
         }
         function step(d) { $('gal-stage').style.setProperty('--dir', d); idx = (idx + d + LIST.length) % LIST.length; show(true); }
-        // elenco: miniaturas clicáveis
-        LIST.forEach((c, i) => {
-            const t = document.createElement('div'); t.className = 'gal-th'; t.title = c[0];
-            const im = document.createElement('img'); im.src = c[1]; im.alt = c[0]; t.appendChild(im);
-            t.addEventListener('click', () => { if (i === idx) return; $('gal-stage').style.setProperty('--dir', i > idx ? 1 : -1); idx = i; show(true); });
-            $('gal-roster').appendChild(t);
-        });
         // brilhos subindo + leve parallax do personagem com o mouse
         const fx = $('gal-fx');
         for (let k = 0; k < 14; k++) {
@@ -2307,6 +2301,10 @@
                 <div class="char-slot playable" data-character="fooshlooket">
                     <img src="FooshLooket Sprites/f_idle.png" alt="FooshLooket">
                     <div class="char-slot-name">FooshLooket</div>
+                </div>
+                <div class="char-slot playable" data-character="dan">
+                    <img src="Dan Sprites/da_idle1.png" alt="Dan">
+                    <div class="char-slot-name">Dan</div>
                 </div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
@@ -2590,6 +2588,28 @@
                     // Z: cospe água que cai e forma uma poça no chão (sem hitbox de melee)
                     throwWater: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 }
                 }
+            },
+            // Dan: idle animado (6 frames), anda (4 frames), pulo com sprite de subida e de queda; sem golpes por enquanto
+            dan: {
+                sprites: {
+                    idle: loadSprite('Dan Sprites/da_idle1.png'),
+                    idleFrames: ['da_idle1.png', 'da_idle2.png', 'da_idle3.png', 'da_idle4.png', 'da_idle5.png', 'da_idle6.png'].map(src => loadSprite('Dan Sprites/' + src)),
+                    walk: ['da_walk1.png', 'da_walk2.png', 'da_walk3.png', 'da_walk4.png'].map(src => loadSprite('Dan Sprites/' + src)),
+                    jump: loadSprite('Dan Sprites/da_jump1.png'),
+                    jumpFall: loadSprite('Dan Sprites/da_jump2.png'),
+                    punch: [],
+                    kick: null,
+                    djump: null,
+                    bucket: null,
+                    brush: loadSprite('Dan Sprites/da_brush.png'),
+                    spin: loadSprite('Dan Sprites/da_spin.png')
+                },
+                attacks: {
+                    // Z: desenha uma forma (linha, curva, quadrado ou círculo) que ganha vida e ataca por ~2 s (dano vem do desenho, não de hitbox melee)
+                    brush: { duration: 420, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 1200 },
+                    // X: giro com o pincel (estilo spin attack do Link) — acerta em volta dele, dos dois lados (hitbox circular, ver updateAttack)
+                    spin: { duration: 500, activeStart: 80, activeEnd: 420, damage: 6, baseKnockback: 170, growth: 0.8, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 500 }
+                }
             }
         };
         const BALL_SPEED = 330;  // px/s no início do avanço da bola do FooshLooket (cai até 50% no fim)
@@ -2606,6 +2626,9 @@
         const WATER_TRIP_DAMAGE = 5;      // dano ao pisar na poça
         const WATER_TRIP_KNOCKBACK = 300; // knockback ao tropeçar (joga ~95 px pra fora da poça)
         const WATER_TUMBLE_MS = 650;      // duração da cambalhota
+        const DAN_SPIN_RADIUS = 85; // alcance (raio) do giro do pincel do Dan, a partir do centro do corpo
+        const DAN_SPIN_MOVE = 0.35; // fração da velocidade normal com que o Dan pode andar durante o giro
+        const DAN_SPIN_TURNS = 2;   // voltas que o Dan dá durante o giro
         const BALL_SPINS = 4;    // voltas completas que a bola dá durante o ataque
 
         // Fator de tamanho do personagem (1 = padrão). Escala a partir dos pés, então ele continua apoiado no chão.
@@ -2773,7 +2796,7 @@
         const JELLY_PRESSURE = 0.0043;    // pressureMult original (0.00035) reescalado pro raio mini
         const JELLY_DAMPING = 0.998;
         const JELLY_GRAVITY = 0.025;      // por sub-passo (~ 720 px/s², bem mais leve que a gravidade do jogo)
-        const JELLY_COOLDOWN = 60;
+        const JELLY_COOLDOWN = 130;
         let jellyAccumulator = 0;
         const POLISH_PALETTES = {
             pink:  { base: '#FF1493' },
@@ -3978,6 +4001,11 @@
                 cs(240,515,13,[['#111',1],['#e04030',.85],['#2a3aa0',.5]]);
                 cs(580,395,52,[['#111',1],['#b7e03a',.9],['#111',.55]],14); cs(503,478,24,[['#fff',1],['#e0409a',.9],['#2a3aa0',.5]]);
             });
+            if (DORFIC_LITE) { // mobile: compõe tudo numa camada só (sem parallax individual nem pulso das caixas)
+                const names = ['ostars', 'rings', 'cube', 'spk', 'mic', 'cstars'];
+                L.all = make(c => { c.scale(1 / Q, 1 / Q); names.forEach(n => c.drawImage(L[n], 0, 0)); });
+                names.forEach(n => { delete L[n]; });
+            }
             return L;
         }
 
@@ -4007,10 +4035,17 @@
             vg.addColorStop(0, 'rgba(255,60,110,0.35)'); vg.addColorStop(0.45, 'rgba(255,60,110,0)'); vg.addColorStop(1, 'rgba(20,0,8,0.75)');
             ctx.fillStyle = vg; ctx.fillRect(-3000, -3000, W + 6000, H + 6000);
             ctx.fillStyle = 'rgba(255,90,150,' + (0.05 * beat) + ')';
-            ctx.fillRect(-3000, -3000, W + 6000, H + 6000);
+            if (!DORFIC_LITE) ctx.fillRect(-3000, -3000, W + 6000, H + 6000);
             ctx.restore();
 
             const ox = W / 2 - 397 * VEC_S, oy = 590 - 330 * VEC_S;
+            if (DORFIC_LITE) {
+                ctx.save();
+                hillsLayerShift(followX, followY, VEC_PAR.spk);
+                ctx.drawImage(vecLayers.all, ox, oy, 794 * VEC_S, 641 * VEC_S);
+                ctx.restore();
+                return;
+            }
             for (const name of ['ostars', 'rings', 'cube', 'spk', 'mic', 'cstars']) {
                 ctx.save();
                 hillsLayerShift(followX, followY, VEC_PAR[name]);
@@ -4072,7 +4107,7 @@
         function drawVectorStageFill(stage, extrude) {
             const x = stage.x, y = stage.y, w = stage.width, h = stage.height;
             ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 16;
+            if (!DORFIC_LITE) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 16; }
             ctx.fillStyle = '#a8206e'; ctx.fillRect(x, y, w, h); ctx.restore();
             ctx.fillStyle = vecLinear(ctx, 0, y - extrude, 0, y, [[0,'#ffe0ec'],[1,'#ff9fbf']]);
             ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w + extrude, y - extrude); ctx.lineTo(x + extrude, y - extrude); ctx.closePath(); ctx.fill();
@@ -4378,6 +4413,14 @@
                         }
                     }
 
+                    // Giro do Dan: dá pra andar devagar durante o giro (não muda a direção que ele encara)
+                    if (p.attackName === 'spin' && isAttacking && !inHitstun && !introLock) {
+                        let sdir = 0;
+                        if (keysPressed['ArrowLeft']) sdir -= 1;
+                        if (keysPressed['ArrowRight']) sdir += 1;
+                        if (sdir !== 0) p.x += sdir * PLAYER_SPEED * DAN_SPIN_MOVE * effectiveDelta;
+                    }
+
                     // Movimento por teclado é bloqueado durante hitstun (levando dano) ou enquanto ataca
                     // Poça do FooshLooket: pisou, escorrega — leva dano, dá uma cambalhota e é jogado pra fora da poça
                     if (!inHitstun && !introLock && now > (p.waterImmuneUntil || 0)) {
@@ -4532,6 +4575,8 @@
             drawBullets();
             updateNotes(deltaTime * 1000);
             drawNotes();
+            updateDanDrawings();
+            drawDanDrawings();
             updateMics(deltaTime * 1000);
             drawMics();
             updateFlails(deltaTime * 1000);
@@ -5492,6 +5537,123 @@
                     ctx.scale(pulse, pulse);
                 }
                 ctx.drawImage(sprite, -drawW / 2, -drawH / 2, drawW, drawH);
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // DESENHO DO DAN (Z): pinta uma forma que "ganha vida" e ataca por ~2 s, atravessando (acerta cada um uma vez).
+        // A posição é calculada só pela idade (sem integração), então todos os clientes veem o mesmo; só o dono detecta o acerto.
+        // ==========================================
+        let danDrawings = []; // { id, ownerId, shape, x, y, dir, spawnTime, hitIds }
+        const DDRAW = {
+            lifetime: 2000, drawMs: 260, prepMs: 200, damage: 5, knockback: 110,
+            shapes: {
+                line:   { speed: 430, hw: 40, hh: 10 },
+                curve:  { speed: 280, hw: 36, hh: 24 },
+                square: { speed: 200, hw: 26, hh: 26 },
+                circle: { speed: 330, hw: 26, hh: 26 }
+            }
+        };
+
+        function paintDrawing(p) {
+            if (!p || p.character !== 'dan') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.dan.attacks.brush;
+            p.attackName = 'brush';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+            SFX.playSwing(0.6);
+            MP.sendState();
+
+            setTimeout(() => {
+                const me = players[myUserId];
+                const t = Date.now();
+                // Cancela se foi interrompido (levou golpe) ou o golpe já acabou
+                if (!me || me.attackName !== 'brush' || t >= me.attackUntil) return;
+                if (me.hitstunUntil && t < me.hitstunUntil) return;
+                const dir = me.facingLeft ? -1 : 1;
+                const names = Object.keys(DDRAW.shapes);
+                const d = {
+                    id: 'ddraw_' + t + '_' + Math.floor(Math.random() * 100000),
+                    ownerId: myUserId,
+                    shape: names[Math.floor(Math.random() * names.length)],
+                    x: me.x + dir * 50 * getSizeScale(me),
+                    y: me.y - PLAYER_SIZE * 0.1,
+                    dir,
+                    spawnTime: t,
+                    hitIds: []
+                };
+                danDrawings.push(d);
+                MP.broadcastToAll({ type: 'danDrawing', d });
+            }, DDRAW.prepMs);
+        }
+
+        // Posição atual do desenho (parado enquanto é pintado; depois avança com um movimento próprio de cada forma)
+        function danDrawingPos(d, age) {
+            const cfg = DDRAW.shapes[d.shape];
+            const live = Math.max(0, age - DDRAW.drawMs);
+            const x = d.x + d.dir * cfg.speed * live / 1000;
+            let y = d.y;
+            if (d.shape === 'curve') y += Math.sin(live / 130) * 40;
+            else if (d.shape === 'circle') y += Math.abs(Math.sin(live / 170)) * -26;
+            return { x, y };
+        }
+
+        function updateDanDrawings() {
+            const now = Date.now();
+            for (let i = danDrawings.length - 1; i >= 0; i--) {
+                const d = danDrawings[i];
+                const age = now - d.spawnTime;
+                if (age >= DDRAW.lifetime) { danDrawings.splice(i, 1); continue; }
+                if (age < DDRAW.drawMs || !isOwnerLocal(d.ownerId)) continue; // só acerta depois de ganhar vida
+                const cfg = DDRAW.shapes[d.shape];
+                const pos = danDrawingPos(d, age);
+                for (const id in players) {
+                    if (id === d.ownerId || d.hitIds.includes(id)) continue;
+                    const target = players[id];
+                    const tS = getSizeScale(target);
+                    if (Math.abs(target.x - pos.x) < cfg.hw + PLAYER_SIZE * 0.4 * tS && Math.abs(target.y - pos.y) < cfg.hh + PLAYER_SIZE * 0.5 * tS) {
+                        const dir = target.x >= pos.x ? 1 : -1;
+                        applyHit(id, DDRAW.damage, DDRAW.knockback, dir);
+                        MP.broadcastToAll({ type: 'hit', targetId: id, damage: DDRAW.damage, knockback: DDRAW.knockback, dir });
+                        d.hitIds.push(id); // atravessa: segue vivo
+                    }
+                }
+            }
+        }
+
+        function drawDanDrawings() {
+            const now = Date.now();
+            for (const d of danDrawings) {
+                const age = now - d.spawnTime;
+                const pos = danDrawingPos(d, age);
+                const prog = Math.min(1, age / DDRAW.drawMs);          // 0..1: traço sendo pintado
+                const alive = age >= DDRAW.drawMs;
+                const fade = Math.min(1, (DDRAW.lifetime - age) / 300); // some nos últimos 300 ms
+                const live = Math.max(0, age - DDRAW.drawMs);
+                ctx.save();
+                ctx.globalAlpha *= Math.max(0, fade);
+                ctx.translate(pos.x, pos.y);
+                if (d.shape === 'square') ctx.rotate(d.dir * live / 180);
+                if (d.shape === 'circle') ctx.rotate(d.dir * live / 120);
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                const trace = () => {
+                    ctx.beginPath();
+                    if (d.shape === 'line') { ctx.moveTo(-40, 0); ctx.lineTo(40, 0); }
+                    else if (d.shape === 'curve') { for (let k = 0; k <= 24; k++) { const u = k / 24; const xx = -36 + 72 * u, yy = Math.sin(u * Math.PI * 2) * 14; k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); } }
+                    else if (d.shape === 'square') ctx.rect(-24, -24, 48, 48);
+                    else { ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.moveTo(0, 0); ctx.lineTo(24, 0); } // traço no raio mostra o giro
+                };
+                const total = d.shape === 'line' ? 80 : d.shape === 'curve' ? 90 : d.shape === 'square' ? 192 : 175;
+                ctx.setLineDash([total * prog, total * 2]);
+                ctx.strokeStyle = '#1b1b2f'; ctx.lineWidth = 6; trace(); ctx.stroke();
                 ctx.restore();
             }
         }
@@ -6574,6 +6736,7 @@
             p.pendingCombo = !!def.next;
             p.queuedAttack = null;
             p.attackSquashTime = now;
+            if (name === 'spin') p.spinHitIds = [];
             if (name === 'ball') {
                 p.ballHops = 0;
                 if (p.onGround) { p.vy = -BALL_HOP; p.onGround = false; }
@@ -6644,6 +6807,38 @@
                             SFX.playHit(knockback >= STRONG_HIT_THRESHOLD ? 'strong' : 'medium');
                             rumble(0.3, 90);
                             break;
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (p.attackName === 'spin') {
+                // Hitbox CIRCULAR em volta do corpo (acerta dos dois lados; cada oponente só uma vez por giro)
+                const sd = charAttacks.spin;
+                const el = now - p.attackStart;
+                if (el >= sd.activeStart && el <= sd.activeEnd) {
+                    if (!p.spinHitIds) p.spinHitIds = [];
+                    const sc = getSizeScale(p);
+                    const R = DAN_SPIN_RADIUS * sc;
+                    const cx = p.x, cy = p.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * sc) / 2;
+                    for (const id in players) {
+                        if (id === myUserId || p.spinHitIds.includes(id)) continue;
+                        const target = players[id];
+                        if (target.eliminated) continue;
+                        const tS = getSizeScale(target);
+                        const hw = (PLAYER_SIZE / 2) * tS;
+                        const bottom = target.y + PLAYER_SIZE / 2, top = bottom - SPRITE_HEIGHT * tS;
+                        const nx = Math.max(target.x - hw, Math.min(cx, target.x + hw));
+                        const ny = Math.max(top, Math.min(cy, bottom));
+                        if (Math.hypot(nx - cx, ny - cy) < R) {
+                            p.spinHitIds.push(id);
+                            const dir = target.x >= p.x ? 1 : -1;
+                            const knockback = sd.baseKnockback + (target.damage || 0) * sd.growth;
+                            applyHit(id, sd.damage, knockback, dir);
+                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: sd.damage, knockback, dir });
+                            SFX.playHit(knockback >= STRONG_HIT_THRESHOLD ? 'strong' : 'medium');
+                            rumble(0.3, 90);
                         }
                     }
                 }
@@ -7456,6 +7651,11 @@
                     currentSprite = cSprites.sax || cSprites.idle;
                 } else if (player.attackName === 'sing') {
                     currentSprite = cSprites.sing || cSprites.idle;
+                } else if (player.attackName === 'brush') {
+                    currentSprite = cSprites.brush || cSprites.idle;
+                } else if (player.attackName === 'spin') {
+                    currentSprite = cSprites.spin || cSprites.idle;
+                    spriteOffsetX = 0; // o giro é em torno do centro do corpo
                 } else if (player.attackName === 'dash') {
                     currentSprite = cSprites.dash || cSprites.jump;
                     spriteOffsetX = 0;
@@ -7469,10 +7669,12 @@
             } else if (player.isDoubleJumping) {
                 currentSprite = cSprites.djump || cSprites.jump;
             } else if (player.isJumping) {
-                currentSprite = cSprites.jump;
+                currentSprite = (cSprites.jumpFall && (player.vy || 0) > 0) ? cSprites.jumpFall : cSprites.jump;
             } else if (isMoving) {
                 const frameIndex = Math.floor(Date.now() / WALK_FRAME_DURATION) % cSprites.walk.length;
                 currentSprite = cSprites.walk[frameIndex];
+            } else if (cSprites.idleFrames) {
+                currentSprite = cSprites.idleFrames[Math.floor(Date.now() / 140) % cSprites.idleFrames.length];
             }
             if (!currentSprite) currentSprite = cSprites.idle; // fallback: personagem sem esse sprite (ex.: Aggie sem kick)
 
@@ -7555,6 +7757,13 @@
                 ctx.translate(0, SPRITE_HEIGHT / 2 - PLAYER_SIZE / 2);
             }
 
+            if (player.attackName === 'spin') {
+                // Giro do pincel: o Dan gira em torno do próprio eixo vertical (achata e espelha ao virar); o nome abaixo não gira
+                ctx.save();
+                const spinT = Math.min(1, (Date.now() - player.attackStart) / CHARACTERS.dan.attacks.spin.duration);
+                ctx.scale(Math.cos(spinT * Math.PI * 2 * DAN_SPIN_TURNS), 1);
+            }
+
             if (currentSprite.complete && currentSprite.naturalWidth > 0) {
                 // Mantém a altura de referência do personagem (SPRITE_HEIGHT) e calcula a largura
                 // pela proporção NATIVA de cada sprite, para não espremer/esticar personagens
@@ -7613,6 +7822,37 @@
             }
 
             if (player.attackName === 'ball') ctx.restore();
+            if (player.attackName === 'spin') {
+                ctx.restore();
+                // Efeito do giro: rastro de tinta colorido orbitando o corpo + gotinhas de tinta
+                const sd = CHARACTERS.dan.attacks.spin;
+                const st = Math.min(1, (Date.now() - player.attackStart) / sd.duration);
+                const fadeA = Math.max(0, Math.min(1, st / 0.12, (1 - st) / 0.2));
+                const R = DAN_SPIN_RADIUS, ry = R * 0.4, ecy = PLAYER_SIZE / 2 - SPRITE_HEIGHT / 2;
+                const head = st * Math.PI * 2 * DAN_SPIN_TURNS * 2;
+                const N = 22, span = 1.7;
+                ctx.save();
+                ctx.lineCap = 'round';
+                for (let k = 0; k < N; k++) {
+                    const a0 = head - k * (span / N), a1 = head - (k + 1) * (span / N);
+                    ctx.globalAlpha = (1 - k / N) * fadeA * 0.85;
+                    ctx.strokeStyle = 'hsl(' + (((a0 * 57) % 360) + 360) % 360 + ',90%,60%)';
+                    ctx.lineWidth = 10 * (1 - k / N) + 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(a0) * R, ecy + Math.sin(a0) * ry);
+                    ctx.lineTo(Math.cos(a1) * R, ecy + Math.sin(a1) * ry);
+                    ctx.stroke();
+                }
+                for (let j = 0; j < 7; j++) {
+                    const a = head - 0.25 - j * 0.8, rr = R * (1.08 + 0.14 * Math.sin(j * 7 + st * 24));
+                    ctx.globalAlpha = fadeA * 0.8;
+                    ctx.fillStyle = 'hsl(' + (((a * 57) % 360) + 360) % 360 + ',90%,60%)';
+                    ctx.beginPath();
+                    ctx.arc(Math.cos(a) * rr, ecy + Math.sin(a) * ry * 1.1, 3.5 - (j % 3), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
             if (tumbling) ctx.restore();
             if (player.attackName !== 'ball') ctx.scale(1 / scaleX, 1 / scaleY); // desfaz o squash/stretch antes do texto abaixo
             if (sizeS !== 1) { // desfaz a escala de tamanho também
@@ -7671,6 +7911,8 @@
                     startAttack(me, 'punch1');
                 } else if (me && me.character === 'doper') {
                     throwCup(me);
+                } else if (me && me.character === 'dan') {
+                    paintDrawing(me); // Dan: sem pulo duplo
                 } else if (me && me.character === 'hofy') {
                     singNote(me); // Hofy: sem pulo duplo
                 } else if (me && me.character === 'fooshlooket') {
@@ -7697,6 +7939,8 @@
                 } else if (me && me.character === 'doper') {
                     if (keysPressed['ArrowDown']) playSax(me);
                     else startAttack(me, 'push');
+                } else if (me && me.character === 'dan') {
+                    startAttack(me, 'spin');
                 } else if (me && me.character === 'hofy') {
                     throwMic(me);
                 } else if (me && me.character === 'fooshlooket') {
@@ -7957,6 +8201,10 @@
                     if (data.note.ownerId !== myUserId) notes.push(data.note);
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'danDrawing') {
+                    if (data.d.ownerId !== myUserId) danDrawings.push(data.d);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
                 else if (data.type === 'noteRemove') {
                     const idx = notes.findIndex(n => n.id === data.noteId);
                     if (idx !== -1) notes.splice(idx, 1);
@@ -8085,7 +8333,8 @@
             blui: 'Audios/blui_e_reddie.mp3',
             doper: 'Audios/doper.mp3',
             hofy: 'Audios/hofy.mp3',
-            fooshlooket: 'Audios/fooshlooket.mp3'
+            fooshlooket: 'Audios/fooshlooket.mp3',
+            dan: 'Audios/dan.mp3'
         };
         let _charSelectAudio = null;
         function playCharSelectAudio(characterId) {
