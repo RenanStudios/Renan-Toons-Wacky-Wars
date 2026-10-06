@@ -2577,7 +2577,7 @@
                     jump: loadSprite('FooshLooket Sprites/f_walk3.png'),
                     punch: [],
                     kick: null,
-                    djump: null,
+                    djump: loadSprite('FooshLooket Sprites/f_ball.png'), // pulo duplo: vira a bolinha (mesmo sprite da bola)
                     bucket: null,
                     ball: loadSprite('FooshLooket Sprites/f_ball.png'),
                     throw: loadSprite('FooshLooket Sprites/f_throw.png')
@@ -2607,6 +2607,8 @@
                 attacks: {
                     // Z: desenha uma forma (linha, curva, quadrado ou círculo) que ganha vida e ataca por ~2 s (dano vem do desenho, não de hitbox melee)
                     brush: { duration: 420, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 1200 },
+                    // ↓+Z: pinta uma poça de tinta no chão (usa o sprite da_brush; a poça vem do código, ver paintInk)
+                    inkPuddle: { duration: 420, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 900 },
                     // X: giro com o pincel (estilo spin attack do Link) — acerta em volta dele, dos dois lados (hitbox circular, ver updateAttack)
                     spin: { duration: 500, activeStart: 80, activeEnd: 420, damage: 6, baseKnockback: 170, growth: 0.8, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 500 }
                 }
@@ -3375,20 +3377,39 @@
         function updateAndDrawPolishSplashes(deltaMs) {
             const dt = deltaMs / 1000;
             const stage = getStageRect();
+            const plats = getFloatingPlatforms();
             for (let i = polishSplashes.length - 1; i >= 0; i--) {
                 const s = polishSplashes[i];
+                rideCarry(s, plats); // gota/poça numa plataforma móvel: vai junto
                 s.vx *= 0.93;
                 s.vy *= 0.93;
                 s.vy += 1600 * dt; // gravidade da gota
                 s.x += s.vx * dt;
                 s.y += s.vy * dt;
 
+                let landed = false;
                 if (s.y + s.radius >= stage.y && s.x >= stage.x && s.x <= stage.x + stage.width) {
                     s.y = stage.y - s.radius;
+                    s.ridePlat = -1;
+                    landed = true;
+                } else {
+                    // plataformas flutuantes (antes as gotas atravessavam): só pousa vindo de cima
+                    for (let fi = 0; fi < plats.length; fi++) {
+                        const fp = plats[fi], bottom = s.y + s.radius;
+                        if (s.vy > -40 && bottom >= fp.y && bottom < fp.y + 30 && s.x >= fp.x && s.x <= fp.x + fp.width) {
+                            s.y = fp.y - s.radius;
+                            rideAttach(s, fp, fi + 1);
+                            landed = true;
+                            break;
+                        }
+                    }
+                }
+                if (landed) {
                     s.vy *= -0.1; // quase não salta, líquido pesado
                     s.vx *= 0.9;
                     s.radius -= 3 * dt; // derrete lentamente, forma poça
                 } else {
+                    s.ridePlat = -1;
                     s.radius -= 10 * dt;
                 }
 
@@ -4406,7 +4427,11 @@
                     if (p.attackName === 'ball' && isAttacking && !inHitstun) {
                         const ballDef = CHARACTERS.fooshlooket.attacks.ball;
                         const frac = Math.min(1, (now - p.attackStart) / ballDef.duration);
-                        p.x += (p.facingLeft ? -1 : 1) * BALL_SPEED * (1 - 0.5 * frac) * (p.hasHitThisAttack ? BALL_HIT_SLOW : 1) * effectiveDelta; // depois de acertar alguém, quase para (não cai no abismo)
+                        // Você controla a bola com ← / →; só as CPUs da demonstração continuam andando sozinhas na direção que encaram
+                        let ballDir = 0;
+                        if (typeof DEMO !== 'undefined' && DEMO.active) ballDir = p.facingLeft ? -1 : 1;
+                        else { if (keysPressed['ArrowLeft']) ballDir -= 1; if (keysPressed['ArrowRight']) ballDir += 1; }
+                        p.x += ballDir * BALL_SPEED * (1 - 0.5 * frac) * (p.hasHitThisAttack ? BALL_HIT_SLOW : 1) * effectiveDelta; // depois de acertar alguém, quase para (não cai no abismo)
                         const hop = p.ballHops || 0;
                         if (p.onGround && hop < 3 && now - p.attackStart > 120) {
                             p.vy = -BALL_HOP * [0.7, 0.5, 0.35][hop]; p.onGround = false; p.ballHops = hop + 1;
@@ -4435,6 +4460,9 @@
                         }
                     }
 
+                    // Poça de tinta do Dan (de outro jogador): enquanto pisa nela (e um instante depois), anda mais devagar
+                    if (!inHitstun && findInkPuddleUnder(p)) p.inkSlowUntil = now + INK_SLOW_LINGER;
+
                     if (!inHitstun && !isAttacking && !introLock) {
                         let dir = 0;
                         if (keysPressed['ArrowLeft']) dir -= 1;
@@ -4443,7 +4471,7 @@
                             isMoving = true;
                             p.facingLeft = dir < 0;
                             const charDef = CHARACTERS[p.character] || CHARACTERS.renanzinho;
-                            const speed = PLAYER_SPEED * (charDef.moveSpeedMultiplier || 1);
+                            const speed = PLAYER_SPEED * (charDef.moveSpeedMultiplier || 1) * (now < (p.inkSlowUntil || 0) ? INK_SLOW : 1);
                             p.x += dir * speed * effectiveDelta;
                         }
                     }
@@ -4577,6 +4605,8 @@
             drawNotes();
             updateDanDrawings();
             drawDanDrawings();
+            updateInkPuddles();
+            drawInkPuddles();
             updateMics(deltaTime * 1000);
             drawMics();
             updateFlails(deltaTime * 1000);
@@ -4684,6 +4714,7 @@
             cupShards.length = 0;
             waterSpits.length = 0;
             waterPuddles.length = 0;
+            inkPuddles.length = 0;
             for (const id of Object.keys(players)) {
                 const p = players[id];
                 p.lives = 3;
@@ -5572,8 +5603,9 @@
             SFX.playSwing(0.6);
             MP.sendState();
 
+            const ownerId = myUserId; // capturado agora: na demonstração, myUserId volta ao normal quando o timeout dispara
             setTimeout(() => {
-                const me = players[myUserId];
+                const me = p;
                 const t = Date.now();
                 // Cancela se foi interrompido (levou golpe) ou o golpe já acabou
                 if (!me || me.attackName !== 'brush' || t >= me.attackUntil) return;
@@ -5582,7 +5614,7 @@
                 const names = Object.keys(DDRAW.shapes);
                 const d = {
                     id: 'ddraw_' + t + '_' + Math.floor(Math.random() * 100000),
-                    ownerId: myUserId,
+                    ownerId,
                     shape: names[Math.floor(Math.random() * names.length)],
                     x: me.x + dir * 50 * getSizeScale(me),
                     y: me.y - PLAYER_SIZE * 0.1,
@@ -5659,6 +5691,148 @@
         }
 
         // ==========================================
+        // POÇA DE TINTA DO DAN (↓+Z): mancha no chão feita pelo código; quem pisa anda mais devagar (sem dano).
+        // Cada Dan mantém até INK_MAX poças (a mais antiga some). Sincronizada por rede ('inkPuddle'); cada cliente
+        // aplica a lentidão em si mesmo (como a poça do FooshLooket). Acompanha plataformas móveis.
+        // ==========================================
+        let inkPuddles = []; // { id, ownerId, x, y, spawnTime, platIdx, offX }
+        const INK_W = 130;            // largura da poça
+        const INK_LIFETIME = 6000;    // ms
+        const INK_MAX = 2;            // poças simultâneas por Dan
+        const INK_SLOW = 0.4;         // fração da velocidade de andar enquanto está na tinta
+        const INK_SLOW_LINGER = 350;  // ms de lentidão depois de sair da poça
+
+        function paintInk(p) {
+            if (!p || p.character !== 'dan' || !p.onGround) return; // só pinta no chão
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.dan.attacks.inkPuddle;
+            p.attackName = 'inkPuddle';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+            SFX.playSwing(0.5);
+            MP.sendState();
+
+            const ownerId = myUserId; // capturado agora (ver paintDrawing)
+            setTimeout(() => {
+                const me = p;
+                const t = Date.now();
+                if (!me || me.attackName !== 'inkPuddle' || t >= me.attackUntil) return;
+                if (me.hitstunUntil && t < me.hitstunUntil) return;
+                const dir = me.facingLeft ? -1 : 1;
+                const x = me.x + dir * 75 * getSizeScale(me);
+                const feetY = me.y + PLAYER_SIZE / 2;
+                // superfície sob a poça (palco ou plataforma flutuante); plataforma móvel: a poça acompanha
+                const surfs = [getStageRect()].concat(getFloatingPlatforms());
+                let surfY = feetY, platIdx = -1, offX = 0;
+                for (let si = 0; si < surfs.length; si++) {
+                    const sf = surfs[si];
+                    if (x > sf.x && x < sf.x + sf.width && Math.abs(sf.y - feetY) < 8) {
+                        surfY = sf.y;
+                        if (sf.moving && si > 0) { platIdx = si - 1; offX = x - sf.x; }
+                        break;
+                    }
+                }
+                inkPuddles = inkPuddles.filter(q => q.ownerId !== ownerId).concat(
+                    inkPuddles.filter(q => q.ownerId === ownerId).slice(-(INK_MAX - 1)));
+                // ox/oy: de onde as gotas saem (na altura do pincel dele)
+                const q = { id: 'ink_' + t + '_' + Math.floor(Math.random() * 100000), ownerId, x, y: surfY, spawnTime: t, platIdx, offX, ox: me.x + dir * 35 * getSizeScale(me), oy: me.y - PLAYER_SIZE * 0.1 };
+                inkPuddles.push(q);
+                MP.broadcastToAll({ type: 'inkPuddle', q });
+            }, 200);
+        }
+
+        function syncInkToPlatform(q, plats) {
+            if (q.platIdx == null || q.platIdx < 0) return;
+            const fp = (plats || getFloatingPlatforms())[q.platIdx];
+            if (fp && fp.moving) { q.x = fp.x + q.offX; q.y = fp.y; }
+        }
+
+        function updateInkPuddles() {
+            const now = Date.now();
+            inkPuddles = inkPuddles.filter(q => now - q.spawnTime < INK_LIFETIME);
+            if (inkPuddles.some(q => q.platIdx >= 0)) {
+                const plats = getFloatingPlatforms();
+                for (const q of inkPuddles) syncInkToPlatform(q, plats);
+            }
+        }
+
+        // Poça de tinta de OUTRO jogador sob o jogador local (apoiado no chão), ou null
+        function findInkPuddleUnder(p) {
+            if (!p.onGround) return null;
+            const feetY = p.y + PLAYER_SIZE / 2;
+            for (const q of inkPuddles) {
+                if (q.ownerId === myUserId || Date.now() - q.spawnTime < 260) continue;
+                if (Math.abs(p.x - q.x) < INK_W / 2 && Math.abs(feetY - q.y) < 6) return q;
+            }
+            return null;
+        }
+
+        function drawInkPuddles() {
+            const now = Date.now();
+            for (const q of inkPuddles) {
+                const age = now - q.spawnTime;
+                const grow = 1 - Math.pow(1 - Math.min(1, Math.max(0, age - 260) / 280), 3); // só começa a se espalhar quando as primeiras gotas pousam
+                const fade = Math.max(0, Math.min(1, (INK_LIFETIME - age) / 700));
+                const rx = (INK_W / 2) * grow;
+                const seed = (q.spawnTime % 997) * 0.31;
+                ctx.save();
+                ctx.globalAlpha = fade;
+                // gotas de tinta saindo do pincel do Dan e caindo em arco até o chão (cada uma com um respingo ao pousar)
+                if (age < 720) {
+                    const ox = q.ox != null ? q.ox : q.x, oy = q.oy != null ? q.oy : q.y - 130;
+                    ctx.fillStyle = '#000'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+                    for (let i = 0; i < 7; i++) {
+                        const u = (age - i * 45) / 260;
+                        const dx = q.x + (i - 3) * INK_W * 0.13 + Math.sin(seed + i) * 6;
+                        if (u > 0 && u < 1) {
+                            ctx.globalAlpha = fade;
+                            ctx.beginPath(); ctx.ellipse(ox + (dx - ox) * u, oy + (q.y - oy) * u - 70 * u * (1 - u), 3.5, 3.5 + 3 * u, 0, 0, Math.PI * 2); ctx.fill();
+                        } else if (u >= 1 && u < 1.7) {
+                            const r = (u - 1) / 0.7;
+                            ctx.globalAlpha = (1 - r) * fade;
+                            ctx.beginPath(); ctx.ellipse(dx, q.y + 1, 4 + 12 * r, 2 + 4 * r, 0, 0, Math.PI * 2); ctx.stroke();
+                        }
+                    }
+                    ctx.globalAlpha = fade;
+                }
+                // mancha irregular: elipse central + "gotas" ao redor, bordas levemente ondulando
+                ctx.fillStyle = '#000';
+                ctx.beginPath(); ctx.ellipse(q.x, q.y + 1, rx, 8, 0, 0, Math.PI * 2); ctx.fill();
+                for (let k = 0; k < 6; k++) {
+                    const a = seed + k * 1.05, wob = 1 + 0.08 * Math.sin(age / 260 + k * 2);
+                    const bx = q.x + Math.cos(a) * rx * 0.72 * wob, bw = rx * (0.22 + 0.06 * ((k * 7) % 3));
+                    ctx.beginPath(); ctx.ellipse(bx, q.y + 1, bw, 5.5, 0, 0, Math.PI * 2); ctx.fill();
+                }
+                // brilho de tinta molhada + bolhinhas subindo
+                ctx.fillStyle = 'rgba(255,255,255,0.10)';
+                ctx.beginPath(); ctx.ellipse(q.x - rx * 0.25, q.y - 0.5, rx * 0.5, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.22)';
+                for (let k = 0; k < 3; k++) {
+                    const r = ((age / 1500) + k / 3) % 1;
+                    ctx.globalAlpha = fade * 0.8 * (1 - r);
+                    ctx.beginPath(); ctx.arc(q.x + Math.sin(seed + k * 2.3) * rx * 0.55, q.y - 2 - r * 9, 1.8 + k * 0.4, 0, Math.PI * 2); ctx.fill();
+                }
+                // respingos quando a poça se forma
+                const te = age / 1000;
+                if (te < 0.4) {
+                    ctx.fillStyle = '#000';
+                    for (let i = 0; i < 6; i++) {
+                        const a = -Math.PI / 2 + (i - 2.5) * 0.35, sp = 180 + (i % 3) * 45;
+                        ctx.globalAlpha = (1 - te / 0.4) * fade;
+                        ctx.beginPath(); ctx.arc(q.x + Math.cos(a) * sp * te * 0.5, q.y + Math.sin(a) * sp * te + 500 * te * te, 2.5, 0, Math.PI * 2); ctx.fill();
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
         // MICROFONE DA HOFY (X): arremessado, cai numa superfície e DESLIZA em velocidade constante até acertar
         // alguém ou cair no abismo (também acerta em pleno ar). Cada cliente simula a física localmente
         // (passo fixo); só o dono detecta o acerto e avisa os outros.
@@ -5730,15 +5904,19 @@
             m.x += m.vx * h;
             m.y += m.vy * h;
             m.onGround = false;
-            for (const sf of [stage].concat(plats)) {
+            const micSurfs = [stage].concat(plats);
+            for (let si = 0; si < micSurfs.length; si++) {
+                const sf = micSurfs[si];
                 if (m.x > sf.x && m.x < sf.x + sf.width && m.vy >= 0 && prevY + R <= sf.y + 2 && m.y + R >= sf.y) {
                     m.y = sf.y - R;
                     m.vy = 0;
                     m.onGround = true;
+                    rideAttach(m, sf, si);
                     if (!m.landed) { m.landed = true; SFX.playTink(0.5); }
                     break;
                 }
             }
+            if (!m.onGround) m.ridePlat = -1;
             if (m.onGround) {
                 // deitado, deslizando: endireita a rotação rapidamente e não perde velocidade
                 let r = m.rot % (Math.PI * 2);
@@ -5767,6 +5945,7 @@
                     thrownMics.splice(i, 1);
                     continue;
                 }
+                rideCarry(m, plats); // deslizando em plataforma móvel: a velocidade passa a ser relativa a ela
                 m.acc += Math.min(deltaMs, 50) / 1000;
                 while (m.acc >= H && !m.dead) { m.acc -= H; stepMic(m, H, stage, plats); }
                 if (m.dead) { SFX.playTink(0.8); removeMic(m, true); continue; }
@@ -6219,13 +6398,39 @@
             }
         }
 
+        // ==========================================
+        // CARONA EM PLATAFORMAS MÓVEIS (Vector)
+        // Objeto que pousa numa plataforma móvel guarda o índice dela (o.ridePlat) e a última posição da plataforma
+        // (o.rideX / o.rideY). A cada frame, rideCarry() move o objeto pelo mesmo deslocamento da plataforma,
+        // então ele não fica parado no ar enquanto a plataforma sai de baixo. A posição das plataformas é função do
+        // relógio (igual em todos os clientes), então todo mundo calcula a mesma carona sem precisar de rede.
+        //   rideAttach(o, superfície, índice em [palco, ...flutuantes]): chame ao pousar (índice 0 = palco, não anda)
+        //   rideCarry(o, plats): chame uma vez por frame, ANTES de mover/colidir o objeto
+        //   o.ridePlat = -1: solta (objeto no ar)
+        // ==========================================
+        function rideAttach(o, sf, si) {
+            if (sf && sf.moving && si > 0) { o.ridePlat = si - 1; o.rideX = sf.x; o.rideY = sf.y; }
+            else o.ridePlat = -1;
+        }
+        function rideCarry(o, plats) {
+            if (o.ridePlat == null || o.ridePlat < 0) return;
+            const fp = (plats || getFloatingPlatforms())[o.ridePlat];
+            if (!fp || !fp.moving) { o.ridePlat = -1; return; }
+            o.x += fp.x - o.rideX;
+            o.y += fp.y - o.rideY;
+            o.rideX = fp.x; o.rideY = fp.y;
+        }
+
         // Física + explosão dos frascos de esmalte: cai com gravidade, assenta no chão da
-        // plataforma mais próxima, e depois de POLISH_EXPLODE_DELAY explode causando dano em área.
+        // plataforma mais próxima (acompanhando-a se for móvel), e depois de POLISH_EXPLODE_DELAY explode causando dano em área.
         function updateNailPolishBottles(deltaMs) {
             const deltaSec = deltaMs / 1000;
+            const plats = getFloatingPlatforms();
             for (let i = nailPolishBottles.length - 1; i >= 0; i--) {
                 const b = nailPolishBottles[i];
                 if (b.exploded) { nailPolishBottles.splice(i, 1); continue; }
+
+                if (b.onGround) rideCarry(b, plats); // pousado em plataforma móvel: vai junto
 
                 if (!b.onGround) {
                     const prevY = b.y;
@@ -6239,15 +6444,18 @@
                     if (cameFromAboveGround && b.vy >= 0 && b.y >= groundY && b.x >= stage.x && b.x <= stage.x + stage.width) {
                         b.y = groundY;
                         b.onGround = true;
+                        b.ridePlat = -1;
                         b.vx = 0;
                         b.vy = 0;
                         b.landTime = Date.now();
                     }
-                    for (const fp of getFloatingPlatforms()) {
+                    for (let fi = 0; fi < plats.length; fi++) {
+                        const fp = plats[fi];
                         const cameFromAboveFp = prevY <= fp.y;
                         if (cameFromAboveFp && b.vy >= 0 && b.y >= fp.y && b.x >= fp.x && b.x <= fp.x + fp.width) {
                             b.y = fp.y;
                             b.onGround = true;
+                            rideAttach(b, fp, fi + 1);
                             b.vx = 0;
                             b.vy = 0;
                             b.landTime = Date.now();
@@ -6520,9 +6728,12 @@
             c.rot += c.vr * h;
             c.onGround = false;
 
-            for (const sf of [stage].concat(plats)) {
+            const cupSurfs = [stage].concat(plats);
+            for (let si = 0; si < cupSurfs.length; si++) {
+                const sf = cupSurfs[si];
                 if (c.x > sf.x && c.x < sf.x + sf.width && c.vy >= 0 && prevY + R <= sf.y + 2 && c.y + R >= sf.y) {
                     c.y = sf.y - R;
+                    rideAttach(c, sf, si);
                     if (c.vy > 160) {
                         SFX.playTink(c.vy / 700);
                         c.vy = -c.vy * CUP_BOUNCE;
@@ -6535,6 +6746,7 @@
                     break;
                 }
             }
+            if (!c.onGround) c.ridePlat = -1;
             if (c.onGround) {
                 c.vx *= Math.exp(-CUP_GROUND_FRICTION * h);
                 c.vr = c.vx / R; // rola de lado enquanto desliza
@@ -6565,6 +6777,7 @@
                     thrownCups.splice(i, 1);
                     continue;
                 }
+                rideCarry(c, plats); // copo parado/armado em plataforma móvel: vai junto
                 if (!c.armed) {
                     c.acc += Math.min(deltaMs, 50) / 1000;
                     while (c.acc >= H && !c.armed) { c.acc -= H; stepCup(c, H, stage, plats); }
@@ -6646,6 +6859,7 @@
         function updateAndDrawCupShards(deltaMs) {
             const dt = deltaMs / 1000;
             const stage = getStageRect();
+            const shardPlats = getFloatingPlatforms();
             for (let i = cupShards.length - 1; i >= 0; i--) {
                 const sh = cupShards[i];
                 sh.life += deltaMs;
@@ -6659,6 +6873,16 @@
                     sh.vy *= -0.35;
                     sh.vx *= 0.7;
                     sh.vr *= 0.5;
+                } else {
+                    for (const fp of shardPlats) {
+                        if (sh.y >= fp.y - 2 && sh.y < fp.y + 14 && sh.x > fp.x && sh.x < fp.x + fp.width && sh.vy > 0) {
+                            sh.y = fp.y - 2;
+                            sh.vy *= -0.35;
+                            sh.vx *= 0.7;
+                            sh.vr *= 0.5;
+                            break;
+                        }
+                    }
                 }
                 const t = sh.life / sh.maxLife;
                 const alpha = t > 0.65 ? 1 - (t - 0.65) / 0.35 : 1;
@@ -7651,7 +7875,7 @@
                     currentSprite = cSprites.sax || cSprites.idle;
                 } else if (player.attackName === 'sing') {
                     currentSprite = cSprites.sing || cSprites.idle;
-                } else if (player.attackName === 'brush') {
+                } else if (player.attackName === 'brush' || player.attackName === 'inkPuddle') {
                     currentSprite = cSprites.brush || cSprites.idle;
                 } else if (player.attackName === 'spin') {
                     currentSprite = cSprites.spin || cSprites.idle;
@@ -7745,11 +7969,14 @@
                 ctx.translate(0, -tcy);
             }
 
-            if (player.attackName === 'ball') {
+            const ballForm = player.attackName === 'ball' || (player.isDoubleJumping && !player.attackName && player.character === 'fooshlooket');
+            if (ballForm) {
                 // Bola: encolhe (pés no chão) e gira em torno do próprio centro; espelhar já inverte o sentido do giro
                 ctx.save(); // o giro/encolhimento vale só para o sprite (o nome abaixo não gira)
                 const bd = CHARACTERS.fooshlooket.attacks.ball;
-                const spin = Math.min(1, (Date.now() - player.attackStart) / bd.duration) * Math.PI * 2 * BALL_SPINS;
+                const spin = player.attackName === 'ball'
+                    ? Math.min(1, (Date.now() - player.attackStart) / bd.duration) * Math.PI * 2 * BALL_SPINS
+                    : (Date.now() / 1000) * Math.PI * 2 * 2; // pulo duplo: gira continuamente (2 voltas/s)
                 ctx.translate(0, PLAYER_SIZE / 2);
                 ctx.scale(BALL_DRAW_SCALE, BALL_DRAW_SCALE);
                 ctx.translate(0, -SPRITE_HEIGHT / 2);
@@ -7821,7 +8048,7 @@
                 }
             }
 
-            if (player.attackName === 'ball') ctx.restore();
+            if (ballForm) ctx.restore();
             if (player.attackName === 'spin') {
                 ctx.restore();
                 // Efeito do giro: rastro de tinta colorido orbitando o corpo + gotinhas de tinta
@@ -7912,7 +8139,7 @@
                 } else if (me && me.character === 'doper') {
                     throwCup(me);
                 } else if (me && me.character === 'dan') {
-                    paintDrawing(me); // Dan: sem pulo duplo
+                    if (keysPressed['ArrowDown']) paintInk(me); else paintDrawing(me); // Dan: sem pulo duplo
                 } else if (me && me.character === 'hofy') {
                     singNote(me); // Hofy: sem pulo duplo
                 } else if (me && me.character === 'fooshlooket') {
@@ -8199,6 +8426,13 @@
                 }
                 else if (data.type === 'noteShoot') {
                     if (data.note.ownerId !== myUserId) notes.push(data.note);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'inkPuddle') {
+                    if (data.q.ownerId !== myUserId) {
+                        inkPuddles = inkPuddles.filter(x => x.id !== data.q.id);
+                        inkPuddles.push(data.q);
+                    }
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
                 else if (data.type === 'danDrawing') {
@@ -8937,25 +9171,91 @@
     <style>
         #demo-overlay { position: fixed; inset: 0; z-index: 102; display: none; cursor: pointer; touch-action: none; }
         #demo-overlay.on { display: block; }
-        #demo-label {
-            position: absolute; top: 4%; left: 0; width: 100%; text-align: center; pointer-events: none;
-            font: 900 clamp(24px, 5vw, 54px) 'Arial Black', Impact, sans-serif; letter-spacing: .14em; color: #fff;
-            -webkit-text-stroke: 2px rgba(10,14,40,.85); paint-order: stroke fill;
-            text-shadow: 0 4px 0 rgba(10,14,40,.55), 0 0 18px rgba(255,255,255,.35);
-            animation: demo-blink 1.2s steps(1) infinite;
-        }
-        #demo-sub {
-            position: absolute; top: calc(4% + clamp(34px, 6.4vw, 70px)); left: 0; width: 100%; text-align: center; pointer-events: none;
-            font: 800 clamp(11px, 1.6vw, 16px) 'Arial Black', Impact, sans-serif; letter-spacing: .2em; color: #fff;
-            text-shadow: 0 2px 0 rgba(10,14,40,.7), 0 0 8px rgba(10,14,40,.6);
-        }
-        @keyframes demo-blink { 0%, 62% { opacity: 1; } 63%, 100% { opacity: 0; } }
+        /* ---- camadas visuais da demonstração (nenhuma interfere na luta; o HUD fica embaixo, então tudo aqui fica no topo/laterais) ---- */
+        #demo-overlay > * { position: absolute; pointer-events: none; }
+        #demo-vignette { inset: 0; background: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,0) 52%, rgba(6,8,28,.62) 100%); opacity: 0; transition: opacity .8s ease; }
+        #demo-overlay.on #demo-vignette { opacity: 1; }
+        #demo-scan { inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, rgba(0,0,0,0) 1px 3px); mix-blend-mode: overlay; opacity: .55; }
+        #demo-sweep { top: -20%; bottom: -20%; left: 0; width: 22%; transform: translateX(-140%) skewX(-18deg);
+            background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.10), rgba(255,255,255,0)); animation: demo-sweep 9s ease-in-out 2.5s infinite; }
+        @keyframes demo-sweep { 0% { transform: translateX(-140%) skewX(-18deg); } 22%, 100% { transform: translateX(620%) skewX(-18deg); } }
+        #demo-motes { inset: 0; overflow: hidden; }
+        .demo-mote { position: absolute; bottom: -12px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.95), rgba(255,255,255,0) 70%);
+            opacity: 0; animation: demo-mote linear infinite; }
+        @keyframes demo-mote { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: .75; } 85% { opacity: .5; } 100% { transform: translate3d(var(--dx, 30px), -112vh, 0); opacity: 0; } }
+        #demo-progress { top: 0; left: 0; width: 100%; height: 5px; background: rgba(0,0,0,.35); }
+        #demo-progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff5a4d, #ffc933, #5ad7ff); box-shadow: 0 0 10px rgba(255,200,80,.8); }
+        #demo-badge { top: calc(5px + 1.2vh); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: .7em; white-space: nowrap;
+            padding: .45em 1.2em .45em .9em; border-radius: 999px; background: rgba(10,14,40,.62); border: 1px solid rgba(255,255,255,.28);
+            box-shadow: 0 4px 18px rgba(0,0,0,.35), inset 0 0 12px rgba(255,255,255,.08); backdrop-filter: blur(4px);
+            font: 900 clamp(12px, 2.1vw, 22px) 'Arial Black', Impact, sans-serif; letter-spacing: .16em; color: #fff; }
+        #demo-badge .dot { width: .7em; height: .7em; border-radius: 50%; background: #ff3b3b; box-shadow: 0 0 10px 2px rgba(255,59,59,.85); animation: demo-rec 1.1s ease-in-out infinite; }
+        #demo-badge em { font: 800 clamp(9px, 1.15vw, 13px) 'Arial Black', Impact, sans-serif; font-style: normal; letter-spacing: .2em; color: #ffe9a8; animation: demo-blink 1.6s steps(1) infinite; }
+        @keyframes demo-rec { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.7); opacity: .45; } }
+        @keyframes demo-blink { 0%, 62% { opacity: 1; } 63%, 100% { opacity: .15; } }
+        @media (max-width: 640px) { #demo-badge em { display: none; } }
+
+        /* cartela de apresentação "A VS B" */
+        #demo-versus { inset: 0; opacity: 0; display: none; }
+        #demo-versus.on { display: block; animation: vs-wrap 2.7s linear forwards; }
+        @keyframes vs-wrap { 0% { opacity: 0; } 5% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+        #demo-versus::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(6,8,28,.40), rgba(6,8,28,.78)); }
+        .vs-side { position: absolute; top: 17%; height: 62%; width: 60%; }
+        .vs-side.l { left: 0; animation: vs-in-l 2.7s cubic-bezier(.2,.85,.25,1) both; }
+        .vs-side.r { right: 0; animation: vs-in-r 2.7s cubic-bezier(.2,.85,.25,1) both; }
+        @keyframes vs-in-l { 0% { transform: translateX(-115%); } 15%, 84% { transform: translateX(0); } 100% { transform: translateX(-22%); } }
+        @keyframes vs-in-r { 0% { transform: translateX(115%); } 15%, 84% { transform: translateX(0); } 100% { transform: translateX(22%); } }
+        .vs-band { position: absolute; inset: 0; box-shadow: 0 0 40px rgba(0,0,0,.5); }
+        .vs-side.l .vs-band { background: linear-gradient(100deg, var(--c1) 0%, var(--c1d) 100%); clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%); }
+        .vs-side.r .vs-band { background: linear-gradient(80deg, var(--c2d) 0%, var(--c2) 100%); clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%); }
+        .vs-band::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,.10) 0 14px, rgba(255,255,255,0) 14px 36px); }
+        .vs-side img { position: absolute; bottom: 4%; max-height: 70%; max-width: 44%; object-fit: contain; filter: drop-shadow(0 10px 0 rgba(0,0,0,.28)) drop-shadow(0 0 14px rgba(255,255,255,.35)); animation: vs-bob 1.2s ease-in-out infinite; }
+        .vs-side.l img { left: 12%; } .vs-side.r img { right: 12%; }
+        @keyframes vs-bob { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2.5%) scale(1.03); } }
+        .vs-txt { position: absolute; top: 9%; width: 52%; white-space: nowrap; color: #fff; font-family: 'Arial Black', Impact, sans-serif; text-shadow: 0 4px 0 rgba(10,14,40,.6); }
+        .vs-side.l .vs-txt { left: 4%; text-align: left; } .vs-side.r .vs-txt { right: 4%; text-align: right; }
+        .vs-name { font-size: clamp(16px, 3.4vw, 48px); font-style: italic; line-height: 1; text-transform: uppercase; -webkit-text-stroke: 2px rgba(10,14,40,.8); paint-order: stroke fill; }
+        .vs-tag { margin-top: .5em; font-size: clamp(8px, 1.25vw, 15px); letter-spacing: .18em; text-transform: uppercase; color: #ffe9a8; }
+        .vs-mid { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); text-align: center; animation: vs-pop 2.7s cubic-bezier(.2,.9,.3,1.2) both; }
+        .vs-mid b { display: block; font: 900 italic clamp(54px, 16vw, 200px)/0.9 'Arial Black', Impact, sans-serif; color: #fff; letter-spacing: -.02em;
+            -webkit-text-stroke: 3px #10163a; paint-order: stroke fill; text-shadow: 0 8px 0 #10163a, 0 0 28px rgba(255,220,120,.9), 0 0 60px rgba(255,120,60,.7); }
+        .vs-mid span { display: inline-block; margin-top: .6em; padding: .3em 1em; background: rgba(10,14,40,.8); border: 1px solid rgba(255,255,255,.35); border-radius: 4px;
+            font: 800 clamp(9px, 1.4vw, 16px) 'Arial Black', Impact, sans-serif; letter-spacing: .24em; color: #fff; text-transform: uppercase; }
+        @keyframes vs-pop { 0%, 12% { transform: translate(-50%, -50%) scale(.1) rotate(-14deg); opacity: 0; } 24% { transform: translate(-50%, -50%) scale(1.3) rotate(3deg); opacity: 1; }
+            32%, 84% { transform: translate(-50%, -50%) scale(1) rotate(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+        /* flash branco, "LUTE!" e "K.O.!" */
+        #demo-flash { inset: 0; background: #fff; opacity: 0; }
+        #demo-flash.on { animation: demo-flash .55s ease-out forwards; }
+        @keyframes demo-flash { 0% { opacity: .85; } 100% { opacity: 0; } }
+        #demo-go, #demo-ko { left: 0; width: 100%; text-align: center; opacity: 0; font-family: 'Arial Black', Impact, sans-serif; font-style: italic; text-transform: uppercase; }
+        #demo-go { top: 36%; font-size: clamp(40px, 11vw, 140px); color: #ffe45a; -webkit-text-stroke: 3px #10163a; paint-order: stroke fill; text-shadow: 0 7px 0 #10163a, 0 0 30px rgba(255,200,60,.8); }
+        #demo-go.on { animation: demo-go 1s cubic-bezier(.2,.9,.3,1.2) forwards; }
+        @keyframes demo-go { 0% { transform: scale(2.6); opacity: 0; } 20% { transform: scale(1); opacity: 1; } 72% { transform: scale(1); opacity: 1; } 100% { transform: scale(.8) translateY(-10%); opacity: 0; } }
+        #demo-ko { top: 30%; font-size: clamp(46px, 13vw, 170px); color: #fff; -webkit-text-stroke: 9px var(--ko, #e53935); paint-order: stroke fill;
+            text-shadow: 0 8px 0 rgba(10,14,40,.85), 0 0 36px var(--ko, #e53935); }
+        #demo-ko.on { animation: demo-ko 1.25s cubic-bezier(.2,.9,.3,1.1) forwards; }
+        @keyframes demo-ko { 0% { transform: scale(3) rotate(-8deg); opacity: 0; } 14% { transform: scale(1) rotate(-3deg); opacity: 1; } 70% { transform: scale(1.04) rotate(-3deg); opacity: 1; } 100% { transform: scale(1.25) rotate(-3deg); opacity: 0; } }
         #demo-fade { position: fixed; inset: 0; z-index: 103; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s ease; }
         #demo-fade.on { opacity: 1; }
         #title-screen.demo-away { visibility: hidden; }
         body.demo-on #touch-controls { display: none !important; }
     </style>
-    <div id="demo-overlay"><div id="demo-label">DEMONSTRAÇÃO</div><div id="demo-sub">TOQUE OU PRESSIONE QUALQUER TECLA</div></div>
+    <div id="demo-overlay">
+        <div id="demo-vignette"></div>
+        <div id="demo-scan"></div>
+        <div id="demo-motes"></div>
+        <div id="demo-sweep"></div>
+        <div id="demo-progress"><i></i></div>
+        <div id="demo-badge"><span class="dot"></span><b>DEMONSTRAÇÃO</b><em>TOQUE OU PRESSIONE QUALQUER TECLA</em></div>
+        <div id="demo-versus">
+            <div class="vs-side l"><div class="vs-band"></div><img alt=""><div class="vs-txt"><div class="vs-name"></div><div class="vs-tag"></div></div></div>
+            <div class="vs-side r"><div class="vs-band"></div><img alt=""><div class="vs-txt"><div class="vs-name"></div><div class="vs-tag"></div></div></div>
+            <div class="vs-mid"><b>VS</b><span id="vs-map"></span></div>
+        </div>
+        <div id="demo-go">Lute!</div>
+        <div id="demo-ko">K.O.!</div>
+        <div id="demo-flash"></div>
+    </div>
     <div id="demo-fade"></div>
     <script>
     const DEMO = (function () {
@@ -8967,6 +9267,33 @@
         const introEl = document.getElementById('logo-intro-overlay');
         const overlay = document.getElementById('demo-overlay');
         const fadeEl = document.getElementById('demo-fade');
+        const $d = id => document.getElementById(id);
+        const INTRO_MS = 2700;   // cartela "A VS B": os bots ficam parados até ela terminar
+
+        // Apresentação visual dos personagens (cartela de abertura)
+        const NAMES = { renanzinho: 'Renanzinho', aggie: 'Aggie', renanAntigo: 'Renan Antigo', blui: 'Blui e Reddie', doper: 'Doper', hofy: 'Hofy', fooshlooket: 'FooshLooket', dan: 'Dan' };
+        const TAGS = { renanzinho: 'Otimista e alegre', aggie: 'Rainha da manicure', renanAntigo: 'Criado em 2020', blui: 'Dupla gelatinosa',
+                       doper: 'Bartender do Blue Note', hofy: 'Dançarina e cantora', fooshlooket: 'Criatura aquática', dan: 'Líder dos White Ones' };
+        const CARD_COLORS = [['#e53935', '#8e1b1b'], ['#1e88e5', '#0d3f7a']];
+        function portraitSrc(ch) {
+            const sp = CHARACTERS[ch] && CHARACTERS[ch].sprites && CHARACTERS[ch].sprites.idle;
+            const im = Array.isArray(sp) ? sp[0] : sp;
+            return (im && im.src) || '';
+        }
+        // retoca uma animação CSS (remove a classe, força reflow e põe de novo)
+        function retrigger(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+        // partículas de brilho subindo pela tela (criadas uma vez só)
+        function buildMotes() {
+            const host = $d('demo-motes');
+            if (host.childElementCount) return;
+            for (let i = 0; i < 18; i++) {
+                const m = document.createElement('span'), sz = 3 + Math.random() * 7;
+                m.className = 'demo-mote';
+                m.style.cssText = 'left:' + (Math.random() * 100) + '%;width:' + sz + 'px;height:' + sz + 'px;' +
+                    '--dx:' + ((Math.random() - 0.5) * 120) + 'px;animation-duration:' + (7 + Math.random() * 8) + 's;animation-delay:-' + (Math.random() * 12) + 's';
+                host.appendChild(m);
+            }
+        }
 
         // ======================================================================
         // KITS: o que cada personagem sabe fazer, com papel tático e janela de uso.
@@ -9009,6 +9336,12 @@
                 { id: 'sing', role: 'zone', min: 90, max: 460, tol: 55, evalMs: 1800, ready: meleeOk, use: p => singNote(p) },
                 { id: 'mic', role: 'zone', min: 130, max: 520, tol: 38, evalMs: 1500, ready: meleeOk, use: p => throwMic(p) }
             ] },
+            dan: { style: 'zoner', moves: [
+                { id: 'draw', role: 'zone', min: 70, max: 420, tol: 60, evalMs: 1600, ready: meleeOk, use: p => paintDrawing(p) },
+                { id: 'spin', role: 'kill', melee: true, min: 0, max: 85, tol: 40, evalMs: 1100, ready: meleeOk, use: p => startAttack(p, 'spin') },
+                { id: 'ink', role: 'trap', min: 60, max: 240, tol: 120, evalMs: 3000,
+                  ready: (p, t, b) => meleeOk(p, t) && p.onGround && countMine(inkPuddles, b.id, () => true) < INK_MAX, use: p => paintInk(p) }
+            ] },
             fooshlooket: { style: 'trapper', djump: true, moves: [
                 { id: 'ball', role: 'kill', melee: true, min: 60, max: 210, tol: 50, run: 260, evalMs: 1600, ready: meleeOk, use: p => startAttack(p, 'ball') },
                 { id: 'water', role: 'trap', min: 90, max: 220, tol: 150, evalMs: 4000,
@@ -9032,7 +9365,7 @@
             trapper: { poke: 1.0, kill: 1.1, zone: 1.0, trap: 1.8, pref: 170 },
             balanced:{ poke: 1.0, kill: 1.0, zone: 1.0, trap: 1.0, pref: 140 }
         };
-        const MELEE_NAMES = { punch1: 1, punch2: 1, kick: 1, nail: 1, push: 1, dash: 1, ball: 1 };
+        const MELEE_NAMES = { punch1: 1, punch2: 1, kick: 1, nail: 1, push: 1, dash: 1, ball: 1, spin: 1 };
         const COLORS = ['#e53935', '#1e88e5'];
 
         let idleSince = performance.now();
@@ -9063,6 +9396,42 @@
                 myUserId = prev.uid;
                 for (const k in keysPressed) delete keysPressed[k];
                 Object.assign(keysPressed, prev.keys);
+            },
+
+            // Cartela de abertura "A VS B" + barra de progresso. Os bots esperam (holdUntil) até ela acabar, aí "LUTE!"
+            intro() {
+                const [A, B] = this.bots;
+                const sides = [['.vs-side.l', A, 0], ['.vs-side.r', B, 1]];
+                const vs = $d('demo-versus');
+                vs.style.setProperty('--c1', CARD_COLORS[0][0]); vs.style.setProperty('--c1d', CARD_COLORS[0][1]);
+                vs.style.setProperty('--c2', CARD_COLORS[1][0]); vs.style.setProperty('--c2d', CARD_COLORS[1][1]);
+                for (const [sel, b, i] of sides) {
+                    const el = vs.querySelector(sel);
+                    el.querySelector('.vs-name').textContent = NAMES[b.character] || b.character;
+                    el.querySelector('.vs-tag').textContent = TAGS[b.character] || '';
+                    const img = el.querySelector('img'), src = portraitSrc(b.character);
+                    img.style.display = src ? '' : 'none';
+                    img.onerror = () => { img.style.display = 'none'; }; // sprite ausente: some o retrato em vez de mostrar imagem quebrada
+                    if (src) img.src = src;
+                }
+                vs.querySelector('.vs-side.r img').style.scale = '-1 1'; // o retrato da direita é espelhado para encarar o rival
+                $d('vs-map').textContent = 'Arena: ' + (MAPS[currentMapIndex] ? MAPS[currentMapIndex].name : '');
+                retrigger(vs, 'on');
+                retrigger($d('demo-flash'), 'on');
+                this.holdUntil = Date.now() + INTRO_MS;
+                const bar = document.querySelector('#demo-progress i');
+                bar.style.transition = 'none'; bar.style.width = '0'; void bar.offsetWidth;
+                bar.style.transition = 'width ' + DEMO_MS + 'ms linear'; bar.style.width = '100%';
+                this.later(INTRO_MS - 150, () => { retrigger($d('demo-go'), 'on'); retrigger($d('demo-flash'), 'on'); });
+                this.later(INTRO_MS + 50, () => vs.classList.remove('on'));
+            },
+
+            // "K.O.!" na cor do lutador que perdeu a vida
+            koFlash(idx) {
+                const ko = $d('demo-ko');
+                ko.style.setProperty('--ko', CARD_COLORS[idx] ? CARD_COLORS[idx][0] : '#e53935');
+                retrigger(ko, 'on');
+                retrigger($d('demo-flash'), 'on');
             },
 
             start() {
@@ -9096,7 +9465,7 @@
                     players[b.id] = {
                         x: st.x + st.width / 2 + side * 190, y: st.y - PLAYER_SIZE / 2 - 1,
                         vy: 0, knockbackVx: 0, onGround: true, isJumping: false, doubleJumpUsed: false, isDoubleJumping: false,
-                        color: COLORS[i], name: 'CPU ' + (i + 1), damage: 0, character: b.character,
+                        color: COLORS[i], name: NAMES[b.character] || ('CPU ' + (i + 1)), damage: 0, character: b.character,
                         lives: 3, eliminated: false, facingLeft: side > 0,
                         lastUpdate: Date.now(), demoBot: true
                     };
@@ -9109,6 +9478,8 @@
                 document.body.classList.add('demo-on');
                 titleEl.classList.add('demo-away');
                 overlay.classList.add('on');
+                buildMotes();
+                this.intro();
                 isRunning = true;
                 lastTime = performance.now();
                 requestAnimationFrame(gameLoop);
@@ -9123,6 +9494,14 @@
             // ======================================================================
             tick(now) {
                 if (this.ending) return;
+                // visual: "K.O.!" sempre que alguém perde uma vida (ou volta pro palco depois da eliminação final)
+                for (let i = 0; i < this.bots.length; i++) {
+                    const pl = players[this.bots[i].id];
+                    if (!pl) continue;
+                    if (this.bots[i].lastLives != null && pl.lives !== this.bots[i].lastLives && now >= (this.holdUntil || 0)) this.koFlash(i);
+                    this.bots[i].lastLives = pl.lives;
+                }
+                if (now < (this.holdUntil || 0)) return; // cartela de abertura: bots esperam
                 for (let i = 0; i < this.bots.length; i++) {
                     const b = this.bots[i];
                     const p = players[b.id], o = players[this.bots[1 - i].id];
@@ -9459,6 +9838,8 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 titleEl.classList.remove('demo-away');
                 overlay.classList.remove('on');
+                for (const id of ['demo-versus', 'demo-go', 'demo-ko', 'demo-flash']) $d(id).classList.remove('on');
+                this.holdUntil = 0;
                 document.body.classList.remove('demo-on');
                 fadeEl.classList.remove('on');
                 this.active = false; this.ending = false;
