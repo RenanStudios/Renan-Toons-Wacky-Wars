@@ -9365,6 +9365,11 @@
             trapper: { poke: 1.0, kill: 1.1, zone: 1.0, trap: 1.8, pref: 170 },
             balanced:{ poke: 1.0, kill: 1.0, zone: 1.0, trap: 1.0, pref: 140 }
         };
+        // Plano de jogo (muda a cada 5-9 s): peso extra por papel do golpe
+        const PLAN_W = {
+            rush: { poke: 1.4, kill: 1.2, zone: 0.7, trap: 0.6 }, zone: { poke: 0.8, kill: 0.9, zone: 1.7, trap: 1.1 },
+            trap: { poke: 0.8, kill: 0.9, zone: 1.0, trap: 2.2 }, bait: { poke: 1.1, kill: 1.1, zone: 1.0, trap: 1.0 }
+        };
         const MELEE_NAMES = { punch1: 1, punch2: 1, kick: 1, nail: 1, push: 1, dash: 1, ball: 1, spin: 1 };
         const COLORS = ['#e53935', '#1e88e5'];
 
@@ -9458,7 +9463,10 @@
                     nextAct: t0 + rnd(900, 1500), retreatUntil: 0, crossUntil: 0, crossDir: 1, nextJump: 0, nextDodge: 0,
                     forceRushUntil: 0, lastProgress: t0 + 1500, lastOppDmg: 0, engaged: true, engageUntil: 0, prefJ: 0,
                     seenAtkStart: 0, reacted: true, oppAtkAt: 0, lastThreat: null, dodgeNow: false,
-                    recent: [], pending: [], stats: {}, charge: null, disabled: {}, lastMoveId: null, errLogged: false
+                    recent: [], pending: [], stats: {}, charge: null, disabled: {}, lastMoveId: null, errLogged: false,
+                    // personalidade e humor (ver human())
+                    aggr: rnd(0.3, 0.9), jumpy: rnd(0.2, 1), sloppy: rnd(0.1, 0.45), tilt: 0, lastMyDmg: 0, lastOdH: 0, comboUntil: 0,
+                    lapseUntil: 0, nextLapse: t0 + rnd(5000, 9000), rangeErr: 0, rangeErrUntil: 0, pauseUntil: 0, plan: 'bait', planUntil: 0, reactJ: 1, lastHumanT: 0
                 }));
                 this.bots.forEach((b, i) => {
                     const side = i === 0 ? -1 : 1;
@@ -9519,6 +9527,34 @@
                         if (p.chargeStart) p.chargeStart = 0;
                         b.charge = null;
                     }
+                }
+            },
+
+            // Camada "humana": humor (levou golpe -> respira ou parte pra revanche), lapsos de atenção, erro de distância,
+            // plano de jogo que muda com o placar e janela de combo depois de acertar
+            human(b, p, o, now) {
+                const my = p.damage || 0, od = o.damage || 0, dt = Math.min(100, now - (b.lastHumanT || now));
+                b.lastHumanT = now;
+                if (my < b.lastMyDmg) b.lastMyDmg = my;
+                if (my > b.lastMyDmg) {
+                    b.tilt = Math.min(60, b.tilt + (my - b.lastMyDmg));
+                    if (Math.random() < 0.5 * (1.2 - b.aggr)) b.retreatUntil = now + rnd(350, 700);
+                    else if (Math.random() < b.aggr) b.forceRushUntil = now + rnd(900, 1800);
+                }
+                b.lastMyDmg = my; b.tilt = Math.max(0, b.tilt - dt * 0.004);
+                if (od < b.lastOdH) b.lastOdH = od;
+                if (od > b.lastOdH) b.comboUntil = now + 650;
+                b.lastOdH = od;
+                if (now > b.nextLapse) { b.lapseUntil = now + rnd(250, 550); b.nextLapse = now + rnd(6000, 12000); }
+                if (now > b.rangeErrUntil) { b.rangeErr = rnd(-1, 1) * b.sloppy * (1 + b.tilt / 60) * 45; b.rangeErrUntil = now + rnd(700, 2000); }
+                if (now > b.planUntil) {
+                    const kit = KITS[p.character], has = r => kit.moves.some(m => m.role === r);
+                    const W = { brawler: [3, .5, .5, 1.5], zoner: [.7, 3, 1, 1.2], trapper: [.8, 1, 3, 1.2], balanced: [1.5, 1.5, 1.5, 1.5] }[b.style];
+                    const w = { rush: W[0] * (0.6 + b.aggr) * ((has('poke') || has('kill')) ? 1 : 0), zone: W[1] * (has('zone') ? 1 : 0), trap: W[2] * (has('trap') ? 1 : 0), bait: W[3] };
+                    if (od > my + 30) w.rush *= 1.4; else if (my > od + 30) { w.zone *= 1.4; w.bait *= 1.4; }
+                    let r = Math.random() * (w.rush + w.zone + w.trap + w.bait), pick = 'bait';
+                    for (const k of ['rush', 'zone', 'trap', 'bait']) { if ((r -= w[k]) <= 0) { pick = k; break; } }
+                    b.plan = pick; b.planUntil = now + rnd(5000, 9000);
                 }
             },
 
@@ -9588,10 +9624,11 @@
                 }
 
                 this.learn(b, o, now);
+                this.human(b, p, o, now);
 
                 // ---------- 2) Leitura do oponente ----------
                 const oppAtkName = alive(now, o.attackUntil) ? o.attackName : null;
-                if (oppAtkName && b.seenAtkStart !== o.attackStart) { b.seenAtkStart = o.attackStart; b.reacted = false; b.oppAtkAt = now; }
+                if (oppAtkName && b.seenAtkStart !== o.attackStart) { b.seenAtkStart = o.attackStart; b.reacted = false; b.oppAtkAt = now; b.reactJ = rnd(0.75, 1.6); }
                 const oppMeleeAtk = !!(oppAtkName && MELEE_NAMES[oppAtkName]);
                 const oppRecover = !alive(now, o.attackUntil) && !!o.attackCooldownUntil && o.attackCooldownUntil - now > 110;
                 const oppStun = alive(now, o.hitstunUntil);
@@ -9621,7 +9658,7 @@
                 let mode = 'neutral';
                 if (oppLost) mode = 'edgeguard';
                 else if (oppShield) mode = 'wait';
-                else if (oppStun || (oppRecover && adx < 170) || now < b.forceRushUntil) mode = 'rush';
+                else if (oppStun || (oppRecover && adx < 170) || now < b.forceRushUntil || (now < b.comboUntil && adx < myReach + 60)) mode = 'rush';
                 else if (myDmg > 100 && myDmg > oDmg + 35) mode = 'safe';
                 else if (oDmg > 90) mode = 'finish';
                 // anti-empate: se ninguém causa dano há tempo, força a pressão
@@ -9639,9 +9676,10 @@
                 else if (mode === 'safe') pref = Math.max(pref, oReach + 90, 200);
                 else if (mode === 'wait') pref = 90;
                 else if (myReach) pref = b.engaged ? myReach * 0.85 : Math.max(pref, oReach + 30);
+                if (mode === 'neutral') { if (b.plan === 'rush' && myReach) pref = myReach * 0.8; else if (b.plan === 'zone' || b.plan === 'trap') pref = Math.max(pref, 230 + b.prefJ); }
 
                 // ---------- 4) Reação a golpe corpo a corpo do oponente ----------
-                if (oppMeleeAtk && !b.reacted && now - b.oppAtkAt >= b.reactMs && !stunned && !attacking) {
+                if (oppMeleeAtk && !b.reacted && now - b.oppAtkAt >= b.reactMs * (b.reactJ || 1) && now >= b.lapseUntil && !stunned && !attacking) {
                     b.reacted = true;
                     if (adx < oReach + 40 && Math.abs(dy) < 80 && Math.random() < b.skill) {
                         const sh = kit.moves.find(m => m.defense && m.ready(p, now, b));
@@ -9658,7 +9696,7 @@
                 // ---------- 5) Esquiva de projéteis / áreas de dano ----------
                 const thr = this.threat(b, p);
                 if (thr && thr.ref !== b.lastThreat) { b.lastThreat = thr.ref; b.dodgeNow = Math.random() < b.skill; }
-                if (thr && b.dodgeNow && !stunned && !attacking && p.onGround && now > b.nextDodge && thr.t < 0.38) {
+                if (thr && b.dodgeNow && !stunned && !attacking && p.onGround && now > b.nextDodge && thr.t < 0.38 && now >= b.lapseUntil) {
                     b.nextDodge = now + 650; b.dodgeNow = false;
                     const sh = kit.moves.find(m => m.defense && m.ready(p, now, b));
                     if (sh && thr.kind !== 'mic' && Math.random() < 0.4) {
@@ -9714,6 +9752,10 @@
                             if (!(toC === sgn && adx < pref + 10)) moveSign = toC;
                         }
                     }
+                    if (mode === 'neutral') { // anda "em toques": para por instantes, como quem pensa
+                        if (now >= b.pauseUntil && Math.random() < 0.01 * (1.4 - b.aggr)) b.pauseUntil = now + rnd(100, 320);
+                        if (now < b.pauseUntil) moveSign = 0;
+                    }
                     if (moveSign) {
                         if (moveSign === -sgn && !canStep(moveSign) && adx < pref + 20 && !stunned) {
                             // encurralado: se tem golpe corpo a corpo, enfrenta; senão pula por cima
@@ -9735,6 +9777,9 @@
                     b.nextJump = now + rnd(1600, 2600); jump();
                 }
 
+                // pulinhos ociosos (quanto mais "nervoso", mais pula)
+                if (mode === 'neutral' && !stunned && p.onGround && !attacking && overStage && edgeSafe(1) && edgeSafe(-1) && now > b.nextJump && Math.random() < 0.0035 * b.jumpy) { b.nextJump = now + rnd(1500, 3200); jump(); }
+
                 if (stunned) return;
 
                 // Combo do Renanzinho: encadeia soco -> soco -> chute enquanto os golpes acertam
@@ -9754,7 +9799,8 @@
                 for (const m of kit.moves) {
                     if (m.defense || b.disabled[m.id] || !m.ready(p, now, b)) continue;
                     const tol = (oppLost && !m.melee) ? m.tol * 1.7 : m.tol;
-                    if (adx < m.min || adx > m.max || Math.abs(dy) > tol) continue;
+                    const adxE = adx + b.rangeErr; // erro de calibragem de distância (humano nem sempre acerta o alcance)
+                    if (adxE < m.min || adxE > m.max || Math.abs(dy) > tol) continue;
                     if (m.run) { const nx = p.x + dir * m.run; if (nx < st.x + 15 || nx > st.x + st.width - 15) continue; }
                     if (oppLost && m.melee) continue;                    // não pula atrás de quem caiu
                     let s = sty[m.role] || 1;
@@ -9775,6 +9821,8 @@
                         if (mode === 'rush' || mode === 'finish') s *= 0.6;
                         if (oppLost) s *= 1.8;
                     }
+                    s *= (PLAN_W[b.plan] || PLAN_W.bait)[m.role] || 1;
+                    if (now < b.comboUntil && (m.role === 'poke' || m.role === 'kill')) s *= 1.7; // emenda depois de acertar
                     // repetição: não spamma o mesmo golpe
                     let rep = 0;
                     for (const r of b.recent) if (r.id === m.id && now - r.t < 3000) rep++;
@@ -9800,7 +9848,8 @@
                 b.lastMoveId = null;
                 b.recent.push({ id: best.id, t: now }); if (b.recent.length > 4) b.recent.shift();
                 b.pending.push({ id: best.id, t: now, ms: best.evalMs || 900, dmg0: oDmg });
-                b.nextAct = now + rnd(120, 380);
+                b.nextAct = now + (now < b.comboUntil ? rnd(40, 120) : rnd(120, 380));
+                if (best.role === 'trap' && Math.random() < 0.6) b.retreatUntil = now + rnd(450, 900); // arma a armadilha e se afasta
             },
 
             // Na demo ninguém é eliminado de vez: o bot volta pro palco e a luta continua até o tempo acabar
