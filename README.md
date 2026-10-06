@@ -72,6 +72,8 @@ Visual da demonstração:
 - **Ambiente**: vinheta nas bordas, linhas de varredura sutis, faixa de luz que atravessa a tela de tempos em tempos e partículas de brilho subindo.
 - Os lutadores aparecem com o nome do personagem (em vez de "CPU 1/2"). Retrato ausente some em vez de mostrar imagem quebrada.
 
+IA das CPUs (mais humana): cada lutador sorteia uma personalidade (agressividade, nervosismo, imprecisão) e um **plano de jogo** que muda a cada 5-9 s conforme o placar (pressionar, zonear, armar armadilhas ou provocar e punir). Ele também emenda golpes depois de acertar, arma uma armadilha e se afasta, anda em "toques" com pausas, dá pulinhos ociosos, erra o alcance de vez em quando, tem lapsos de atenção, reação variável e reage a levar dano (respira ou parte pra revanche).
+
 Tudo isso fica no bloco `LUTA DE DEMONSTRAÇÃO` do `index.html` (CSS do overlay + `DEMO.intro()` / `DEMO.koFlash()`), sem alterar a IA das CPUs. O HUD de dano continua visível embaixo, por isso nada novo é posicionado ali.
 
 ## Tecnologias
@@ -82,3 +84,4 @@ HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio par
 
 - **Plataformas móveis:** esmalte (frasco e respingos), copos e microfones não ficam mais estáticos no ar; respingos de esmalte e estilhaços passam a colidir com plataformas flutuantes.
 - **Demonstração:** novo visual (cartela VS, "LUTE!", "K.O.!", selo, barra de progresso, vinheta, partículas e nomes reais dos personagens), sem mudar o comportamento da luta.
+- **IA das CPUs:** comportamento mais humano (personalidade, plano de jogo, combos, armadilhas, erros e humor).
