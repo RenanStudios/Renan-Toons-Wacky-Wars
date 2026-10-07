@@ -357,6 +357,235 @@
         .mode-item.locked .mode-icon { opacity: 0.65; }
         .mode-item.locked .mode-label { color: #8a1d1d; }
 
+
+        /* ===== MENU MULTIJOGADOR: NORMAL x TORNEIO (palco 4:3 centralizado, dois painéis inclinados lado a lado) ===== */
+        #mp-overlay {
+            --u: min(calc(100vw / 960), calc(100vh / 720));
+            position: fixed; inset: 0; z-index: 100; display: none; overflow: hidden;
+            align-items: center; justify-content: center; background: #050505;
+            font-family: 'Arial Black', Arial, Helvetica, sans-serif; user-select: none;
+        }
+        #mp-stage { position: relative; flex: none; width: calc(var(--u) * 960); height: calc(var(--u) * 720); overflow: hidden;
+            background:
+                repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 calc(var(--u) * 3), transparent calc(var(--u) * 3) calc(var(--u) * 26)),
+                radial-gradient(ellipse at 50% 40%, #1b2438 0%, #0b0f18 70%); }
+        /* chave de torneio gigante e apagada no fundo */
+        #mp-bgbracket { position: absolute; left: 0; top: calc(var(--u) * 150); width: 100%; height: calc(var(--u) * 480); opacity: 0.09; pointer-events: none; }
+        #mp-bgbracket path { fill: none; stroke: #9fb8e8; stroke-width: 6; stroke-linecap: square; }
+        #mp-title { position: absolute; left: calc(var(--u) * 40); top: calc(var(--u) * 38); height: calc(var(--u) * 92); width: calc(var(--u) * 520); z-index: 1; }
+        #mp-title::before { content: ''; position: absolute; inset: 0; background: linear-gradient(#21509c, #143469); transform: skewX(-10deg); box-shadow: calc(var(--u) * 6) calc(var(--u) * 6) 0 #04102b; }
+        #mp-title span { position: absolute; left: calc(var(--u) * 40); top: calc(var(--u) * 6);
+            font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif; font-style: italic; font-weight: 800;
+            font-size: calc(var(--u) * 62); line-height: 1.25; letter-spacing: calc(var(--u) * 1); white-space: nowrap;
+            background: linear-gradient(#a6ceff 0%, #4e8fea 45%, #2a62c4 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(calc(var(--u) * 3) calc(var(--u) * 3) 0 #07163a); }
+        #mp-sub { position: absolute; left: calc(var(--u) * 52); top: calc(var(--u) * 142); color: #8d98ad; font-size: calc(var(--u) * 17); letter-spacing: calc(var(--u) * 3); text-transform: uppercase; z-index: 1; }
+        #mp-cards { position: absolute; left: 0; right: 0; top: calc(var(--u) * 190); height: calc(var(--u) * 420); z-index: 1; }
+        .mp-card {
+            position: absolute; top: 0; width: calc(var(--u) * 410); height: calc(var(--u) * 420); cursor: pointer;
+            transition: transform 140ms ease, filter 140ms ease; filter: brightness(0.62) saturate(0.7);
+            animation: mp-in 420ms cubic-bezier(.2,.9,.3,1) backwards;
+        }
+        .mp-card[data-mode="normal"] { left: calc(var(--u) * 50); --c1: #ff3b30; --c2: #8c0f0f; --glow: rgba(255,60,50,0.55); animation-delay: 40ms; }
+        .mp-card[data-mode="tournament"] { left: calc(var(--u) * 500); --c1: #ffc21a; --c2: #8a5a00; --glow: rgba(255,194,26,0.55); animation-delay: 140ms; }
+        @keyframes mp-in { from { opacity: 0; transform: translateY(calc(var(--u) * 60)) skewX(-8deg); } }
+        .mp-card .mp-shape { position: absolute; inset: 0; transform: skewX(-8deg); background: linear-gradient(160deg, var(--c1) 0%, var(--c2) 100%);
+            border: calc(var(--u) * 6) solid #0a0a0a; box-shadow: calc(var(--u) * 8) calc(var(--u) * 8) 0 #000; overflow: hidden; }
+        .mp-card .mp-shape::after { content: ''; position: absolute; left: -20%; right: -20%; top: 56%; bottom: -10%; background: rgba(0,0,0,0.38); transform: skewY(-6deg); }
+        .mp-card .mp-icon { position: absolute; left: 0; right: 0; top: calc(var(--u) * 26); height: calc(var(--u) * 190); display: flex; align-items: center; justify-content: center; z-index: 1; }
+        .mp-card .mp-icon svg { height: 100%; width: auto; overflow: visible; fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;
+            filter: drop-shadow(calc(var(--u) * 4) calc(var(--u) * 4) 0 rgba(0,0,0,0.55)); }
+        .mp-card .mp-name { position: absolute; left: 0; right: 0; top: calc(var(--u) * 226); text-align: center; z-index: 1; text-transform: uppercase;
+            font-size: calc(var(--u) * 58); font-style: italic; font-weight: 900; color: #fff; -webkit-text-stroke: calc(var(--u) * 9) #120000; paint-order: stroke fill;
+            text-shadow: calc(var(--u) * 3) calc(var(--u) * 4) 0 #000; letter-spacing: calc(var(--u) * 1); }
+        .mp-card .mp-desc { position: absolute; left: calc(var(--u) * 34); right: calc(var(--u) * 34); top: calc(var(--u) * 308); text-align: center; z-index: 1;
+            font-family: Verdana, 'Segoe UI', sans-serif; font-weight: 700; font-size: calc(var(--u) * 19); line-height: 1.3; color: #f1f1f1; text-shadow: 0 calc(var(--u) * 2) 0 rgba(0,0,0,0.8); }
+        .mp-card .mp-tag { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 24); text-align: center; z-index: 1; font-size: calc(var(--u) * 17); letter-spacing: calc(var(--u) * 3); color: #ffe9b0; text-transform: uppercase; }
+        .mp-card.selected { transform: translateY(calc(var(--u) * -12)) scale(1.04); filter: none; z-index: 2; }
+        .mp-card.selected .mp-shape { border-color: #fff; box-shadow: calc(var(--u) * 8) calc(var(--u) * 8) 0 #000, 0 0 calc(var(--u) * 46) var(--glow); }
+        #mp-hint { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 40); text-align: center; color: #8d98ad; font-size: calc(var(--u) * 16); letter-spacing: calc(var(--u) * 2); z-index: 1; }
+        #mp-back { position: absolute; left: calc(var(--u) * 40); bottom: calc(var(--u) * 28); z-index: 2; cursor: pointer; padding: calc(var(--u) * 8) calc(var(--u) * 18);
+            font-size: calc(var(--u) * 20); color: #fff; background: #1a1a1a; border: calc(var(--u) * 3) solid #555; transform: skewX(-8deg); }
+        #mp-back:hover { background: #2b2b2b; border-color: #fff; }
+        #mp-hint { left: calc(var(--u) * 240); }
+
+
+        /* ===== MODO TORNEIO: tela da chave, apresentação VS, botão de espectador e aviso de host ===== */
+        #t-bracket { position: fixed; inset: 0; z-index: 150; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 14px; box-sizing: border-box; font-family: 'Arial Black', Arial, Helvetica, sans-serif; color: #fff; user-select: none;
+            background: radial-gradient(ellipse at 50% 100%, rgba(255,160,70,0.35), transparent 60%), linear-gradient(180deg, #0a0830 0%, #1a2462 45%, #4d518e 100%); }
+        #t-bracket.show { display: flex; }
+        #t-bracket.peek { background: rgba(8,6,30,0.82); }
+        #t-bracket .tb-title { font-size: min(34px, 5.5vh); letter-spacing: 3px; color: #ffc21a; text-shadow: 0 3px 0 #5a3a00, 0 0 18px rgba(255,194,26,0.5); margin-bottom: 4px; }
+        #tb-banner { min-height: min(28px, 4.5vh); font-size: min(20px, 3.4vh); color: #fff; text-shadow: 0 2px 0 #000; margin-bottom: min(14px, 2vh); text-align: center; }
+        #tb-tree { display: flex; gap: min(34px, 4vw); align-items: stretch; justify-content: center; max-width: 100%; }
+        .tb-col { display: flex; flex-direction: column; justify-content: space-around; gap: min(14px, 2vh); }
+        .tb-rname { text-align: center; font-size: min(14px, 2.4vh); color: #ffd98a; letter-spacing: 1px; margin-bottom: 2px; }
+        .tb-match { width: min(210px, 27vw); background: rgba(10,8,40,0.78); border: 2px solid #8fa2ff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.45); }
+        .tb-match.next { border-color: #ffc21a; box-shadow: 0 0 16px rgba(255,194,26,0.8); animation: tb-pulse 0.9s ease-in-out infinite alternate; }
+        .tb-match.live { border-color: #ff5a4a; box-shadow: 0 0 16px rgba(255,90,74,0.85); }
+        @keyframes tb-pulse { from { transform: scale(1); } to { transform: scale(1.04); } }
+        .tb-row { display: flex; align-items: center; gap: 8px; height: min(38px, 5.2vh); padding: 0 8px; font-size: min(14px, 2.3vh); border-top: 1px solid rgba(143,162,255,0.25); white-space: nowrap; overflow: hidden; }
+        .tb-row:first-child { border-top: 0; }
+        .tb-row img { height: 80%; width: auto; max-width: 34px; object-fit: contain; flex: none; }
+        .tb-row span { overflow: hidden; text-overflow: ellipsis; }
+        .tb-row.tbd { color: rgba(255,255,255,0.4); }
+        .tb-row.bye { color: rgba(255,255,255,0.45); font-style: italic; }
+        .tb-row.shuf { color: #ffe9b8; background: rgba(255,194,26,0.12); }
+        .tb-row.win { background: linear-gradient(90deg, rgba(60,200,90,0.45), transparent); color: #fff; }
+        .tb-row.lose, .tb-row.out { opacity: 0.45; }
+        .tb-row.out span { text-decoration: line-through; }
+        #tb-foot { margin-top: min(16px, 2.4vh); font-size: min(17px, 2.9vh); color: #ffe9b8; text-shadow: 0 2px 0 #000; text-align: center; min-height: 1.3em; }
+        #t-bracket .main-btn { margin-top: 10px; }
+        #t-vs { position: fixed; inset: 0; z-index: 160; display: none; overflow: hidden; background: #05060f; font-family: 'Arial Black', Arial, Helvetica, sans-serif; user-select: none; }
+        #t-vs.show { display: block; }
+        .tv-side { position: absolute; top: 0; bottom: 0; width: 58%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .tv-left { left: 0; background: linear-gradient(120deg, #e24a4a, #5a0f18); clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%); animation: tv-in-l 0.5s cubic-bezier(.2,.9,.3,1) both; }
+        .tv-right { right: 0; background: linear-gradient(240deg, #4a66ff, #101a6a); clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%); animation: tv-in-r 0.5s cubic-bezier(.2,.9,.3,1) both; }
+        .tv-side img { height: 52vh; max-width: 38vw; object-fit: contain; filter: drop-shadow(0 8px 0 rgba(0,0,0,0.45)); animation: tv-pop 0.6s 0.35s both; }
+        .tv-left img { margin-right: 16%; } .tv-right img { margin-left: 16%; }
+        .tv-name { margin-top: 2vh; font-size: min(5vw, 7vh); color: #fff; background: rgba(0,0,0,0.55); padding: 0.15em 0.8em; transform: skewX(-8deg); text-shadow: 0 3px 0 #000; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: tv-pop 0.5s 0.5s both; }
+        .tv-left .tv-name { margin-right: 16%; } .tv-right .tv-name { margin-left: 16%; }
+        .tv-vs { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; font-size: min(18vw, 26vh); color: #ffd400; -webkit-text-stroke: 0.035em #000; text-shadow: 0 0.06em 0 #b84400, 0 0 0.4em rgba(255,200,0,0.6); animation: tv-vs 0.55s 0.7s cubic-bezier(.2,1.6,.4,1) both; }
+        #tv-info { position: absolute; left: 0; right: 0; bottom: 4vh; z-index: 3; text-align: center; font-size: min(3vw, 4.2vh); color: #fff; text-shadow: 0 3px 0 #000; letter-spacing: 2px; }
+        @keyframes tv-in-l { from { transform: translateX(-100%); } to { transform: none; } }
+        @keyframes tv-in-r { from { transform: translateX(100%); } to { transform: none; } }
+        @keyframes tv-pop { from { transform: scale(0.5); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes tv-vs { from { transform: translate(-50%, -50%) scale(0) rotate(-25deg); } to { transform: translate(-50%, -50%) scale(1) rotate(0); } }
+        .tv-name { animation-name: tv-pop; }
+        #t-peek-btn { position: fixed; top: 10px; right: 10px; z-index: 140; display: none; padding: 8px 14px; border-radius: 10px; border: 2px solid #ffc21a; background: rgba(20,10,50,0.85); color: #ffe9b8; font: bold 13px Arial, sans-serif; cursor: pointer; box-shadow: 0 0 12px rgba(255,194,26,0.4); }
+        #t-hostlost { position: fixed; inset: 0; z-index: 400; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); font-family: 'Arial Black', Arial, sans-serif; }
+        #t-hostlost.show { display: flex; }
+        #t-hostlost .tl-box { background: linear-gradient(160deg, rgba(48,24,66,0.96), rgba(22,10,40,0.98)); border: 4px solid #ffc21a; border-radius: 18px; padding: 26px 34px; text-align: center; color: #fff; max-width: 86vw; }
+        #t-hostlost .tl-title { font-size: 26px; color: #ffc21a; margin-bottom: 8px; }
+        /* ===== LOBBY DO TORNEIO: entardecer com estrelas e cilindros amarelos ao fundo ===== */
+        #lobby-cylinders { display: none; position: fixed; inset: 0; pointer-events: none; }
+        #lobby-cylinders svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+        /* troféu 3D girando no topo do cilindro grande (mesmo enquadramento 'slice' do SVG: 1600x900, centro/embaixo) */
+        #lobby-trophy { position: absolute; left: 50%; bottom: 0; width: max(100vw, calc(100vh * 16 / 9)); aspect-ratio: 16 / 9; transform: translateX(-50%); pointer-events: none;
+            --tu: calc(max(100vw, 100vh * 16 / 9) / 1600 * 1.3); --gold-hue: 45; --gold-sat: 100%; --gold-lig: 50%; --dark-hue: 0; --dark-sat: 0%; --dark-lig: 15%; --grid-glow: rgba(255, 215, 0, 0.4); }
+        #lobby-trophy .tr-pos { position: absolute; left: 72.5%; top: 45.2%; }
+        #lobby-trophy .tr-persp { perspective: calc(1200 * var(--tu)); }
+        #lobby-trophy .tr-rig { position: relative; transform-style: preserve-3d; transform: rotateX(-15deg); }
+        #lobby-trophy .tr-spin { position: relative; transform-style: preserve-3d; animation: tr-spin 8s infinite linear; }
+        @keyframes tr-spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        #lobby-trophy .tr-prism { position: absolute; transform-style: preserve-3d; transform: translate3d(calc(var(--tx, 0) * var(--tu)), calc(var(--ty, 0) * var(--tu)), calc(var(--tz, 0) * var(--tu))) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotateZ(var(--rz, 0deg)); }
+        #lobby-trophy .tr-face { position: absolute; width: calc(var(--w) * var(--tu)); height: calc(var(--h) * var(--tu)); left: calc(var(--w) * var(--tu) * -0.5); top: calc(var(--h) * var(--tu) * -0.5);
+            background: hsl(var(--hue), var(--sat), calc(var(--lig) + var(--l-mod, 0%))); border: 1px solid var(--b-color, var(--grid-glow)); box-sizing: border-box; backface-visibility: visible; }
+        #lobby-trophy .tr-face:nth-child(1) { transform: rotateY(0deg) translateZ(calc(var(--w) * 0.866 * var(--tu))); --l-mod: 15%; }
+        #lobby-trophy .tr-face:nth-child(2) { transform: rotateY(60deg) translateZ(calc(var(--w) * 0.866 * var(--tu))); --l-mod: 5%; }
+        #lobby-trophy .tr-face:nth-child(3) { transform: rotateY(120deg) translateZ(calc(var(--w) * 0.866 * var(--tu))); --l-mod: -10%; }
+        #lobby-trophy .tr-face:nth-child(4) { transform: rotateY(180deg) translateZ(calc(var(--w) * 0.866 * var(--tu))); --l-mod: -25%; }
+        #lobby-trophy .tr-face:nth-child(5) { transform: rotateY(240deg) translateZ(calc(var(--w) * 0.866 * var(--tu))); --l-mod: -15%; }
+        #lobby-trophy .tr-face:nth-child(6) { transform: rotateY(300deg) translateZ(calc(var(--w) * 0.866 * var(--tu))); --l-mod: 5%; }
+        #lobby-trophy .tr-face.top, #lobby-trophy .tr-face.bottom { width: calc(var(--w) * 2 * var(--tu)); height: calc(var(--w) * 1.732 * var(--tu)); left: calc(var(--w) * -1 * var(--tu)); top: calc(var(--w) * -0.866 * var(--tu)); clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); border: none; }
+        #lobby-trophy .tr-face.top { transform: rotateX(90deg) translateZ(calc(var(--h) * 0.5 * var(--tu))); --l-mod: 20%; }
+        #lobby-trophy .tr-face.bottom { transform: rotateX(-90deg) translateZ(calc(var(--h) * 0.5 * var(--tu))); --l-mod: -30%; }
+        #lobby-overlay.tournament {
+            background: linear-gradient(180deg, #0a0830 0%, #0f0d3c 7%, #131a4f 14%, #1a2462 21%, #202e75 28%, #243988 35%, #29469c 42%,
+                #4d518e 49%, #755b7e 56%, #956475 63%, #ae6d69 70%, #c47262 77%, #d1775c 84%, #d78f5f 91%, #ddb368 100%);
+        }
+        #lobby-overlay.tournament #lobby-cylinders { display: block; }
+        #lobby-overlay.tournament::before { /* estrelas no lugar da grade azul */
+            inset: 0; transform: none; animation: lobby-twinkle 4.5s ease-in-out infinite alternate;
+            -webkit-mask: linear-gradient(#000 0%, #000 55%, transparent 100%); mask: linear-gradient(#000 0%, #000 55%, transparent 100%);
+            background:
+                radial-gradient(2.2px 2.2px at 32.7% 7.2%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.2px 1.2px at 8.1% 18.9%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1px 1px at 90.2% 9.5%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.8px 1.8px at 42.0% 10.5%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 6.8% 19.6%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1px 1px at 57.6% 15.4%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.5px 1.5px at 55.6% 6.5%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.8px 1.8px at 54.0% 19.7%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 11.1% 19.7%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.8px 1.8px at 10.5% 22.4%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.8px 1.8px at 61.7% 18.0%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.5px 1.5px at 77.2% 17.2%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(2.2px 2.2px at 30.4% 23.5%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.5px 1.5px at 9.0% 12.5%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1px 1px at 72.5% 12.1%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.2px 1.2px at 51.2% 7.7%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(2.2px 2.2px at 92.5% 16.1%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.2px 1.2px at 75.9% 19.8%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.8px 1.8px at 69.1% 20.2%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.2px 1.2px at 7.7% 4.9%, rgba(255,255,255,1), transparent),
+                radial-gradient(2.2px 2.2px at 69.3% 3.8%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.5px 1.5px at 64.4% 25.3%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.2px 1.2px at 71.2% 24.5%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.8px 1.8px at 93.2% 14.2%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.2px 1.2px at 49.4% 9.7%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.5px 1.5px at 73.4% 15.4%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.2px 1.2px at 17.3% 15.5%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.2px 1.2px at 81.3% 24.3%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.5px 1.5px at 97.7% 21.9%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 15.8% 8.1%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 2.2% 24.0%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.8px 1.8px at 28.6% 7.0%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1px 1px at 60.8% 13.0%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(2.2px 2.2px at 45.8% 24.4%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.5px 1.5px at 40.0% 15.3%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 7.1% 3.9%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 16.9% 13.7%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1px 1px at 1.0% 7.2%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1px 1px at 61.1% 4.0%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.2px 1.2px at 15.6% 10.9%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.5px 1.5px at 47.5% 5.8%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 48.1% 12.8%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.5px 1.5px at 74.5% 22.8%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.8px 1.8px at 51.6% 9.2%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1px 1px at 15.4% 19.1%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(2.2px 2.2px at 96.9% 24.3%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.2px 1.2px at 51.8% 24.7%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.2px 1.2px at 53.2% 23.3%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 61.1% 23.5%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 81.2% 22.8%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 51.7% 14.2%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1px 1px at 78.4% 17.4%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.2px 1.2px at 44.8% 24.9%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1.5px 1.5px at 8.9% 5.3%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.8px 1.8px at 34.1% 17.7%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(2.2px 2.2px at 48.0% 21.4%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.5px 1.5px at 82.8% 6.0%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(2.2px 2.2px at 47.8% 8.2%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(2.2px 2.2px at 9.5% 25.0%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 46.4% 22.8%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 17.7% 6.3%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.8px 1.8px at 80.0% 7.0%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.8px 1.8px at 65.4% 14.0%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(2.2px 2.2px at 3.1% 23.6%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.5px 1.5px at 52.6% 24.9%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.2px 1.2px at 82.0% 9.4%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.8px 1.8px at 29.7% 10.5%, rgba(255,255,255,0.85), transparent),
+                radial-gradient(1px 1px at 26.4% 16.0%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.5px 1.5px at 90.2% 14.1%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 82.1% 24.5%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.5px 1.5px at 52.3% 1.8%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 60.6% 23.3%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 14.9% 20.7%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1.8px 1.8px at 32.9% 18.5%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.8px 1.8px at 77.9% 5.4%, rgba(255,255,255,0.55), transparent),
+                radial-gradient(1px 1px at 25.4% 11.7%, rgba(255,255,255,1), transparent),
+                radial-gradient(1px 1px at 56.0% 23.1%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.8px 1.8px at 32.9% 25.2%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1.8px 1.8px at 68.9% 16.9%, rgba(255,255,255,1), transparent),
+                radial-gradient(1.8px 1.8px at 50.8% 10.7%, rgba(255,255,255,0.85), transparent);
+        }
+        @keyframes lobby-twinkle { from { opacity: 0.65; } to { opacity: 1; } }
+        #lobby-overlay.tournament::after { /* brilho do sol no horizonte + vinheta leve */
+            background:
+                radial-gradient(ellipse 75% 26% at 50% 88%, rgba(255,205,120,0.5), transparent 72%),
+                radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(12,6,34,0.5) 100%);
+        }
+        #lobby-overlay.tournament #lobby-card {
+            background: linear-gradient(160deg, rgba(48,24,66,0.84), rgba(22,10,40,0.92));
+            border-color: #ffc21a;
+            top: -9vh;
+            left: -8vw;
+            box-shadow: 0 0 0 2px rgba(30,12,40,0.9), 0 0 34px rgba(255,170,60,0.5), inset 0 0 40px rgba(255,150,70,0.18);
+        }
+        #lobby-overlay.tournament .lobby-head { background: linear-gradient(#ffffff, #ffe9b8); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 2px #1a0830) drop-shadow(0 0 3px #1a0830) drop-shadow(0 3px 2px rgba(26,8,48,0.9)); } /* legível sobre os cilindros amarelos */
+        #lobby-overlay.tournament .lobby-head::after { background: repeating-linear-gradient(-60deg, #ffb347 0 6px, transparent 6px 11px); }
+
         /* ===== GALERIA DE PERSONAGENS — estilo da galeria de troféus do Smash ===== */
         #gal-overlay { --u: min(calc(100vw / 960), calc(100vh / 720)); position: fixed; inset: 0; z-index: 101; display: none; overflow: hidden;
             align-items: center; justify-content: center; font-family: Verdana, 'Segoe UI', sans-serif;
@@ -2006,7 +2235,7 @@
                 // Menu de modo de jogo: só o multijogador funciona por enquanto (Um Jogador e Descrição de Personagens são só visual)
                 document.getElementById('mode-multi').addEventListener('click', () => {
                     modeOverlay.style.display = 'none';
-                    lobbyOverlay.style.display = 'flex';
+                    document.getElementById('mp-overlay').style.display = 'flex'; // escolhe Normal ou Torneio antes do lobby
                 });
                 // Item sob o mouse (ou tocado) fica selecionado, maior e claro; o bloqueado não seleciona
                 const modeItems = modeOverlay.querySelectorAll('.mode-item');
@@ -2157,6 +2386,38 @@
         </div>
     </div>
 
+    <div id="mp-overlay">
+        <div id="mp-stage">
+            <svg id="mp-bgbracket" viewBox="0 0 960 480" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M40 40H180V100H40 M40 140H180V200H40 M40 280H180V340H40 M40 380H180V440H40 M180 70H300V170H180 M180 310H300V410H180 M300 120H420V360H300 M420 240H560 M960 40H820V100H960 M960 140H820V200H960 M960 280H820V340H960 M960 380H820V440H960 M820 70H700V170H820 M820 310H700V410H820 M700 120H580V360H700 M580 240H400"/>
+            </svg>
+            <div id="mp-title"><span>Multijogador</span></div>
+            <div id="mp-sub">Escolha o tipo de partida</div>
+            <div id="mp-cards">
+                <div class="mp-card selected" data-mode="normal">
+                    <div class="mp-shape"></div>
+                    <div class="mp-icon">
+                        <svg viewBox="0 0 130 100"><circle cx="28" cy="32" r="14"/><path d="M6 88Q6 56 28 56Q50 56 50 88Z"/><circle cx="102" cy="32" r="14"/><path d="M80 88Q80 56 102 56Q124 56 124 88Z"/><path d="M70 14L58 50H70L62 86L84 42H72L80 14Z"/></svg>
+                    </div>
+                    <div class="mp-name">Normal</div>
+                    <div class="mp-desc">Todos contra todos na mesma arena. Quem sobrar de pé vence.</div>
+                    <div class="mp-tag">Modo clássico</div>
+                </div>
+                <div class="mp-card" data-mode="tournament">
+                    <div class="mp-shape"></div>
+                    <div class="mp-icon">
+                        <svg viewBox="0 0 140 100"><path d="M8 12h26v18H8 M8 40h26v18H8 M8 68h26v18H8 M34 21h12V49H34 M34 77h12V49 M46 35h20 M66 35V63 M66 49h14"/><path d="M96 28h30v10c0 14-8 24-15 24s-15-10-15-24z"/><path d="M96 32H86c0 10 4 16 12 18 M126 32h10c0 10-4 16-12 18"/><path d="M111 62v14M100 82h22"/></svg>
+                    </div>
+                    <div class="mp-name">Torneio</div>
+                    <div class="mp-desc">Eliminatórias de 2 contra 2 até a final. Quem cai continua assistindo.</div>
+                    <div class="mp-tag">3 a 8 jogadores</div>
+                </div>
+            </div>
+            <div id="mp-hint">◀ ▶ escolher &nbsp;·&nbsp; Enter confirmar &nbsp;·&nbsp; Esc voltar</div>
+            <div id="mp-back">◀ Voltar</div>
+        </div>
+    </div>
+
     <div id="gal-overlay">
         <div id="gal-stage">
             <div id="gal-band"></div><div id="gal-tab"></div>
@@ -2230,15 +2491,150 @@
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         const back = document.getElementById('lobby-back'), lobby = document.getElementById('lobby-overlay');
-        function goBack() { lobby.style.display = 'none'; document.getElementById('mode-overlay').style.display = 'flex'; }
+        function goBack() { lobby.style.display = 'none'; document.getElementById('mp-overlay').style.display = 'flex'; } // volta ao menu Normal/Torneio
         back.addEventListener('click', goBack);
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && lobby.style.display === 'flex' && !(e.target && e.target.tagName === 'INPUT')) goBack();
+            if (e.key === 'Escape' && lobby.style.display === 'flex' && !(e.target && e.target.tagName === 'INPUT')) { e.stopImmediatePropagation(); goBack(); } // stop: o menu Normal/Torneio também escuta Esc e voltaria um passo a mais
+        });
+    });
+    </script>
+
+    <script>
+    // Menu Multijogador: escolhe entre partida Normal e Torneio, depois abre o lobby.
+    // window.mpMode guarda a escolha ('normal' | 'tournament') para o resto do jogo usar.
+    document.addEventListener('DOMContentLoaded', function () {
+        const ov = document.getElementById('mp-overlay');
+        const cards = Array.from(ov.querySelectorAll('.mp-card'));
+        const lobby = document.getElementById('lobby-overlay');
+        const lobbyHead = lobby.querySelector('.lobby-head');
+        window.mpMode = 'normal';
+        let sel = 0;
+        function select(i) {
+            sel = (i + cards.length) % cards.length;
+            cards.forEach((c, k) => c.classList.toggle('selected', k === sel));
+        }
+        function choose(i) {
+            select(i);
+            window.mpMode = cards[sel].dataset.mode;
+            if (lobbyHead) lobbyHead.textContent = window.mpMode === 'tournament' ? 'Multijogador · Torneio' : 'Multijogador';
+            lobby.classList.toggle('tournament', window.mpMode === 'tournament'); // tema de entardecer com cilindros
+            ov.style.display = 'none';
+            lobby.style.display = 'flex';
+        }
+        function back() { ov.style.display = 'none'; document.getElementById('mode-overlay').style.display = 'flex'; }
+        cards.forEach((c, i) => {
+            c.addEventListener('mouseenter', () => select(i));
+            c.addEventListener('click', () => choose(i));
+        });
+        document.getElementById('mp-back').addEventListener('click', back);
+        document.addEventListener('keydown', e => {
+            if (ov.style.display !== 'flex') return;
+            if (e.key === 'ArrowLeft') { e.preventDefault(); select(sel - 1); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); select(sel + 1); }
+            else if (e.key === 'Enter') { e.preventDefault(); choose(sel); }
+            else if (e.key === 'Escape') { e.preventDefault(); back(); }
         });
     });
     </script>
 
     <div id="lobby-overlay" style="display: none;">
+        <div id="lobby-cylinders" aria-hidden="true">
+            <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+                <defs>
+                    <linearGradient id="lp-body" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#a86a00"/><stop offset=".22" stop-color="#ffc21a"/><stop offset=".42" stop-color="#ffe680"/><stop offset=".7" stop-color="#ffc21a"/><stop offset="1" stop-color="#8f5600"/></linearGradient>
+                    <radialGradient id="lp-cap" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#fff6c2"/><stop offset="1" stop-color="#ffd23a"/></radialGradient>
+                    <linearGradient id="lp-fade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#241230" stop-opacity="0"/><stop offset="1" stop-color="#241230" stop-opacity=".55"/></linearGradient>
+                </defs>
+                <rect x="90" y="700" width="120" height="260" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="150" cy="700" rx="60" ry="24" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="150" cy="702" rx="47" ry="17" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><rect x="250" y="770" width="100" height="190" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="300" cy="770" rx="50" ry="20" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="300" cy="772" rx="39" ry="14" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><rect x="375" y="735" width="130" height="225" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="440" cy="735" rx="65" ry="26" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="440" cy="737" rx="51" ry="18" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><rect x="1125" y="745" width="110" height="215" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1180" cy="745" rx="55" ry="22" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1180" cy="747" rx="43" ry="15" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><rect x="1265" y="690" width="140" height="270" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1335" cy="690" rx="70" ry="28" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1335" cy="692" rx="55" ry="20" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><rect x="1435" y="775" width="100" height="185" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1485" cy="775" rx="50" ry="20" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1485" cy="777" rx="39" ry="14" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/><rect x="1015" y="615" width="290" height="345" fill="url(#lp-body)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1160" cy="615" rx="145" ry="58" fill="url(#lp-cap)" stroke="#7a4a00" stroke-width="4"/><ellipse cx="1160" cy="617" rx="113" ry="41" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/>
+                <rect x="0" y="780" width="1600" height="120" fill="url(#lp-fade)"/>
+            </svg>
+            <div id="lobby-trophy"><div class="tr-pos"><div class="tr-outline"><div class="tr-persp"><div class="tr-rig"><div class="tr-spin">
+<!-- BASE 1 (Fundo) - Escuro -->
+                <div class="tr-prism" style="--w: 80; --h: 20; --ty: 150; --hue: var(--dark-hue); --sat: var(--dark-sat); --lig: var(--dark-lig); --b-color: rgba(255,255,255,0.1);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- BASE 2 (Topo) - Escuro -->
+                <div class="tr-prism" style="--w: 70; --h: 15; --ty: 132.5; --hue: var(--dark-hue); --sat: var(--dark-sat); --lig: var(--dark-lig); --b-color: rgba(255,255,255,0.1);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- HASTE (Stem) - Ouro -->
+                <div class="tr-prism" style="--w: 20; --h: 70; --ty: 90; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- ANEL DA HASTE - Ouro -->
+                <div class="tr-prism" style="--w: 30; --h: 10; --ty: 50; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: calc(var(--gold-lig) + 10%);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- COPO: Base -->
+                <div class="tr-prism" style="--w: 45; --h: 30; --ty: 30; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- COPO: Meio -->
+                <div class="tr-prism" style="--w: 70; --h: 50; --ty: -10; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- COPO: Borda Superior (Sem a tampa 'top' para ser oco) -->
+                <div class="tr-prism" style="--w: 80; --h: 20; --ty: -45; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div>
+                    <div class="tr-face bottom"></div>
+                    <!-- Nota: Sem div class="tr-face top" aqui! -->
+                </div>
+
+                <!-- Fundo Escuro do Interior do Copo -->
+                <div class="tr-prism" style="--w: 75; --h: 0; --ty: -45; --hue: 40; --sat: 100%; --lig: 25%; --b-color: transparent;">
+                    <div class="tr-face top"></div>
+                </div>
+
+                <!-- ==== ALÇA DIREITA ==== -->
+                <!-- Braço Superior Direito -->
+                <div class="tr-prism" style="--w: 12; --h: 30; --tx: 85; --ty: -45; --rz: 90deg; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+                <!-- Braço Vertical Direito -->
+                <div class="tr-prism" style="--w: 12; --h: 60; --tx: 100; --ty: -15; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+                <!-- Braço Inferior Direito -->
+                <div class="tr-prism" style="--w: 12; --h: 60; --tx: 70; --ty: 15; --rz: 90deg; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                <!-- ==== ALÇA ESQUERDA ==== -->
+                <!-- Braço Superior Esquerdo -->
+                <div class="tr-prism" style="--w: 12; --h: 30; --tx: -85; --ty: -45; --rz: -90deg; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+                <!-- Braço Vertical Esquerdo -->
+                <div class="tr-prism" style="--w: 12; --h: 60; --tx: -100; --ty: -15; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+                <!-- Braço Inferior Esquerdo -->
+                <div class="tr-prism" style="--w: 12; --h: 60; --tx: -70; --ty: 15; --rz: -90deg; --hue: var(--gold-hue); --sat: var(--gold-sat); --lig: var(--gold-lig);">
+                    <div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face"></div><div class="tr-face top"></div><div class="tr-face bottom"></div>
+                </div>
+
+                
+            </div></div></div></div></div></div>
+        </div>
         <div id="lobby-back">◀ Voltar</div>
         <div id="lobby-card">
             <div class="lobby-head">Multijogador</div>
@@ -2336,6 +2732,22 @@
     <canvas id="gameCanvas"></canvas>
 
     <!-- ===== TELA DE VITÓRIA 2.5D (estilo Smash Bros) ===== -->
+    <div id="t-bracket">
+        <div class="tb-title">🏆 CHAVE DO TORNEIO</div>
+        <div id="tb-banner"></div>
+        <div id="tb-tree"></div>
+        <div id="tb-foot"></div>
+        <button class="main-btn" id="tb-skip" style="display:none;">Iniciar luta agora</button>
+        <button class="main-btn" id="tb-close" style="display:none;">Fechar chave</button>
+    </div>
+    <div id="t-vs">
+        <div class="tv-side tv-left"><img id="tv-img-a" alt=""><div class="tv-name" id="tv-name-a"></div></div>
+        <div class="tv-side tv-right"><img id="tv-img-b" alt=""><div class="tv-name" id="tv-name-b"></div></div>
+        <div class="tv-vs">VS</div>
+        <div id="tv-info"></div>
+    </div>
+    <button id="t-peek-btn" type="button">👀 Assistindo · 🏆 Chave (B)</button>
+    <div id="t-hostlost"><div class="tl-box"><div class="tl-title">O host saiu</div><div style="font-size:15px; margin-bottom:14px;">O torneio foi encerrado.</div><button class="main-btn" id="tl-btn">Voltar ao início</button></div></div>
     <div id="victory-overlay" style="display:none;">
         <div id="victory-rays"></div>
         <div id="victory-scene">
@@ -2580,12 +2992,15 @@
                     djump: loadSprite('FooshLooket Sprites/f_ball.png'), // pulo duplo: vira a bolinha (mesmo sprite da bola)
                     bucket: null,
                     ball: loadSprite('FooshLooket Sprites/f_ball.png'),
-                    throw: loadSprite('FooshLooket Sprites/f_throw.png')
+                    throw: loadSprite('FooshLooket Sprites/f_throw.png'),
+                    shoot: loadSprite('FooshLooket Sprites/f_throw.png') // cuspe reto (Z): mesmo sprite de cuspir
                 },
                 attacks: {
                     // X: vira bola e quica para a frente (dano vem da colisão circular da bola, ver updateAttack)
                     ball: { duration: 1300, activeStart: 0, activeEnd: 1300, damage: 7, baseKnockback: 200, growth: 1.0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 1500 },
-                    // Z: cospe água que cai e forma uma poça no chão (sem hitbox de melee)
+                    // Z: cuspe reto, rápido como uma bala (não trava o personagem: usa cooldown próprio, ver spitStraight)
+                    spitStraight: { duration: 200, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 },
+                    // ↓ + Z: cospe água que cai e forma uma poça no chão (sem hitbox de melee)
                     throwWater: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 }
                 }
             },
@@ -2627,6 +3042,13 @@
         const WATER_COOLDOWN = 3000;      // ms até poder cuspir água de novo (só o Z; não trava o X)
         const WATER_TRIP_DAMAGE = 5;      // dano ao pisar na poça
         const WATER_TRIP_KNOCKBACK = 300; // knockback ao tropeçar (joga ~95 px pra fora da poça)
+        const SPIT_SPEED = 760;        // px/s do cuspe reto do FooshLooket (Z)
+        const SPIT_LIFETIME = 950;     // ms até o cuspe reto sumir
+        const SPIT_DAMAGE = 3;
+        const SPIT_KNOCKBACK = 60;
+        const SPIT_COOLDOWN = 320;     // ms entre cuspes retos
+        const SPIT_HIT_RADIUS = 26;    // meia-largura da hitbox (igual à bala normal do Renan Antigo)
+        const DJUMP_SPIN_TURNS_PER_SEC = 3; // voltas por segundo do sprite no pulo duplo do FooshLooket
         const WATER_TUMBLE_MS = 650;      // duração da cambalhota
         const DAN_SPIN_RADIUS = 85; // alcance (raio) do giro do pincel do Dan, a partir do centro do corpo
         const DAN_SPIN_MOVE = 0.35; // fração da velocidade normal com que o Dan pode andar durante o giro
@@ -2766,6 +3188,7 @@
         // --- Copo do Doper (Z): arremessado, quica no chão até parar; depois de parado, se um oponente encostar, estilhaça ---
         let thrownCups = []; // { id, ownerId, x, y, vx, vy, rot, vr, onGround, armed, spawnTime, acc }
         let cupShards = [];  // estilhaços de vidro criados no código (só visual)
+        let spitShots = [];    // { id, x, y, dir, ownerId, hitIds, spawnTime } cuspe reto do FooshLooket (Z)
         let waterSpits = [];   // { id, ownerId, x, y, vx, vy, spawnTime, acc, trail } cuspe d'água no ar
         let waterPuddles = []; // { id, ownerId, x, y, spawnTime } poças no chão (y = topo da plataforma)
         const CUP_THROW_VX = 430;        // px/s horizontal no arremesso
@@ -3533,7 +3956,7 @@
         }
         // Mesma ordem em todos os clientes (host primeiro, depois por id) pra cor/posição de cada jogador bater
         function hudSortedIds() {
-            return Object.keys(players).sort((a, b) => {
+            return Object.keys(players).filter(id => !(window.TOURN && TOURN.isSpectator(id))).sort((a, b) => {
                 const ha = a === MP.hostId ? 0 : 1, hb = b === MP.hostId ? 0 : 1;
                 if (ha !== hb) return ha - hb;
                 return a < b ? -1 : a > b ? 1 : 0;
@@ -4386,6 +4809,13 @@
 
                 // Movimento horizontal contínuo via teclado (apenas para o jogador local, os outros recebem via rede)
                 let isMoving = false;
+                // Recuperação ao pousar: o hitstun é um tempo fixo (proporcional ao knockback) e em golpes fortes
+                // durava mais que o voo, deixando o jogador paralisado no chão. Agora acaba assim que ele pousa
+                // (o intervalo de 150 ms evita cancelar no instante do golpe, quando ainda está saindo do chão).
+                if ((id === myUserId || p.demoBot) && p.hitstunUntil && now < p.hitstunUntil && p.onGround && now - (p.hitFlashTime || 0) > 150) {
+                    p.hitstunUntil = 0;
+                    if (id === myUserId) MP.sendState();
+                }
                 const inHitstun = p.hitstunUntil && now < p.hitstunUntil;
                 const isAttacking = p.attackUntil && now < p.attackUntil;
 
@@ -4617,6 +5047,8 @@
             drawWaterPuddles();
             updateWaterSpits(deltaTime * 1000);
             drawWaterSpits();
+            updateSpitShots(deltaTime * 1000);
+            drawSpitShots();
             updateThrownCups(deltaTime * 1000);
             drawThrownCups();
 
@@ -4701,6 +5133,7 @@
             if (alive.length <= 1 && !matchOver) {
                 matchOver = true;
                 championId = alive.length === 1 ? alive[0] : null;
+                if (window.TOURN && TOURN.active) { TOURN.onFightEnd(championId); return; } // torneio: o host decide o resultado e mostra a chave
                 triggerVictoryScreen();
             }
         }
@@ -4713,6 +5146,7 @@
             thrownMics.length = 0;
             cupShards.length = 0;
             waterSpits.length = 0;
+            spitShots.length = 0;
             waterPuddles.length = 0;
             inkPuddles.length = 0;
             for (const id of Object.keys(players)) {
@@ -4752,6 +5186,7 @@
                 isRunning = false;
                 hideVictoryScreen();
                 restartMatch();
+                if (window.TOURN) TOURN.reset(); // fim do torneio: volta ao estado normal
                 openReadyScreen();
             }
         }
@@ -6492,7 +6927,7 @@
 
 
         // ==========================================
-        // CUSPE D'ÁGUA DO FOOSHLOOKET (Z)
+        // CUSPE D'ÁGUA DO FOOSHLOOKET (↓ + Z) — poça
         // Ele cospe um jato em arco; quando o jato pousa numa plataforma vira uma poça. Oponentes que pisam
         // na poça escorregam: levam dano, dão uma cambalhota e são jogados pra fora (o dono não tropeça). Só uma poça por dono: a nova apaga a antiga.
         // Cada cliente simula o jato localmente (passo fixo) e cria a poça ao pousar.
@@ -6528,6 +6963,96 @@
             SFX.playSwing(0.7);
             MP.sendState();
             MP.broadcastToAll({ type: 'waterSpit', spit });
+        }
+
+        // Z: cuspe reto — viaja em linha reta como a bala do Renan Antigo (sem versão carregada).
+        // Não bloqueia p.attackName/attackUntil: usa cooldown próprio (p.spitCooldownUntil) e o flash
+        // do sprite f_throw (bulletShootFlashUntil), então dá pra andar/usar a bola sem travar.
+        function spitStraight(p) {
+            if (!p || p.character !== 'fooshlooket') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return; // não cospe no meio da bola/poça
+            if (p.spitCooldownUntil && now < p.spitCooldownUntil) return;
+
+            p.spitCooldownUntil = now + SPIT_COOLDOWN;
+            p.bulletShootFlashUntil = now + CHARACTERS.fooshlooket.attacks.spitStraight.duration;
+            p.attackSquashTime = now;
+
+            const dir = p.facingLeft ? -1 : 1;
+            const sc = getSizeScale(p);
+            const shot = {
+                id: 'spit_' + now + '_' + Math.floor(Math.random() * 100000),
+                x: p.x + dir * 28 * sc,
+                y: p.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * sc) * 0.6, // altura da boca
+                dir,
+                hitIds: [],
+                spawnTime: now,
+                ownerId: myUserId
+            };
+            spitShots.push(shot);
+            SFX.playSwing(1.2);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'spitShoot', shot });
+        }
+
+        function updateSpitShots(deltaMs) {
+            const deltaSec = deltaMs / 1000;
+            const now = Date.now();
+            for (let i = spitShots.length - 1; i >= 0; i--) {
+                const b = spitShots[i];
+                if (now - b.spawnTime >= SPIT_LIFETIME || b.x < -600 || b.x > WORLD_WIDTH + 600) { spitShots.splice(i, 1); continue; }
+                b.x += b.dir * SPIT_SPEED * deltaSec;
+
+                if (isOwnerLocal(b.ownerId)) {
+                    for (const id in players) {
+                        if (id === b.ownerId || b.hitIds.includes(id)) continue;
+                        const target = players[id];
+                        const tS = getSizeScale(target);
+                        if (Math.abs(target.x - b.x) < SPIT_HIT_RADIUS * tS && Math.abs(target.y - b.y) < PLAYER_SIZE * 0.9 * tS) {
+                            b.hitIds.push(id);
+                            const dir = target.x >= b.x ? 1 : -1;
+                            applyHit(id, SPIT_DAMAGE, SPIT_KNOCKBACK, dir);
+                            MP.broadcastToAll({ type: 'hit', targetId: id, damage: SPIT_DAMAGE, knockback: SPIT_KNOCKBACK, dir });
+                            MP.broadcastToAll({ type: 'spitRemove', shotId: b.id });
+                            spitShots.splice(i, 1);
+                            break; // some ao acertar
+                        }
+                    }
+                }
+            }
+        }
+
+        function drawSpitShots() {
+            const now = Date.now();
+            for (const b of spitShots) {
+                const seed = (b.spawnTime % 997) * 0.37;
+                const pul = 1 + 0.08 * Math.sin(now / 45 + seed);
+                ctx.save();
+                ctx.translate(b.x, b.y);
+                if (b.dir < 0) ctx.scale(-1, 1);
+                // rastro curto de água atrás da bola
+                for (let k = 3; k >= 1; k--) {
+                    ctx.globalAlpha = 0.5 - k * 0.12;
+                    ctx.fillStyle = '#7fd3ff';
+                    ctx.beginPath(); ctx.ellipse(-k * 11, 0, 8 - k, 5 - k * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                // gota alongada na direção do movimento
+                const g = ctx.createRadialGradient(-2, -3, 1, 0, 0, 12);
+                g.addColorStop(0, '#effcff'); g.addColorStop(0.5, '#7fd3ff'); g.addColorStop(1, '#2f8fdc');
+                ctx.fillStyle = g; ctx.strokeStyle = 'rgba(25,100,190,0.9)'; ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-13 * pul, 0);
+                ctx.quadraticCurveTo(-4, -8 * pul, 5, -7.5 * pul);
+                ctx.quadraticCurveTo(13, -5, 13, 0);
+                ctx.quadraticCurveTo(13, 5, 5, 7.5 * pul);
+                ctx.quadraticCurveTo(-4, 8 * pul, -13 * pul, 0);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.beginPath(); ctx.ellipse(3, -3, 3.5, 1.8, -0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
         }
 
         function makeWaterSpit(data) {
@@ -7976,7 +8501,7 @@
                 const bd = CHARACTERS.fooshlooket.attacks.ball;
                 const spin = player.attackName === 'ball'
                     ? Math.min(1, (Date.now() - player.attackStart) / bd.duration) * Math.PI * 2 * BALL_SPINS
-                    : (Date.now() / 1000) * Math.PI * 2 * 2; // pulo duplo: gira continuamente (2 voltas/s)
+                    : (((Date.now() / 1000) * DJUMP_SPIN_TURNS_PER_SEC) % 1) * Math.PI * 2; // pulo duplo: gira continuamente (ângulo sempre entre 0 e 2π; valores gigantes perdem precisão no canvas e o sprite parecia parado)
                 ctx.translate(0, PLAYER_SIZE / 2);
                 ctx.scale(BALL_DRAW_SCALE, BALL_DRAW_SCALE);
                 ctx.translate(0, -SPRITE_HEIGHT / 2);
@@ -8106,13 +8631,14 @@
         const keysPressed = {};
         window.addEventListener('keydown', (e) => {
             if (!myUserId) return;
-            if (e.code === 'KeyR' && matchOver) {
+            if (e.code === 'KeyR' && matchOver && !(window.TOURN && TOURN.blocksReplay())) {
                 e.preventDefault();
                 requestPlayAgain();
                 return;
             }
             if (matchOver) return; // partida encerrada: ignora demais controles até dar restart
             if (introLock) return; // contagem inicial: controles travados
+            if (window.TOURN && TOURN.blocksInput()) return; // torneio: espectador/aguardando não controla o personagem
             if (e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
                 e.preventDefault();
                 keysPressed[e.code] = true;
@@ -8143,8 +8669,10 @@
                 } else if (me && me.character === 'hofy') {
                     singNote(me); // Hofy: sem pulo duplo
                 } else if (me && me.character === 'fooshlooket') {
-                    // No ar (depois de pular): pulo duplo. No chão, ou se o pulo duplo já foi usado: cospe água
-                    if (me.onGround || !startDoubleJump()) throwWater(me);
+                    // ↓ + Z: cospe a poça. Z: no ar (depois de pular) faz o pulo duplo; no chão, ou se o pulo
+                    // duplo já foi usado, cospe reto como uma bala
+                    if (keysPressed['ArrowDown']) throwWater(me);
+                    else if (me.onGround || !startDoubleJump()) spitStraight(me);
                 } else if (me && (!me.character || me.character === 'renanzinho') && keysPressed['ArrowDown']) {
                     startBucketThrow(me);
                 } else if (me && !me.onGround) {
@@ -8340,7 +8868,7 @@
                         players[id].damage = data.damage;
                         players[id].lives = typeof data.lives === 'number' ? data.lives : 3;
                         const wasEliminated = players[id].eliminated;
-                        players[id].eliminated = !!data.eliminated;
+                        players[id].eliminated = !!data.eliminated || !!(window.TOURN && TOURN.isSpectator(id)); // torneio: espectador nunca volta à cena
                         if (!wasEliminated && players[id].eliminated) checkMatchEnd();
                         if (data.attackName === 'nail' && players[id].attackName !== 'nail') {
                             const dir = data.facingLeft ? -1 : 1;
@@ -8410,6 +8938,15 @@
                     if (data.spit.ownerId !== myUserId) waterSpits.push(makeWaterSpit(data.spit));
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'spitShoot') {
+                    if (data.shot.ownerId !== myUserId) spitShots.push(data.shot);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'spitRemove') {
+                    const idx = spitShots.findIndex(b => b.id === data.shotId);
+                    if (idx !== -1) spitShots.splice(idx, 1);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
                 else if (data.type === 'clipperThrow') {
                     if (data.clipper.ownerId !== myUserId) nailClippers.push(data.clipper);
                     if (this.role === 'host') this.broadcast(data, fromId);
@@ -8457,6 +8994,7 @@
                     delete players[data.pid];
                     _removeFromRoster(data.pid);
                     if (this.role === 'host') {
+                        if (window.TOURN) TOURN.onPlayerLeft(data.pid); // torneio: W.O. / sai da chave
                         this.broadcast(data, fromId);
                         this.broadcastRoster();
                     }
@@ -8493,6 +9031,9 @@
                     renderMapSelect();
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'tState') {
+                    if (this.role !== 'host' && window.TOURN) TOURN.onState(data);
+                }
                 else if (data.type === 'playAgain') {
                     _playAgainState[data.pid] = true;
                     if (this.role === 'host') this.broadcast(data, fromId);
@@ -8503,6 +9044,7 @@
 
             // Um jogador saiu: avisa os demais e remove localmente
             removePlayer(id) {
+                if (window.TOURN) TOURN.onPlayerLeft(id); // torneio: W.O. / sai da chave
                 delete players[id];
                 delete this.conns[id];
                 _removeFromRoster(id);
@@ -8624,6 +9166,7 @@
                     background:${m.thumb || '#333'}; color:#fff; font-weight:bold; cursor:${isHost ? 'pointer' : 'default'}; opacity:${isHost ? '1' : '0.7'};
                     display:inline-flex; align-items:flex-end; justify-content:center; overflow:hidden; box-shadow:${i === currentMapIndex ? '0 0 10px #ffd400' : 'none'};"
                     ${isHost ? '' : 'disabled'}><span style="width:100%; padding:2px 0; background:rgba(0,0,0,0.55); font-size:11px;">${m.name}</span></button>`).join('');
+            _mapSelectEl.style.display = window.mpMode === 'tournament' ? 'none' : ''; // torneio: o mapa é sorteado a cada luta
             if (isHost) {
                 _mapSelectEl.querySelectorAll('.map-select-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -8659,7 +9202,7 @@
                     <div class="ready-pcard-status">${ready ? 'Pronto' : 'Aguardando'}</div>
                 </div>`;
             });
-            for (let i = pids.length; i < MAX_PLAYERS; i++) {
+            for (let i = pids.length; i < maxPlayers(); i++) {
                 cards.push(`<div class="ready-pcard empty p${i + 1}">
                     <div class="ready-pcard-tag">P${i + 1}</div>
                     <div class="ready-pcard-stage"></div>
@@ -8669,8 +9212,8 @@
             }
             readyPlayerList.innerHTML = cards.join('');
             const countEl = document.getElementById('ready-count');
-            if (countEl) countEl.textContent = `${pids.length}/${MAX_PLAYERS} jogadores`;
-            const allReady = pids.length >= 2 && pids.every(pid => _readyState[pid]);
+            if (countEl) countEl.textContent = `${pids.length}/${maxPlayers()} jogadores` + (window.mpMode === 'tournament' && pids.length < 3 ? ' · mínimo 3 para o torneio' : '');
+            const allReady = pids.length >= (window.mpMode === 'tournament' ? 3 : 2) && pids.every(pid => _readyState[pid]);
             readyStartBtn.style.display = (MP.role === 'host' && allReady) ? 'inline-block' : 'none';
         }
 
@@ -8684,7 +9227,8 @@
         });
 
         readyStartBtn.addEventListener('click', () => {
-            if (Object.keys(_hostNickMap).length < 2) return;
+            if (Object.keys(_hostNickMap).length < (window.mpMode === 'tournament' ? 3 : 2)) return;
+            if (window.mpMode === 'tournament') { TOURN.hostStart(); return; } // torneio: o host monta a chave
             MP.broadcastToAll({ type: 'gameStart' });
             runCountdownThenBegin();
         });
@@ -8713,7 +9257,7 @@
             if (!p) return null;
             return { x: p.x, y: p.y - 20, zoom: 1.8 };
         }
-        function introOrder() { return (_rosterOrder && _rosterOrder.length) ? _rosterOrder : Object.keys(_hostNickMap); }
+        function introOrder() { if (window.TOURN && TOURN.active && TOURN.fighters) return TOURN.fighters; return (_rosterOrder && _rosterOrder.length) ? _rosterOrder : Object.keys(_hostNickMap); }
         function introSlot(id) {
             const order = introOrder();
             const n = Math.max(1, order.length);
@@ -8858,6 +9402,7 @@
         function beginGameplay() {
             players[myUserId] = { ...myPlayerState, y: getStageRect().y - PLAYER_SIZE / 2 - 1, x: introSlot(myUserId).x, vy: 0, knockbackVx: 0, onGround: true, isJumping: false, doubleJumpUsed: false, isDoubleJumping: false, lastUpdate: Date.now() };
             players[myUserId].facingLeft = players[myUserId].x > WORLD_WIDTH / 2;
+            if (window.TOURN) TOURN.applySpectator(players[myUserId]); // torneio: quem só assiste fica fora do palco
             MP.sendState();
             statusText.innerText = "Conectado ao Mundo!";
             connectionDot.className = "status-dot connected";
@@ -8872,6 +9417,310 @@
         }
 
         // ==========================================
+        // 5.8. MODO TORNEIO (chave eliminatória de 3 a 8 jogadores, lutas em sequência na mesma arena)
+        // O HOST é a fonte da verdade: monta a chave (com byes), escolhe quem luta e o mapa, recebe o
+        // resultado e manda o estado inteiro ('tState') para todo mundo. Quem não está lutando fica como
+        // ESPECTADOR: marcado como eliminated e fora do palco (o jogo já ignora eliminados nas colisões,
+        // golpes e no fim de luta), vendo a luta pela câmera normal e podendo só abrir/fechar a chave.
+        // ==========================================
+        window.TOURN = (function () {
+            const T = { active: false, finished: false, inFight: false, live: false, fighters: null, cur: null, bracket: null, lastMap: -1 };
+            const $ = id => document.getElementById(id);
+            const bracketEl = $('t-bracket'), vsEl = $('t-vs'), peekBtn = $('t-peek-btn');
+            const BRACKET_DRAW_MS = 6500, BRACKET_WAIT_MS = 5000, VS_MS = 3800, RESULT_DELAY_MS = 1800;
+            let timers = [], drawTimer = null, cdTimer = null, nextTimer = null, peeking = false;
+            let V = { draw: false, reveal: 99, next: null, banner: '', secs: 0 };
+            const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
+            const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            const isF = id => !!(T.fighters && T.fighters.indexOf(id) >= 0);
+            const infoOf = pid => (T.bracket && T.bracket.info[pid]) || { n: nickFor(pid), c: 'renanzinho' };
+            const icon = c => '<img src="' + ((CHARACTERS[c] || CHARACTERS.renanzinho).sprites.idle.src) + '" alt="">';
+            const roundName = (r, total) => { const left = total - r; return left === 1 ? 'Final' : left === 2 ? 'Semifinais' : 'Quartas de final'; };
+            function clearTimers() {
+                timers.forEach(clearTimeout); timers = [];
+                if (drawTimer) clearInterval(drawTimer); drawTimer = null;
+                if (cdTimer) clearInterval(cdTimer); cdTimer = null;
+            }
+
+            // ---------- Chave (só o host mexe nela; os clientes recebem uma cópia) ----------
+            function buildBracket() {
+                const ro = MP.buildRoster();
+                const ids = ro.order.slice();
+                for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = ids[i]; ids[i] = ids[j]; ids[j] = t; }
+                const n = ids.length, size = n <= 4 ? 4 : 8, byes = size - n, pairs = size / 2;
+                const byePairs = [0, 3, 1, 2].filter(k => k < pairs).slice(0, byes); // byes espalhados pela chave
+                const r0 = []; let k = 0;
+                for (let p = 0; p < pairs; p++) {
+                    if (byePairs.indexOf(p) >= 0) r0.push({ a: ids[k++], b: null });
+                    else { r0.push({ a: ids[k], b: ids[k + 1] }); k += 2; }
+                }
+                const rounds = [r0]; let m = pairs;
+                while (m > 1) { m /= 2; rounds.push(Array.from({ length: m }, () => ({}))); }
+                const info = {};
+                for (const id of ids) info[id] = { n: (ro.nickMap && ro.nickMap[id]) || nickFor(id), c: (ro.characters && ro.characters[id]) || 'renanzinho' };
+                return { rounds, info, dropped: {} };
+            }
+            // a/b: undefined = ainda não definido, null = vaga vazia (bye); w: undefined = sem resultado, null = sem vencedor
+            function settle(r, i, w) {
+                const rounds = T.bracket.rounds;
+                rounds[r][i].w = w;
+                if (rounds[r + 1]) rounds[r + 1][i >> 1][(i % 2) ? 'b' : 'a'] = w;
+            }
+            // Resolve byes e W.O. pendentes e devolve a próxima luta de verdade {r,i} (null = acabou)
+            function nextMatch() {
+                const B = T.bracket; let first = null;
+                for (let r = 0; r < B.rounds.length; r++) {
+                    for (let i = 0; i < B.rounds[r].length; i++) {
+                        const m = B.rounds[r][i];
+                        if (m.w !== undefined || m.a === undefined || m.b === undefined) continue;
+                        const aOut = m.a === null || !!B.dropped[m.a], bOut = m.b === null || !!B.dropped[m.b];
+                        if (aOut && bOut) { settle(r, i, null); continue; }
+                        if (aOut || bOut) { settle(r, i, aOut ? m.b : m.a); continue; }
+                        if (!first) first = { r, i }; // 1ª luta de verdade; segue varrendo só para resolver os byes/W.O. restantes
+                    }
+                }
+                return first;
+            }
+
+            // ---------- Orquestração do host ----------
+            function sendAll(s) { MP.broadcast(Object.assign({ type: 'tState' }, s)); onState(s); }
+            function scheduleNext(ms) { if (nextTimer) clearTimeout(nextTimer); nextTimer = later(hostNext, ms); }
+            function pickMap() {
+                const n = MAPS.length; if (n <= 1) return 0;
+                let idx; do { idx = Math.floor(Math.random() * n); } while (idx === T.lastMap);
+                T.lastMap = idx; return idx;
+            }
+            function hostStart() {
+                if (MP.role !== 'host') return;
+                T.active = true; T.finished = false; T.lastMap = -1;
+                T.bracket = buildBracket();
+                const m = nextMatch();
+                sendAll({ phase: 'bracket', bracket: T.bracket, draw: true, banner: '', next: m, wait: BRACKET_DRAW_MS });
+                scheduleNext(BRACKET_DRAW_MS);
+            }
+            function hostNext() {
+                if (MP.role !== 'host' || !T.active || T.inFight || T.finished) return;
+                const m = nextMatch();
+                if (!m) return hostFinish();
+                const mt = T.bracket.rounds[m.r][m.i];
+                sendAll({ phase: 'match', bracket: T.bracket, a: mt.a, b: mt.b, r: m.r, i: m.i, map: pickMap() });
+            }
+            function hostFinish() {
+                const B = T.bracket, last = B.rounds[B.rounds.length - 1][0];
+                sendAll({ phase: 'end', bracket: B, champion: last.w || null });
+            }
+            function afterResult(text) {
+                const m = nextMatch();
+                if (!m) return hostFinish();
+                sendAll({ phase: 'bracket', bracket: T.bracket, draw: false, banner: text, next: m, wait: BRACKET_WAIT_MS });
+                scheduleNext(BRACKET_WAIT_MS);
+            }
+            function hostResult(champ) {
+                const mt = T.bracket.rounds[T.cur.r][T.cur.i];
+                let text;
+                if (champ && (champ === mt.a || champ === mt.b)) { settle(T.cur.r, T.cur.i, champ); text = infoOf(champ).n + ' venceu!'; }
+                else text = 'Empate! A luta será repetida.';
+                afterResult(text);
+            }
+            // Chamado por checkMatchEnd() em todos os clientes quando a luta acaba (vence quem sobrou)
+            function onFightEnd(champ) {
+                T.live = false;
+                if (MP.role !== 'host' || !T.inFight) return;
+                T.inFight = false;
+                later(() => hostResult(champ), RESULT_DELAY_MS);
+            }
+            // Só no host: alguém caiu. Lutador => adversário vence por W.O.; os demais ficam fora da chave
+            function onPlayerLeft(pid) {
+                if (MP.role !== 'host' || !T.active || T.finished || !T.bracket || !T.bracket.info[pid] || T.bracket.dropped[pid]) return;
+                T.bracket.dropped[pid] = true;
+                const nm = infoOf(pid).n;
+                if (T.inFight && isF(pid)) {
+                    T.inFight = false; T.live = false;
+                    const opp = T.fighters.find(x => x !== pid);
+                    const oppOut = !opp || T.bracket.dropped[opp];
+                    settle(T.cur.r, T.cur.i, oppOut ? null : opp);
+                    afterResult(oppOut ? nm + ' desconectou.' : nm + ' desconectou — ' + infoOf(opp).n + ' vence por W.O.!');
+                } else if (!T.inFight) {
+                    const m = nextMatch();
+                    if (!m) return hostFinish();
+                    sendAll({ phase: 'bracket', bracket: T.bracket, draw: false, banner: nm + ' desconectou.', next: m, wait: 3500 });
+                    scheduleNext(3500);
+                }
+            }
+
+            // ---------- Tela da chave ----------
+            function row(pid, m, r, slot) {
+                const B = T.bracket; let cls = 'tb-row', name = '?', img = '';
+                if (r === 0 && V.draw && slot >= V.reveal) { // sorteio: nomes embaralhando até "travar"
+                    const pool = Object.keys(B.info), rp = pool[Math.floor(Math.random() * pool.length)];
+                    name = B.info[rp].n; img = icon(B.info[rp].c); cls += ' shuf';
+                } else if (V.draw && r > 0) cls += ' tbd';
+                else if (pid === undefined) cls += ' tbd';
+                else if (pid === null) { name = 'BYE (avança direto)'; cls += ' bye'; }
+                else {
+                    const f = B.info[pid] || { n: '?', c: 'renanzinho' };
+                    name = f.n; img = icon(f.c);
+                    if (B.dropped[pid]) cls += ' out';
+                    if (m.w !== undefined) cls += m.w === pid ? ' win' : ' lose';
+                }
+                return '<div class="' + cls + '">' + img + '<span>' + esc(name) + '</span></div>';
+            }
+            function render() {
+                const B = T.bracket; if (!B) return;
+                const total = B.rounds.length; let html = '';
+                B.rounds.forEach((round, r) => {
+                    html += '<div class="tb-col"><div class="tb-rname">' + roundName(r, total) + '</div>';
+                    round.forEach((m, i) => {
+                        const nx = V.next && V.next.r === r && V.next.i === i && !V.draw;
+                        const live = T.live && T.cur && T.cur.r === r && T.cur.i === i;
+                        html += '<div class="tb-match' + (nx ? ' next' : '') + (live ? ' live' : '') + '">' + row(m.a, m, r, i * 2) + row(m.b, m, r, i * 2 + 1) + '</div>';
+                    });
+                    html += '</div>';
+                });
+                $('tb-tree').innerHTML = html;
+                $('tb-banner').textContent = V.draw ? 'Sorteando os confrontos...' : (V.banner || '');
+                let foot = '';
+                if (!V.draw && V.next) {
+                    const mt = B.rounds[V.next.r][V.next.i];
+                    foot = 'Próxima luta: ' + infoOf(mt.a).n + ' × ' + infoOf(mt.b).n + (V.secs > 0 ? ' — começa em ' + V.secs + 's' : '');
+                }
+                $('tb-foot').textContent = foot;
+            }
+            function showBracket(s) {
+                peeking = false;
+                vsEl.classList.remove('show');
+                bracketEl.className = 'show';
+                V = { draw: !!s.draw, reveal: s.draw ? 0 : 99, next: s.next || null, banner: s.banner || '', secs: Math.ceil((s.wait || 0) / 1000) };
+                $('tb-close').style.display = 'none';
+                $('tb-skip').style.display = MP.role === 'host' ? 'inline-block' : 'none';
+                render();
+                const t0 = Date.now(), slots = T.bracket.rounds[0].length * 2;
+                if (s.draw) {
+                    drawTimer = setInterval(() => {
+                        V.reveal = Math.floor((Date.now() - t0 - 700) / 260);
+                        if (V.reveal >= slots) { V.draw = false; V.reveal = 99; clearInterval(drawTimer); drawTimer = null; }
+                        render();
+                    }, 90);
+                }
+                cdTimer = setInterval(() => {
+                    V.secs = Math.max(0, Math.ceil(((s.wait || 0) - (Date.now() - t0)) / 1000));
+                    if (!V.draw) render();
+                }, 250);
+            }
+            function openPeek() {
+                if (!T.bracket) return;
+                peeking = true;
+                V = { draw: false, reveal: 99, next: null, banner: '', secs: 0 };
+                bracketEl.className = 'show peek';
+                $('tb-skip').style.display = 'none'; $('tb-close').style.display = 'inline-block';
+                render();
+            }
+            function closePeek() { peeking = false; bracketEl.className = ''; }
+            const canPeek = () => T.active && !T.finished && T.live && !isF(myUserId);
+            peekBtn.addEventListener('click', () => { if (peeking) closePeek(); else if (canPeek()) openPeek(); });
+            $('tb-close').addEventListener('click', closePeek);
+            bracketEl.addEventListener('click', e => { if (peeking && e.target === bracketEl) closePeek(); });
+            $('tb-skip').addEventListener('click', () => {
+                if (MP.role === 'host' && T.active && !T.inFight && !T.finished) { if (nextTimer) clearTimeout(nextTimer); hostNext(); }
+            });
+            window.addEventListener('keydown', e => {
+                if (e.code !== 'KeyB' || (e.target && e.target.tagName === 'INPUT')) return;
+                if (peeking) closePeek(); else if (canPeek()) openPeek();
+            });
+            setInterval(() => {
+                const show = canPeek();
+                peekBtn.style.display = show ? 'block' : 'none';
+                if (!show && peeking) closePeek();
+            }, 300);
+
+            // ---------- Apresentação (VS) e início da luta ----------
+            function markSpectator(p) {
+                if (!p) return;
+                p.eliminated = true; p.eliminatedAt = 0;
+                p.x = -9999; p.y = -9999; p.renderTargetX = -9999; p.renderTargetY = -9999;
+                p.vy = 0; p.knockbackVx = 0;
+            }
+            function startVs(s) {
+                T.active = true; T.inFight = true; T.live = false;
+                T.fighters = [s.a, s.b]; T.cur = { r: s.r, i: s.i };
+                currentMapIndex = s.map;
+                bracketEl.className = ''; peeking = false;
+                $('tv-img-a').src = (CHARACTERS[infoOf(s.a).c] || CHARACTERS.renanzinho).sprites.idle.src;
+                $('tv-img-b').src = (CHARACTERS[infoOf(s.b).c] || CHARACTERS.renanzinho).sprites.idle.src;
+                $('tv-name-a').textContent = infoOf(s.a).n;
+                $('tv-name-b').textContent = infoOf(s.b).n;
+                $('tv-info').textContent = roundName(s.r, T.bracket.rounds.length) + ' · Mapa: ' + ((MAPS[s.map] && MAPS[s.map].name) || '');
+                vsEl.classList.remove('show'); void vsEl.offsetWidth; vsEl.classList.add('show'); // reinicia as animações
+                // voz do 1º lutador, depois "VS" (Audios/vs.mp3), depois voz do 2º (cada um começa quando o anterior termina)
+                const seq = [CHAR_SELECT_AUDIO[infoOf(s.a).c], 'Audios/vs.mp3', CHAR_SELECT_AUDIO[infoOf(s.b).c]].filter(Boolean);
+                const playNext = () => { const src = seq.shift(); if (!src || !T.inFight) return; const au = new Audio(src); au.onended = playNext; au.onerror = playNext; au.play().catch(playNext); };
+                later(playNext, 300);
+                later(() => { vsEl.classList.remove('show'); startFight(); }, VS_MS);
+            }
+            function startFight() {
+                isRunning = false; // garante que beginGameplay religue o loop do jogo
+                restartMatch();    // todos com 3 vidas e dano zerado; limpa projéteis e poças
+                const st = getStageRect();
+                for (const id in players) {
+                    const p = players[id];
+                    if (!isF(id)) { markSpectator(p); continue; }
+                    if (id !== myUserId) { // lutador remoto já aparece no ponto de entrada (sem "deslizar" de longe)
+                        p.x = introSlot(id).x; p.y = st.y - PLAYER_SIZE / 2 - 1; p.renderTargetX = p.x; p.renderTargetY = p.y;
+                        p.vy = 0; p.knockbackVx = 0; p.hitstunUntil = 0; p.attackUntil = 0;
+                    }
+                }
+                T.live = true;
+                runCountdownThenBegin();
+            }
+            function showEnd(s) {
+                T.inFight = false; T.live = false; T.fighters = null; T.finished = true;
+                isRunning = false; peeking = false;
+                bracketEl.className = ''; vsEl.classList.remove('show');
+                matchOver = true; championId = s.champion;
+                triggerVictoryScreen(); // fim do torneio: tela de vitória normal (R / toque = jogar de novo)
+            }
+
+            // Estado vindo do host (e aplicado também no próprio host)
+            function onState(s) {
+                clearTimers();
+                T.bracket = s.bracket; T.active = true;
+                if (s.phase === 'bracket') {
+                    T.inFight = false; T.live = false; T.fighters = null;
+                    isRunning = false; matchOver = true; introLock = false; // para o loop da luta anterior
+                    countdownOverlay.classList.remove('show');
+                    showBracket(s);
+                } else if (s.phase === 'match') startVs(s);
+                else if (s.phase === 'end') showEnd(s);
+            }
+
+            function onHostLost() {
+                clearTimers(); T.active = false; T.finished = false; T.inFight = false; T.live = false; T.fighters = null;
+                _manualDisconnect = true; isRunning = false; matchOver = true; introLock = false;
+                bracketEl.className = ''; vsEl.classList.remove('show'); peekBtn.style.display = 'none';
+                countdownOverlay.classList.remove('show');
+                hideVictoryScreen();
+                $('t-hostlost').classList.add('show');
+            }
+            $('tl-btn').addEventListener('click', () => location.reload());
+
+            function reset() {
+                clearTimers(); T.active = false; T.finished = false; T.inFight = false; T.live = false;
+                T.fighters = null; T.cur = null; T.bracket = null; peeking = false;
+                bracketEl.className = ''; vsEl.classList.remove('show'); peekBtn.style.display = 'none';
+            }
+
+            return Object.assign(T, {
+                hostStart, onState, onFightEnd, onPlayerLeft, onHostLost, reset,
+                isSpectator: id => T.active && T.inFight && !!T.fighters && !isF(id),
+                applySpectator: p => { if (T.active && T.inFight && T.fighters && !isF(myUserId)) markSpectator(p); },
+                // espectador/aguardando (ou fora da luta): sem controle do personagem
+                blocksInput: () => T.active && !T.finished && !(T.live && isF(myUserId)),
+                // durante o torneio o R/toque de "jogar de novo" só vale na tela final
+                blocksReplay: () => T.active && !T.finished
+            });
+        })();
+
+        // ==========================================
         // 6. TELA INICIAL — CRIAR SALA / ENTRAR
         // ==========================================
         function genRoomCode() {
@@ -8882,6 +9731,7 @@
         }
 
         const MAX_PLAYERS = 4; // limite máximo de jogadores por sala
+        function maxPlayers() { return window.mpMode === 'tournament' ? 8 : MAX_PLAYERS; } // torneio aceita até 8
 
         const lobbyStatus = document.getElementById('lobby-status');
         let _hostNickMap = {};
@@ -9002,7 +9852,7 @@
                 items.push('🙂 ' + _hostNickMap[pid]);
             }
             const count = Object.keys(_hostNickMap).length;
-            items.push(`<span style="opacity:0.7;">${count}/${MAX_PLAYERS} jogadores</span>`);
+            items.push(`<span style="opacity:0.7;">${count}/${maxPlayers()} jogadores</span>`);
             el.innerHTML = items.join('<br>');
             const startBtn = document.getElementById('lobby-start-btn');
             startBtn.disabled = count < 2;
@@ -9036,7 +9886,7 @@
             MP.peer.on('connection', (conn) => {
                 // Sala cheia: recusa a conexão e avisa o cliente, sem adicioná-lo aos jogadores
                 const currentCount = Math.max(Object.keys(_hostNickMap).length, Object.keys(MP.conns).length + 1);
-                if (currentCount >= MAX_PLAYERS) {
+                if (currentCount >= maxPlayers() || (window.TOURN && TOURN.active)) { // sala cheia ou torneio já em andamento
                     conn.on('open', () => {
                         conn.send({ type: 'roomFull' });
                         setTimeout(() => conn.close(), 200); // pequeno delay p/ garantir que a msg chegue antes de fechar
@@ -9047,7 +9897,7 @@
                 MP.conns[conn.peer] = conn;
                 conn.on('open', () => {
                     // Manda para o novo cliente o estado de todos os jogadores já na sala e da caixa de arma
-                    conn.send({ type: 'welcome', players: players, nickMap: _hostNickMap, roster: MP.buildRoster() });
+                    conn.send({ type: 'welcome', players: players, nickMap: _hostNickMap, roster: MP.buildRoster(), mode: window.mpMode });
                 });
                 conn.on('data', (data) => {
                     if (data.type === 'nick') {
@@ -9085,11 +9935,12 @@
                         if (pid !== myUserId) players[pid] = { ...data.players[pid] };
                     }
                     _hostNickMap = data.nickMap || {};
+                    if (data.mode) window.mpMode = data.mode; // o modo (normal/torneio) vem do host
                     for (const pid in _hostNickMap) _readyState[pid] = false;
                     if (data.roster) applyRoster(data.roster);
                     startGame();
                 } else if (data.type === 'roomFull') {
-                    setLobbyStatus(`Sala cheia! Máximo de ${MAX_PLAYERS} jogadores.`, 'error');
+                    setLobbyStatus(`Sala cheia! Máximo de ${maxPlayers()} jogadores.`, 'error');
                 } else if (data.type === 'nickUpdate') {
                     if (players[data.pid]) players[data.pid].name = data.nick;
                 } else {
@@ -9099,6 +9950,7 @@
 
             conn.on('close', () => {
                 if (_manualDisconnect) return;
+                if (window.TOURN && TOURN.active) { TOURN.onHostLost(); return; } // torneio: sem host, o torneio acaba
                 if (!isRunning) {
                     // Ainda no lobby/ready: não há sentido em reconectar automaticamente
                     setLobbyStatus('Conexão com a sala perdida.', 'error');
@@ -9344,6 +10196,8 @@
             ] },
             fooshlooket: { style: 'trapper', djump: true, moves: [
                 { id: 'ball', role: 'kill', melee: true, min: 60, max: 210, tol: 50, run: 260, evalMs: 1600, ready: meleeOk, use: p => startAttack(p, 'ball') },
+                { id: 'spit', role: 'zone', min: 120, max: 520, tol: 60, evalMs: 900,
+                  ready: (p, t) => meleeOk(p, t) && !alive(t, p.spitCooldownUntil), use: p => spitStraight(p) },
                 { id: 'water', role: 'trap', min: 90, max: 220, tol: 150, evalMs: 4000,
                   ready: (p, t) => meleeOk(p, t) && !alive(t, p.waterCooldownUntil), use: p => throwWater(p) }
             ] },
@@ -9586,6 +10440,7 @@
                     if (!best || t < best.t) best = { t, ref, kind };
                 };
                 for (const q of bullets) if (q.ownerId !== b.id) look(q, q.x, q.y, q.dir * BULLET_SPEED, 'bullet');
+                for (const q of spitShots) if (q.ownerId !== b.id) look(q, q.x, q.y, q.dir * SPIT_SPEED, 'bullet');
                 for (const q of notes) if (q.ownerId !== b.id) look(q, q.x, q.y, q.dir * ((typeof noteCfg === 'function' && noteCfg(q).speed) || NOTE_SPEED), 'note');
                 for (const q of thrownMics) if (q.ownerId !== b.id && !q.dead) look(q, q.x, q.y, q.vx || 0, 'mic');
                 for (const q of nailClippers) if (q.ownerId !== b.id) look(q, q.x, q.y, q.vx !== undefined ? q.vx : (q.dir || 0) * CLIPPER_SPEED, 'clipper');
@@ -9876,7 +10731,7 @@
                 for (const id of Object.keys(players)) if (players[id].demoBot) delete players[id];
                 this.bots = [];
                 for (const arr of [nailPolishBottles, nailClippers, bullets, notes, thrownMics, flails, jellyBalls,
-                                   thrownCups, cupShards, waterSpits, waterPuddles, fallingBuckets, hitParticles,
+                                   thrownCups, cupShards, waterSpits, spitShots, waterPuddles, fallingBuckets, hitParticles,
                                    clawEffects, polishSplashes, damagePopups, impactLines, motionTrails]) arr.length = 0;
                 isRunning = false; matchOver = false; championId = null;
                 currentMapIndex = this.prevMap;
