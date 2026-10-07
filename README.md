@@ -1,6 +1,6 @@
 # Renan Toons Wacky Wars
 
-Jogo de luta 2D estilo plataforma (inspirado em *Smash*), feito em um único arquivo `index.html` (HTML + Canvas + JavaScript puro). Cada jogador tem 3 vidas; o dano acumulado aumenta o knockback, e quem cai para fora do palco perde uma vida.
+Jogo de luta 2D estilo plataforma (inspirado em *Super Smash Bros.*), feito em um único arquivo `index.html` (HTML + Canvas + JavaScript puro). Cada jogador tem 3 vidas; o dano acumulado aumenta o knockback, e quem cai para fora do palco perde uma vida.
 
 ## Como jogar
 
@@ -44,6 +44,18 @@ O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, 
 
 Online via [PeerJS](https://peerjs.com/) (conexão P2P entre jogadores, com código de sala curto). Cada cliente simula a física dos projéteis localmente; só o dono de cada ataque detecta o acerto e avisa os outros.
 
+### Modo Torneio
+
+Além do modo normal, o multijogador tem o modo **Torneio** (mínimo de 3 e máximo de 8 jogadores). O host monta a chave e o mapa é sorteado a cada luta, por isso a seleção de mapa some do lobby nesse modo.
+
+Visual do lobby do torneio:
+
+- **Tema de entardecer** com cilindros ao fundo e um **troféu 3D** girando no topo do cilindro grande.
+- **Troféu em wireframe**: o troféu (feito de prismas hexagonais em CSS 3D) agora é desenhado só com as arestas, em tom dourado nas peças do copo e cinza claro nas bases, com faces transparentes. As tampas de topo e fundo de cada prisma não são mais renderizadas, e as faces que nunca aparecem em nenhum ângulo da rotação (coladas entre prismas ou escondidas dentro de outro prisma) também foram removidas (*occlusion culling* estático, calculado por ray-casting em todos os ângulos), para o troféu pesar menos na interface.
+- **Fogos de artifício no fundo**: um `<canvas>` (`#lobby-fireworks`) fica atrás dos cilindros, do troféu e do card, com foguetes que sobem e explodem na metade de cima da tela (esfera, anel e bicolor, com rastro brilhante e cores variadas). A animação só roda enquanto o lobby do torneio está aberto e a aba está visível; ao sair, ela para e limpa a tela. A resolução e o número de partículas são limitados para não pesar.
+
+Tela **VS** entre as lutas do torneio: agora dura **5,5 s** (antes 3,8 s). O tempo é controlado pela constante `VS_MS`, junto das demais temporizações do torneio (`BRACKET_DRAW_MS`, `BRACKET_WAIT_MS`, `RESULT_DELAY_MS`). As animações de entrada da tela terminam em cerca de 1,25 s, então o VS fica parado na tela pelo restante do tempo.
+
 ## Plataformas móveis (mapa Vector)
 
 A posição das plataformas é uma função do relógio sincronizado (`vecNow()`), então todos os clientes calculam a mesma posição sem trocar mensagens.
@@ -78,10 +90,13 @@ Tudo isso fica no bloco `LUTA DE DEMONSTRAÇÃO` do `index.html` (CSS do overlay
 
 ## Tecnologias
 
-HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos.
+HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby usa CSS 3D e os fogos de artifício usam um `<canvas>` 2D próprio.
 
 ## Changelog
 
+- **Torneio · fogos de artifício:** o fundo do lobby do torneio ganhou fogos de artifício animados em canvas (explosões em esfera, anel e bicolor, com rastro), que só rodam enquanto o lobby está visível.
+- **Torneio · troféu em wireframe:** o troféu do lobby agora é só arestas, sem preenchimento, e as faces que nunca aparecem (tampas e faces escondidas dentro de outros prismas) deixaram de ser renderizadas, melhorando o desempenho da interface.
+- **Torneio · tela VS:** a duração da tela VS entre as lutas passou de 3,8 s para 5,5 s (`VS_MS`).
 - **Plataformas móveis:** esmalte (frasco e respingos), copos e microfones não ficam mais estáticos no ar; respingos de esmalte e estilhaços passam a colidir com plataformas flutuantes.
 - **Demonstração:** novo visual (cartela VS, "LUTE!", "K.O.!", selo, barra de progresso, vinheta, partículas e nomes reais dos personagens), sem mudar o comportamento da luta.
 - **IA das CPUs:** comportamento mais humano (personalidade, plano de jogo, combos, armadilhas, erros e humor).
