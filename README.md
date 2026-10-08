@@ -44,6 +44,53 @@ O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, 
 
 Online via [PeerJS](https://peerjs.com/) (conexão P2P entre jogadores, com código de sala curto). Cada cliente simula a física dos projéteis localmente; só o dono de cada ataque detecta o acerto e avisa os outros.
 
+O multijogador tem três modos, escolhidos antes do lobby: **Normal** (todos contra todos), **Torneio** (3 a 8 jogadores) e **2 vs 2** (exatamente 4 jogadores).
+
+### Modo 2 vs 2
+
+Duas duplas se enfrentam na mesma arena. A dupla que ficar de pé vence, e não há fogo amigo.
+
+**Times.** Os times são montados no início de cada partida a partir da ordem do roster: **P1 + P2** (Time Vermelho, `#e53935`) contra **P3 + P4** (Time Azul, `#1e88e5`). A partida termina quando todos os jogadores vivos são do mesmo time. Dentro da partida, o nome de cada jogador aparece na cor do seu time, com contorno branco e uma seta acima.
+
+**Lobby e seleção de personagem:**
+
+- Os cards de jogador (`.ready-pcard`) usam a cor do **time** em vez da cor da porta (as classes `t0` e `t1` sobrescrevem `p1`–`p4`): P1 e P2 vermelhos, P3 e P4 azuis.
+- Cada card ganhou uma etiqueta "Vermelho" ou "Azul" no canto, e um **"VS"** (`.ready-teamvs`) aparece entre as duas duplas.
+- As luvas dos cursores na tela de pronto também seguem a cor do time.
+- Os outros modos continuam com as cores por porta.
+
+**Tela de vitória com a dupla.** Os **dois** jogadores do time vencedor aparecem lado a lado na cena 2.5D (`#victory-champion` e `#victory-champion2`, a ±95 px do centro), cada um com seu sprite e nome, pulando em sequência. O aro de luz no chão fica mais largo (`.duo`), a placa "1º" mostra o nome do time e os dois nomes (ex.: *Time Vermelho · Ana & Bia*) e a cor de destaque (confete, brilho) é a do time. Isso vale mesmo que o parceiro tenha sido eliminado antes do fim. No painel de colocações, os perdedores têm a borda inferior na cor do time deles.
+
+#### Fundo "Frutiger Aero" animado
+
+No lobby e na seleção de personagem do 2v2, o overlay recebe a classe `aurora` e o fundo é um conjunto de camadas (`.au-bg`) injetado por JavaScript, só com gradientes CSS (sem imagens externas). São 4 temas que alternam em *crossfade* num ciclo de 48 s (cada um fica visível cerca de 12 s, com transição de 4 s):
+
+1. **Aurora verde-água:** degradê verde-água para azul, com arcos de luz verde-limão e azul claro, brilho amarelo-esverdeado e clarão branco na base.
+2. **Cortina verde-azul:** luz no canto superior esquerdo, feixes verticais, arcos finos azuis e horizonte azul brilhante embaixo.
+3. **Ondas azuis:** faixas translúcidas que deslizam e ondulam sobre um azul-ciano.
+4. **Ciano com bolhas:** feixe de luz branca, bolhas subindo devagar e linha de horizonte.
+
+Cada tema tem movimento próprio (feixes e arcos balançam, ondas deslizam, bolhas sobem). Por causa de problemas de travamento nas primeiras versões, o fundo segue regras de desempenho:
+
+- Só `transform` e `opacity` são animados (camadas promovidas com `will-change`); nada de animar `filter`, `background-position` ou sombras grandes.
+- Sem `backdrop-filter`/blur no vidro dos cards.
+- A animação da grade azul do lobby é desligada nesse tema (`animation: none`), pois continuava rodando por baixo.
+- Com `prefers-reduced-motion`, o fundo fica parado no primeiro tema.
+
+#### Boneco 3D no fundo
+
+Uma figura em wireframe (cúpula "meio oval" com uma esfera no topo, feita de 14 prismas hexagonais em CSS 3D) gira lentamente atrás do card (uma volta a cada 30 s). Só as arestas das 6 faces laterais são desenhadas (sem tampas), para pesar pouco. Em telas com menos de 800 px ela fica menor e centralizada embaixo. O markup é gerado por JavaScript a partir de uma lista de anéis `[largura, altura, y]` (classes `.bg-dome`, `.bd-rig`, `.bd-spin`, `.bd-prism`, `.bd-face`).
+
+#### Cards e botões Frutiger Aero
+
+Os botões e cards do 2v2 usam um visual de vidro:
+
+- **Botões** (abas "Criar Sala"/"Entrar", `main-btn` do lobby e da seleção, "Voltar"): pílula com degradê, brilho branco embaixo (`radial-gradient` na base), reflexo diagonal (`::before`) e realce de vidro no topo (`::after`). Cores em **OKLCH** (`--hue`, `--sat`, `--glow-intensity`) com cor de reserva para navegadores sem suporte (`@supports`). Hover sobe 1 px, clique afunda 1 px. Os botões principais são verde-água (`--hue: 150`), as abas azuis (`215`) e a aba ativa verde brilhante (`145`). Os pseudo-elementos ficam atrás do texto (`z-index: -1` com `isolation: isolate`).
+- **Card do lobby e painel da seleção:** vidro translúcido com borda branca, brilho curvo no topo e luz interna.
+- **Demais elementos:** título "Multijogador", campo de código (pílula branca com sombra interna), caixa da sala, barra de status, título da seleção, contador de jogadores, círculo "VS" e slots de personagem (o selecionado pulsa em verde).
+
+Todo esse tema fica restrito a `#lobby-overlay.aurora` e `#ready-overlay.aurora`, então os modos Normal e Torneio não mudam.
+
 ### Modo Torneio
 
 Além do modo normal, o multijogador tem o modo **Torneio** (mínimo de 3 e máximo de 8 jogadores). O host monta a chave e o mapa é sorteado a cada luta, por isso a seleção de mapa some do lobby nesse modo.
@@ -90,10 +137,16 @@ Tudo isso fica no bloco `LUTA DE DEMONSTRAÇÃO` do `index.html` (CSS do overlay
 
 ## Tecnologias
 
-HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby usa CSS 3D e os fogos de artifício usam um `<canvas>` 2D próprio.
+HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS.
 
 ## Changelog
 
+- **2 vs 2 · cards por time:** os cards de jogador do lobby/seleção passam a usar a cor do time (P1+P2 vermelho, P3+P4 azul), com etiqueta de time e "VS" entre as duplas; as luvas dos cursores também seguem o time.
+- **2 vs 2 · vitória em dupla:** a tela de vitória mostra os dois jogadores do time vencedor (antes só um), com placa do time, cor de destaque do time e aro de luz mais largo; os cartões de colocação ganham a cor do time.
+- **2 vs 2 · fundo Frutiger Aero animado:** novo fundo de gradientes com 4 temas em *crossfade* (aurora verde-água, cortina verde-azul, ondas azuis e ciano com bolhas), feito só com `transform`/`opacity` para não travar; respeita `prefers-reduced-motion`.
+- **2 vs 2 · boneco 3D no fundo:** figura em wireframe (cúpula + esfera, 14 prismas hexagonais) girando atrás do card, sem tampas para pesar menos.
+- **2 vs 2 · cards e botões Frutiger Aero:** botões em pílula de vidro (cores OKLCH, brilho inferior, reflexo diagonal e realce no topo), cards em vidro translúcido e demais elementos do lobby e da seleção no mesmo estilo.
+- **2 vs 2 · correções:** o "VS" entre os times ganhou classe própria (`.ready-teamvs`), pois compartilhava a classe do círculo "VS" do cabeçalho; a animação da grade do lobby é desligada no tema do 2v2.
 - **Torneio · fogos de artifício:** o fundo do lobby do torneio ganhou fogos de artifício animados em canvas (explosões em esfera, anel e bicolor, com rastro), que só rodam enquanto o lobby está visível.
 - **Torneio · troféu em wireframe:** o troféu do lobby agora é só arestas, sem preenchimento, e as faces que nunca aparecem (tampas e faces escondidas dentro de outros prismas) deixaram de ser renderizadas, melhorando o desempenho da interface.
 - **Torneio · tela VS:** a duração da tela VS entre as lutas passou de 3,8 s para 5,5 s (`VS_MS`).
