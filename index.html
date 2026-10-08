@@ -382,12 +382,13 @@
         #mp-sub { position: absolute; left: calc(var(--u) * 52); top: calc(var(--u) * 142); color: #8d98ad; font-size: calc(var(--u) * 17); letter-spacing: calc(var(--u) * 3); text-transform: uppercase; z-index: 1; }
         #mp-cards { position: absolute; left: 0; right: 0; top: calc(var(--u) * 190); height: calc(var(--u) * 420); z-index: 1; }
         .mp-card {
-            position: absolute; top: 0; width: calc(var(--u) * 410); height: calc(var(--u) * 420); cursor: pointer;
+            position: absolute; top: 0; width: calc(var(--u) * 280); height: calc(var(--u) * 420); cursor: pointer;
             transition: transform 140ms ease, filter 140ms ease; filter: brightness(0.62) saturate(0.7);
             animation: mp-in 420ms cubic-bezier(.2,.9,.3,1) backwards;
         }
-        .mp-card[data-mode="normal"] { left: calc(var(--u) * 50); --c1: #ff3b30; --c2: #8c0f0f; --glow: rgba(255,60,50,0.55); animation-delay: 40ms; }
-        .mp-card[data-mode="tournament"] { left: calc(var(--u) * 500); --c1: #ffc21a; --c2: #8a5a00; --glow: rgba(255,194,26,0.55); animation-delay: 140ms; }
+        .mp-card[data-mode="normal"] { left: calc(var(--u) * 40); --c1: #ff3b30; --c2: #8c0f0f; --glow: rgba(255,60,50,0.55); animation-delay: 40ms; }
+        .mp-card[data-mode="tournament"] { left: calc(var(--u) * 350); --c1: #ffc21a; --c2: #8a5a00; --glow: rgba(255,194,26,0.55); animation-delay: 140ms; }
+        .mp-card[data-mode="teams"] { left: calc(var(--u) * 660); --c1: #2f7bff; --c2: #0b2f8a; --glow: rgba(60,120,255,0.55); animation-delay: 240ms; }
         @keyframes mp-in { from { opacity: 0; transform: translateY(calc(var(--u) * 60)) skewX(-8deg); } }
         .mp-card .mp-shape { position: absolute; inset: 0; transform: skewX(-8deg); background: linear-gradient(160deg, var(--c1) 0%, var(--c2) 100%);
             border: calc(var(--u) * 6) solid #0a0a0a; box-shadow: calc(var(--u) * 8) calc(var(--u) * 8) 0 #000; overflow: hidden; }
@@ -396,10 +397,10 @@
         .mp-card .mp-icon svg { height: 100%; width: auto; overflow: visible; fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;
             filter: drop-shadow(calc(var(--u) * 4) calc(var(--u) * 4) 0 rgba(0,0,0,0.55)); }
         .mp-card .mp-name { position: absolute; left: 0; right: 0; top: calc(var(--u) * 226); text-align: center; z-index: 1; text-transform: uppercase;
-            font-size: calc(var(--u) * 58); font-style: italic; font-weight: 900; color: #fff; -webkit-text-stroke: calc(var(--u) * 9) #120000; paint-order: stroke fill;
+            font-size: calc(var(--u) * 44); font-style: italic; font-weight: 900; color: #fff; -webkit-text-stroke: calc(var(--u) * 9) #120000; paint-order: stroke fill;
             text-shadow: calc(var(--u) * 3) calc(var(--u) * 4) 0 #000; letter-spacing: calc(var(--u) * 1); }
-        .mp-card .mp-desc { position: absolute; left: calc(var(--u) * 34); right: calc(var(--u) * 34); top: calc(var(--u) * 308); text-align: center; z-index: 1;
-            font-family: Verdana, 'Segoe UI', sans-serif; font-weight: 700; font-size: calc(var(--u) * 19); line-height: 1.3; color: #f1f1f1; text-shadow: 0 calc(var(--u) * 2) 0 rgba(0,0,0,0.8); }
+        .mp-card .mp-desc { position: absolute; left: calc(var(--u) * 22); right: calc(var(--u) * 22); top: calc(var(--u) * 292); text-align: center; z-index: 1;
+            font-family: Verdana, 'Segoe UI', sans-serif; font-weight: 700; font-size: calc(var(--u) * 16); line-height: 1.3; color: #f1f1f1; text-shadow: 0 calc(var(--u) * 2) 0 rgba(0,0,0,0.8); }
         .mp-card .mp-tag { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 24); text-align: center; z-index: 1; font-size: calc(var(--u) * 17); letter-spacing: calc(var(--u) * 3); color: #ffe9b0; text-transform: uppercase; }
         .mp-card.selected { transform: translateY(calc(var(--u) * -12)) scale(1.04); filter: none; z-index: 2; }
         .mp-card.selected .mp-shape { border-color: #fff; box-shadow: calc(var(--u) * 8) calc(var(--u) * 8) 0 #000, 0 0 calc(var(--u) * 46) var(--glow); }
@@ -586,12 +587,227 @@
         #lobby-overlay.tournament #lobby-card {
             background: linear-gradient(160deg, rgba(48,24,66,0.84), rgba(22,10,40,0.92));
             border-color: #ffc21a;
-            top: -9vh;
-            left: -8vw;
+            top: calc(-9vh / var(--lobby-zoom, 1));
+            left: calc(-8vw / var(--lobby-zoom, 1));
             box-shadow: 0 0 0 2px rgba(30,12,40,0.9), 0 0 34px rgba(255,170,60,0.5), inset 0 0 40px rgba(255,150,70,0.18);
         }
         #lobby-overlay.tournament .lobby-head { background: linear-gradient(#ffffff, #ffe9b8); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 2px #1a0830) drop-shadow(0 0 3px #1a0830) drop-shadow(0 3px 2px rgba(26,8,48,0.9)); } /* legível sobre os cilindros amarelos */
         #lobby-overlay.tournament .lobby-head::after { background: repeating-linear-gradient(-60deg, #ffb347 0 6px, transparent 6px 11px); }
+
+
+        /* ===== 2 VS 2: fundo Frutiger Aero animado — 4 temas em crossfade (só transform/opacity, leve) ===== */
+        #lobby-overlay.aurora, #ready-overlay.aurora { background: #0d6f9c; }
+        #lobby-overlay.aurora::before, #lobby-overlay.aurora::after,
+        #ready-overlay.aurora::before, #ready-overlay.aurora::after { display: none; }
+        .au-bg { display: none; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; background: #0d6f9c; }
+        .aurora > .au-bg { display: block; }
+        .au-t { position: absolute; inset: 0; opacity: 0; animation: au-cycle 48s linear infinite; will-change: opacity; }
+        .au-t:nth-child(1) { animation-delay: -4s; }
+        .au-t:nth-child(2) { animation-delay: 8s; }
+        .au-t:nth-child(3) { animation-delay: 20s; }
+        .au-t:nth-child(4) { animation-delay: 32s; }
+        @keyframes au-cycle { 0% { opacity: 0; } 8.3% { opacity: 1; } 25% { opacity: 1; } 33.3% { opacity: 0; } 100% { opacity: 0; } }
+        .au-a, .au-b { position: absolute; inset: -6% -8%; will-change: transform; animation: au-sway 16s ease-in-out infinite alternate; }
+        .au-b { animation-duration: 23s; animation-direction: alternate-reverse; }
+        @keyframes au-sway { from { transform: translate3d(-2.5%, 0, 0); } to { transform: translate3d(2.5%, -1.2%, 0) scale(1.04); } }
+        @keyframes au-rise { from { transform: translate3d(-1%, 4%, 0); } to { transform: translate3d(2%, -6%, 0); } }
+        .au-vig { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,25,50,0.4) 100%); }
+        .au-floor { position: absolute; left: 0; right: 0; bottom: 0; height: 20%;
+            background: linear-gradient(180deg, rgba(200,235,255,0.95) 0 2px, rgba(70,130,255,0.6) 2px, rgba(24,58,200,0.85) 45%, rgba(10,30,140,0.95)); }
+        .au-floor::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.12) 30%, transparent 40%, transparent 62%, rgba(255,255,255,0.1) 70%, transparent 80%); }
+
+        /* tema 1: aurora verde-água (arcos de luz) */
+        .au-t1 { background: linear-gradient(160deg, #0a6f62 0%, #13998a 34%, #158aa6 68%, #1b8fd0 100%); }
+        .au-t1 .au-a { background:
+            linear-gradient(98deg, transparent 14%, rgba(255,255,255,0.10) 20%, transparent 27%),
+            linear-gradient(94deg, transparent 38%, rgba(160,255,220,0.12) 45%, transparent 53%),
+            linear-gradient(101deg, transparent 62%, rgba(255,255,255,0.08) 68%, transparent 75%); }
+        .au-t1 .au-b { background:
+            radial-gradient(ellipse 125% 85% at 0% 112%, transparent 69.5%, rgba(180,255,90,0.95) 70%, rgba(150,255,110,0.28) 71.6%, transparent 74%),
+            radial-gradient(ellipse 85% 95% at 108% 110%, transparent 69.5%, rgba(170,245,255,0.85) 70%, rgba(130,230,255,0.25) 71.8%, transparent 74%),
+            radial-gradient(ellipse 85% 50% at 6% 104%, rgba(238,232,60,0.95) 0%, rgba(160,226,80,0.7) 40%, transparent 72%),
+            radial-gradient(ellipse 55% 34% at 100% 96%, rgba(70,225,255,0.8) 0%, transparent 72%),
+            radial-gradient(ellipse 40% 7% at 62% 93%, rgba(255,255,255,0.95), rgba(255,255,255,0) 72%); }
+
+        /* tema 2: cortina verde-azul com horizonte (luz no canto superior esquerdo) */
+        .au-t2 { background:
+            radial-gradient(ellipse 34% 46% at 27% -6%, #fff 0%, rgba(255,255,205,0.8) 32%, transparent 72%),
+            radial-gradient(ellipse 60% 55% at 78% 0%, rgba(150,175,25,0.95), transparent 75%),
+            linear-gradient(180deg, #5b9a22 0%, #2f8a52 22%, #14688a 42%, #0a3ab8 64%, #0a2cc4 100%); }
+        .au-t2 .au-a { background: repeating-linear-gradient(90deg, rgba(255,255,225,0) 0 36px, rgba(255,255,225,0.13) 66px, rgba(255,255,225,0) 104px, rgba(150,255,200,0.07) 130px, rgba(255,255,225,0) 160px);
+            -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,0.5) 55%, transparent 80%); mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,0.5) 55%, transparent 80%); }
+        .au-t2 .au-b { background:
+            radial-gradient(ellipse 36% 46% at 30% 108%, transparent 66%, rgba(120,190,255,0.7) 67%, transparent 69%),
+            radial-gradient(ellipse 28% 40% at 36% 108%, transparent 66%, rgba(150,210,255,0.6) 67%, transparent 69%),
+            radial-gradient(ellipse 44% 52% at 26% 108%, transparent 66%, rgba(100,170,255,0.55) 67%, transparent 69%); }
+
+        /* tema 3: ondas azuis translúcidas */
+        .au-t3 { background:
+            radial-gradient(ellipse 55% 50% at 66% 0%, rgba(34,214,255,0.95), transparent 72%),
+            linear-gradient(170deg, #12acf0 0%, #0a82e2 55%, #0846c8 100%); }
+        .au-t3 .au-a { background: radial-gradient(ellipse 40% 60% at 62% 12%, rgba(255,255,255,0.22), transparent 70%); }
+        .au-t3 .au-b { overflow: visible; animation: none; }
+        .au-w { position: absolute; left: -16%; width: 132%; height: var(--h, 24%); top: var(--t, 50%); border-radius: 50%; will-change: transform;
+            background: radial-gradient(ellipse 50% 7% at 50% 50%, rgba(255,255,255,0.8), transparent 80%), radial-gradient(ellipse at 50% 50%, rgba(225,250,255,0.8), rgba(150,225,255,0.45) 50%, transparent 74%);
+            animation: au-wave var(--d, 12s) ease-in-out infinite alternate; }
+        @keyframes au-wave { from { transform: translate3d(-4%, 0, 0) rotate(var(--r, 0deg)) scaleY(1); } to { transform: translate3d(4%, -6%, 0) rotate(calc(var(--r, 0deg) * -0.6)) scaleY(1.25); } }
+
+        /* tema 4: ciano com feixe de luz, bolhas e horizonte */
+        .au-t4 { background: linear-gradient(180deg, #62f4ee 0%, #34c8dc 14%, #2a8fd0 38%, #2260bf 60%, #1a3ba8 80%, #17306f 100%); }
+        .au-t4 .au-a { background:
+            radial-gradient(ellipse 5% 62% at 41% 0%, #fff, rgba(255,255,255,0) 80%),
+            radial-gradient(ellipse 2% 45% at 52% 0%, rgba(255,255,255,0.75), transparent 80%),
+            radial-gradient(ellipse 1.5% 40% at 60% 0%, rgba(255,255,255,0.6), transparent 80%),
+            radial-gradient(ellipse 1.5% 38% at 78% 0%, rgba(255,255,255,0.5), transparent 80%); }
+        .au-t4 .au-b { animation: au-rise 26s ease-in-out infinite alternate; }
+
+        #lobby-overlay.aurora #lobby-card {
+            background: linear-gradient(160deg, rgba(8,70,100,0.6), rgba(5,40,75,0.8));
+            border: 3px solid rgba(255,255,255,0.7); border-radius: 28px;
+            box-shadow: 0 0 0 2px rgba(0,50,80,0.55), 0 0 24px rgba(160,255,230,0.45), inset 0 2px 0 rgba(255,255,255,0.55), inset 0 0 40px rgba(160,255,230,0.12);
+        }
+        #ready-overlay.aurora #ready-inner {
+            background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(5,50,85,0.52) 40%);
+            border: 3px solid rgba(255,255,255,0.65); border-radius: 18px; margin-top: 12px; margin-bottom: 12px;
+            box-shadow: 0 0 0 2px rgba(0,50,80,0.45), 0 0 22px rgba(160,255,230,0.4), inset 0 2px 0 rgba(255,255,255,0.5);
+        }
+        @media (prefers-reduced-motion: reduce) { .au-t, .au-a, .au-b, .au-w { animation: none !important; } .au-t:first-child { opacity: 1; } }
+
+
+        /* ===== 2 VS 2: cards e botões Frutiger Aero (vidro, brilho inferior, reflexo diagonal) ===== */
+        #lobby-overlay.aurora .lobby-tab, #lobby-overlay.aurora #lobby-card button.main-btn, #ready-overlay.aurora button.main-btn {
+            --hue: 180; --sat: 0.2; --glow-intensity: 0.7;
+            --fg: #06323a; --bg: rgba(96,208,218,0.85); --bg-dark: rgba(28,120,140,0.8);
+            --bottom-glow: radial-gradient(farthest-corner at bottom center, rgba(255,255,255,var(--glow-intensity)), transparent);
+            background: var(--bottom-glow), linear-gradient(to bottom, var(--bg-dark), var(--bg));
+            border: 1px solid var(--bg);
+            border-radius: 9999px;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.35);
+            color: var(--fg);
+            font-family: Tahoma, Verdana, Geneva, sans-serif; font-weight: 700; font-style: normal;
+            text-transform: none; letter-spacing: 0.3px; text-shadow: 0 2px 0.5em rgba(0,0,0,0.2);
+            cursor: pointer; position: relative; isolation: isolate; clip-path: none;
+            transition: all 300ms ease; user-select: none; -webkit-user-select: none;
+        }
+        @supports (color: oklch(50% 0.1 180)) {
+            #lobby-overlay.aurora .lobby-tab, #lobby-overlay.aurora #lobby-card button.main-btn, #ready-overlay.aurora button.main-btn {
+                --fg: oklch(15% calc(var(--sat) * 0.5) var(--hue));
+                --bg: oklch(75% var(--sat) var(--hue) / 0.8);
+                --bg-dark: oklch(45% var(--sat) var(--hue) / 0.75);
+            }
+        }
+        #lobby-overlay.aurora #lobby-card button.main-btn, #ready-overlay.aurora button.main-btn { --hue: 150; --glow-intensity: 0.8; filter: none; }
+        #lobby-overlay.aurora .lobby-tab { --hue: 215; padding: 14px 24px; font-size: 19px; }
+        #lobby-overlay.aurora .lobby-tabs { filter: none; gap: 12px; }
+        /* reflexo diagonal */
+        #lobby-overlay.aurora .lobby-tab::before, #lobby-overlay.aurora #lobby-card button.main-btn::before, #ready-overlay.aurora button.main-btn::before {
+            content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; clip-path: none;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.05) 55%, transparent 70%);
+        }
+        /* realce de vidro no topo */
+        #lobby-overlay.aurora .lobby-tab::after, #lobby-overlay.aurora #lobby-card button.main-btn::after, #ready-overlay.aurora button.main-btn::after {
+            content: ''; position: absolute; z-index: -1; pointer-events: none; border-radius: inherit;
+            top: 4%; left: 0.75em; right: auto; width: calc(100% - 1.5em); height: 40%; margin: 0; border: none; box-shadow: none;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+            transition: background 400ms ease;
+        }
+        #lobby-overlay.aurora .lobby-tab:hover, #lobby-overlay.aurora #lobby-card button.main-btn:hover, #ready-overlay.aurora button.main-btn:hover, #lobby-overlay.aurora .lobby-tab:focus, #lobby-overlay.aurora #lobby-card button.main-btn:focus, #ready-overlay.aurora button.main-btn:focus { box-shadow: 0 6px 8px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.45); transform: translateY(-1px); filter: none; }
+        #lobby-overlay.aurora .lobby-tab:active, #lobby-overlay.aurora #lobby-card button.main-btn:active, #ready-overlay.aurora button.main-btn:active { box-shadow: 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); filter: none; }
+        #lobby-overlay.aurora .lobby-tab:hover { color: var(--fg); }
+        #lobby-overlay.aurora .lobby-tab.active { --hue: 145; --glow-intensity: 0.95; transform: none; color: var(--fg); text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+            box-shadow: 0 0 16px rgba(120,255,170,0.75), 0 4px 4px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.6); }
+        #lobby-overlay.aurora .lobby-tab.active::before, #lobby-overlay.aurora .lobby-tab.active::after { background-color: transparent; }
+        #lobby-overlay.aurora #lobby-card button.main-btn:disabled, #ready-overlay.aurora button.main-btn:disabled { opacity: 0.6; filter: grayscale(0.6); transform: none; cursor: not-allowed; }
+
+        /* card do lobby: vidro com brilho no topo */
+        #lobby-overlay.aurora #lobby-card {
+            background: linear-gradient(165deg, rgba(255,255,255,0.26) 0%, rgba(120,225,240,0.16) 28%, rgba(8,78,120,0.5) 100%);
+            border: 2px solid rgba(255,255,255,0.8); border-radius: 28px;
+            box-shadow: 0 12px 30px rgba(0,40,80,0.45), 0 0 26px rgba(150,255,230,0.35), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -24px 44px rgba(120,230,255,0.16);
+        }
+        #lobby-overlay.aurora #lobby-card::before {
+            content: ''; position: absolute; z-index: -1; pointer-events: none; top: 0; left: 0; right: 0; height: 46%;
+            border-radius: 26px 26px 50% 50% / 26px 26px 22% 22%;
+            background: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.04));
+        }
+        #lobby-overlay.aurora .lobby-head { font-family: Tahoma, Verdana, sans-serif; font-style: normal; background: linear-gradient(#ffffff, #b8f2ff); -webkit-background-clip: text; background-clip: text;
+            filter: drop-shadow(0 2px 3px rgba(0,50,80,0.75)); }
+        #lobby-overlay.aurora .lobby-head::after { background: repeating-linear-gradient(-60deg, rgba(255,255,255,0.85) 0 6px, transparent 6px 11px); }
+        #lobby-overlay.aurora .lobby-section.open {
+            background: linear-gradient(rgba(255,255,255,0.22), rgba(255,255,255,0.06)); border: 2px solid rgba(255,255,255,0.55); border-radius: 18px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 0 16px rgba(150,255,230,0.2); backdrop-filter: none;
+        }
+        #lobby-overlay.aurora #lobby-card input[type="text"] {
+            border-radius: 9999px; border: 2px solid rgba(255,255,255,0.9); background: linear-gradient(#e6faff, #ffffff); color: #06323a;
+            font-family: Tahoma, Verdana, sans-serif; box-shadow: inset 0 2px 5px rgba(0,60,90,0.35);
+        }
+        #lobby-overlay.aurora #lobby-card input[type="text"]::placeholder { color: #5a8ea0; }
+        #lobby-overlay.aurora #lobby-card input[type="text"]:focus { border-color: #fff; box-shadow: 0 0 0 3px rgba(120,255,200,0.75), inset 0 2px 5px rgba(0,60,90,0.35); }
+        #lobby-overlay.aurora #lobby-room-display { background: rgba(5,50,85,0.5); border: 2px solid rgba(255,255,255,0.55); border-radius: 16px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+        #lobby-overlay.aurora #lobby-room-code { font-style: normal; font-family: Tahoma, Verdana, sans-serif; color: #eaffff; text-shadow: 0 0 12px #6ff0ff; }
+        #lobby-overlay.aurora #lobby-player-list { color: #e6fbff; }
+        #lobby-overlay.aurora #lobby-status {
+            background: linear-gradient(rgba(255,255,255,0.32), rgba(10,90,130,0.7) 50%, rgba(6,52,92,0.82)); border: 2px solid rgba(255,255,255,0.85); border-radius: 9999px;
+            box-shadow: 0 4px 10px rgba(0,40,70,0.5), inset 0 1px 0 #fff; font-family: Tahoma, Verdana, sans-serif;
+        }
+        #lobby-overlay.aurora #lobby-status.status-error { color: #ffc2c2; }
+        #lobby-overlay.aurora #lobby-status.status-warn { color: #fff5a8; }
+        #lobby-overlay.aurora #lobby-status.status-ok { color: #bfffd9; }
+
+        /* seleção de personagem */
+        #ready-overlay.aurora #ready-inner {
+            background: linear-gradient(165deg, rgba(255,255,255,0.24) 0%, rgba(120,225,240,0.12) 22%, rgba(8,78,120,0.48) 100%);
+            border: 2px solid rgba(255,255,255,0.8); border-radius: 26px;
+            box-shadow: 0 12px 30px rgba(0,40,80,0.45), 0 0 26px rgba(150,255,230,0.35), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -24px 44px rgba(120,230,255,0.14);
+        }
+        #ready-overlay.aurora #ready-inner::before {
+            content: ''; position: absolute; z-index: -1; pointer-events: none; top: 0; left: 0; right: 0; height: 26%;
+            border-radius: 24px 24px 50% 50% / 24px 24px 30% 30%; background: linear-gradient(rgba(255,255,255,0.35), rgba(255,255,255,0.03));
+        }
+        #ready-overlay.aurora .ready-logo { color: #fff; font-family: Tahoma, Verdana, sans-serif; text-shadow: 0 2px 4px rgba(0,50,80,0.7), 0 0 10px rgba(150,255,255,0.6); -webkit-text-stroke: 0; }
+        #ready-overlay.aurora #ready-title, #ready-overlay.aurora #ready-count {
+            font-family: Tahoma, Verdana, sans-serif; color: #fff; border-radius: 9999px; border: 2px solid rgba(255,255,255,0.85);
+            background: linear-gradient(rgba(255,255,255,0.32), rgba(10,90,130,0.7) 50%, rgba(6,52,92,0.82));
+            box-shadow: 0 4px 10px rgba(0,40,70,0.5), inset 0 1px 0 #fff; text-shadow: 0 1px 3px rgba(0,30,50,0.8);
+        }
+        #ready-overlay.aurora .char-slot { background: linear-gradient(160deg, rgba(255,255,255,0.38), rgba(30,120,160,0.5)); border-color: rgba(255,255,255,0.65); border-radius: 12px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 3px 6px rgba(0,40,70,0.4); }
+        #ready-overlay.aurora .char-slot.playable { border-color: rgba(255,255,255,0.85); }
+        #ready-overlay.aurora .char-slot.playable:hover { border-color: #fff; box-shadow: 0 0 14px rgba(150,255,235,0.9), 0 6px 10px rgba(0,40,70,0.5); }
+        #ready-overlay.aurora .char-slot.playable.selected { border-color: #fff; box-shadow: 0 0 0 2px #5dffb0, 0 0 18px rgba(120,255,190,0.9); animation: au-slot-pulse 1.2s ease-in-out infinite; }
+        @keyframes au-slot-pulse { 50% { box-shadow: 0 0 0 2px #5dffb0, 0 0 8px rgba(120,255,190,0.5); } }
+        #ready-overlay.aurora .char-slot-name { background: linear-gradient(transparent, rgba(4,50,80,0.88) 35%); font-family: Tahoma, Verdana, sans-serif; }
+
+
+        /* Voltar e círculo VS no estilo Frutiger Aero */
+        #lobby-overlay.aurora #lobby-back {
+            --hue: 215; --glow-intensity: 0.7;
+            background: radial-gradient(farthest-corner at bottom center, rgba(255,255,255,0.7), transparent), linear-gradient(to bottom, rgba(24,100,150,0.85), rgba(110,205,235,0.85));
+            border: 1px solid rgba(150,225,245,0.9); border-radius: 9999px; color: #06323a; font-family: Tahoma, Verdana, sans-serif; font-weight: 700; font-style: normal;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5); box-shadow: 0 4px 4px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.4); isolation: isolate;
+        }
+        #lobby-overlay.aurora #lobby-back::after { content: ''; position: absolute; z-index: -1; pointer-events: none; top: 4%; left: 0.75em; width: calc(100% - 1.5em); height: 40%; border-radius: inherit;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.1)); }
+        #lobby-overlay.aurora #lobby-back:hover { transform: translateY(-1px); filter: none; }
+        #ready-overlay.aurora .ready-vs { color: #06323a; font-family: Tahoma, Verdana, sans-serif; font-style: normal; border: 2px solid rgba(255,255,255,0.9);
+            background: radial-gradient(farthest-corner at bottom center, rgba(255,255,255,0.7), transparent), linear-gradient(to bottom, rgba(24,100,150,0.9), rgba(110,205,235,0.9)); box-shadow: 0 3px 6px rgba(0,40,70,0.5), inset 0 1px 0 #fff; }
+        #ready-overlay.aurora .ready-teamvs { color: #fff; font-family: Tahoma, Verdana, sans-serif; text-shadow: 0 0 12px rgba(150,255,255,0.9), 0 2px 3px rgba(0,40,70,0.7); }
+        /* ===== 2 VS 2: boneco 3D (meio oval + esfera) em wireframe girando no fundo ===== */
+        .bg-dome { display: none; position: fixed; left: 82%; top: 52%; width: 0; height: 0; perspective: 1200px; pointer-events: none; z-index: 0; }
+        .aurora > .bg-dome { display: block; }
+        .bg-dome .bd-rig { position: relative; transform-style: preserve-3d; transform: rotateX(-16deg) scale(1.25); }
+        .bg-dome .bd-spin { position: relative; transform-style: preserve-3d; will-change: transform; animation: bd-spin 30s infinite linear; }
+        @keyframes bd-spin { to { transform: rotateY(360deg); } }
+        .bg-dome .bd-prism { position: absolute; transform-style: preserve-3d; transform: translate3d(0, calc(var(--ty) * 1px), 0); }
+        .bg-dome .bd-face { position: absolute; width: calc(var(--w) * 1px); height: calc(var(--h) * 1px); left: calc(var(--w) * -0.5px); top: calc(var(--h) * -0.5px);
+            border: 1px solid rgba(255,255,255,0.8); box-sizing: border-box; backface-visibility: visible; }
+        .bg-dome .bd-face:nth-child(1) { transform: rotateY(0deg)   translateZ(calc(var(--w) * 0.866px)); }
+        .bg-dome .bd-face:nth-child(2) { transform: rotateY(60deg)  translateZ(calc(var(--w) * 0.866px)); }
+        .bg-dome .bd-face:nth-child(3) { transform: rotateY(120deg) translateZ(calc(var(--w) * 0.866px)); }
+        .bg-dome .bd-face:nth-child(4) { transform: rotateY(180deg) translateZ(calc(var(--w) * 0.866px)); }
+        .bg-dome .bd-face:nth-child(5) { transform: rotateY(240deg) translateZ(calc(var(--w) * 0.866px)); }
+        .bg-dome .bd-face:nth-child(6) { transform: rotateY(300deg) translateZ(calc(var(--w) * 0.866px)); }
+        @media (max-width: 800px) { .bg-dome { left: 50%; top: 70%; } .bg-dome .bd-rig { transform: rotateX(-16deg) scale(1.1); } }
 
         /* ===== GALERIA DE PERSONAGENS — estilo da galeria de troféus do Smash ===== */
         #gal-overlay { --u: min(calc(100vw / 960), calc(100vh / 720)); position: fixed; inset: 0; z-index: 101; display: none; overflow: hidden;
@@ -722,7 +938,8 @@
             position: relative;
             z-index: 1;
             box-sizing: border-box;
-            width: min(640px, 94vw);
+            width: 640px;
+            zoom: var(--lobby-zoom, 1); /* escala proporcional à tela (ver script no fim) */
             margin: auto;
             padding: 30px 26px 44px;
             background: linear-gradient(160deg, rgba(10,16,60,0.82), rgba(5,8,34,0.9));
@@ -894,7 +1111,7 @@
             filter: grayscale(0.4);
         }
 
-        @media (max-width: 560px) {
+        @media (max-width: 0px) { /* desativado: o lobby/seleção agora escalam por zoom */
             #lobby-card {
                 grid-template-columns: 1fr;
                 grid-template-areas: "tabs" "panel";
@@ -1007,6 +1224,7 @@
             position: relative;
             z-index: 1;
             max-width: 780px;
+            zoom: var(--ready-zoom, 1); /* escala proporcional à tela (ver script no fim) */
             margin: 0 auto;
             padding: 22px 16px 44px;
             text-align: center;
@@ -1143,6 +1361,20 @@
         .ready-pcard.p2 { --pc: #3f5cff; --pc2: #16227a; --pcl: #8fa2ff; }
         .ready-pcard.p3 { --pc: #e9c21c; --pc2: #7a5f08; --pcl: #fff07a; }
         .ready-pcard.p4 { --pc: #2fb84f; --pc2: #145a28; --pcl: #86f0a0; }
+        /* 2 vs 2: a cor do card segue o time (sobrescreve as cores por porta) */
+        .ready-pcard.t0 { --pc: #e53935; --pc2: #6e1a22; --pcl: #ff8a80; }
+        .ready-pcard.t1 { --pc: #1e88e5; --pc2: #0b2f8a; --pcl: #8fc4ff; }
+        .ready-pcard-team {
+            position: absolute; top: -3px; right: -6px; z-index: 3;
+            padding: 3px 10px 3px 14px; font-size: 11px; font-weight: 900; font-style: italic; letter-spacing: 1px;
+            color: #fff; text-transform: uppercase; text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+            background: var(--pc2); border: 2px solid var(--pcl);
+            clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
+        }
+        .ready-teamvs {
+            align-self: center; font-size: 28px; font-weight: 900; font-style: italic; color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 3px 0 #14162a; padding: 0 4px;
+        }
         .ready-pcard.is-ready {
             box-shadow: 0 0 0 2px rgba(10,14,30,0.8), 0 0 22px var(--pcl), 0 8px 16px rgba(0,0,0,0.5);
             transform: translateY(-4px);
@@ -1273,6 +1505,7 @@
         .ready-pcard.p2 .ready-pcard-status::after { content: 'P2'; }
         .ready-pcard.p3 .ready-pcard-status::after { content: 'P3'; }
         .ready-pcard.p4 .ready-pcard-status::after { content: 'P4'; }
+        .ready-pcard.t0 .ready-pcard-status::after, .ready-pcard.t1 .ready-pcard-status::after { content: '' !important; }
         .ready-pcard-status::before {
             content: '';
             width: 7px; height: 7px;
@@ -1357,7 +1590,7 @@
         .ready-pcard.empty { opacity: 0.4; filter: grayscale(0.75); transform: none; box-shadow: none; }
         .ready-pcard.empty .ready-pcard-status { animation: none; }
 
-        @media (max-width: 560px) {
+        @media (max-width: 0px) { /* desativado: o lobby/seleção agora escalam por zoom */
             #char-select-grid { grid-template-columns: repeat(4, 1fr); }
             .ready-logo { display: none; }
             #ready-title { font-size: 16px; padding: 7px 18px; }
@@ -1385,7 +1618,7 @@
         .ready-pcard-check { top: 26px; right: 12px; width: 22px; height: 22px; font-size: 12px; }
         #ready-count { margin: 0 0 11px; padding: 3px 14px; font-size: 12px; }
         #ready-overlay button.main-btn { min-width: 175px; padding: 10px 28px; font-size: 15px; border-width: 2px; }
-        @media (max-width: 560px) {
+        @media (max-width: 0px) { /* desativado: o lobby/seleção agora escalam por zoom */
             #char-select-grid { max-width: 100%; }
             .ready-pcard { width: calc(25% - 5px); min-width: 80px; }
             .ready-pcard-stage { height: 80px; }
@@ -1603,11 +1836,17 @@
         }
         @keyframes vRingPulse { 50% { opacity: 0.45; box-shadow: 0 0 70px var(--v-accent); } }
 
-        #victory-champion .v-sprite img { transform-origin: 50% 100%; }
+        #victory-champion .v-sprite img, #victory-champion2 .v-sprite img { transform-origin: 50% 100%; }
         #victory-overlay.impact .v-sprite {
             filter: drop-shadow(0 0 18px var(--v-accent)) drop-shadow(0 6px 8px rgba(0,0,0,0.35));
         }
         #victory-overlay.impact #victory-champion .v-sprite img { animation: vHop 0.9s ease-in-out infinite; }
+        #victory-overlay.impact #victory-champion2 .v-sprite img { animation: vHop 0.9s ease-in-out 0.25s infinite; }
+        #victory-champion2-name { transition: opacity 0.3s; }
+        #victory-overlay.impact #victory-champion2-name { opacity: 0; }
+        #victory-overlay.duo #victory-ring { width: 520px; height: 520px; }
+        #victory-plate .plate-duo { display: flex; align-items: center; gap: 10px; }
+        #victory-plate .plate-duo img { height: 1.9em; image-rendering: pixelated; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6)); }
         @keyframes vHop {
             0%, 100% { transform: translateY(0) scale(1.04, 0.94); }
             45%      { transform: translateY(-16px) scale(0.97, 1.05); }
@@ -1934,6 +2173,9 @@
             display: none;
         }
     </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Yellowtail&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -2419,6 +2661,15 @@
                     <div class="mp-desc">Eliminatórias de 2 contra 2 até a final. Quem cai continua assistindo.</div>
                     <div class="mp-tag">3 a 8 jogadores</div>
                 </div>
+                <div class="mp-card" data-mode="teams">
+                    <div class="mp-shape"></div>
+                    <div class="mp-icon">
+                        <svg viewBox="0 0 140 100"><circle cx="16" cy="30" r="9"/><path d="M2 76Q2 50 16 50Q30 50 30 76Z"/><circle cx="42" cy="30" r="9"/><path d="M28 76Q28 50 42 50Q56 50 56 76Z"/><path d="M70 14V86"/><circle cx="98" cy="30" r="9"/><path d="M84 76Q84 50 98 50Q112 50 112 76Z"/><circle cx="124" cy="30" r="9"/><path d="M110 76Q110 50 124 50Q138 50 138 76Z"/></svg>
+                    </div>
+                    <div class="mp-name">2 vs 2</div>
+                    <div class="mp-desc">Duplas se enfrentam na mesma arena. A dupla que ficar de pé vence. Sem fogo amigo.</div>
+                    <div class="mp-tag">4 jogadores</div>
+                </div>
             </div>
             <div id="mp-hint">◀ ▶ escolher &nbsp;·&nbsp; Enter confirmar &nbsp;·&nbsp; Esc voltar</div>
             <div id="mp-back">◀ Voltar</div>
@@ -2523,8 +2774,9 @@
         function choose(i) {
             select(i);
             window.mpMode = cards[sel].dataset.mode;
-            if (lobbyHead) lobbyHead.textContent = window.mpMode === 'tournament' ? 'Multijogador · Torneio' : 'Multijogador';
+            if (lobbyHead) lobbyHead.textContent = window.mpMode === 'tournament' ? 'Multijogador · Torneio' : window.mpMode === 'teams' ? 'Multijogador · 2 vs 2' : 'Multijogador';
             lobby.classList.toggle('tournament', window.mpMode === 'tournament'); // tema de entardecer com cilindros
+            lobby.classList.toggle('aurora', window.mpMode === 'teams'); // 2 vs 2: fundo aurora
             ov.style.display = 'none';
             lobby.style.display = 'flex';
         }
@@ -2545,6 +2797,7 @@
     </script>
 
     <div id="lobby-overlay" style="display: none;">
+        <div class="bg-dome" aria-hidden="true"></div>
         <canvas id="lobby-fireworks" aria-hidden="true"></canvas>
         <div id="lobby-cylinders" aria-hidden="true">
             <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
@@ -2667,6 +2920,7 @@
     </div>
 
     <div id="ready-overlay">
+        <div class="bg-dome" aria-hidden="true"></div>
         <div id="ready-inner">
             <div id="ready-head">
                 <span class="ready-logo">WACKY</span>
@@ -2766,6 +3020,12 @@
                     </div>
                     <div class="v-nametag" id="victory-champion-name"></div>
                 </div>
+                <div id="victory-champion2" class="v-billboard v-character" data-anchor="bottom" data-x="0" data-y="0" data-z="0" style="display:none;">
+                    <div class="v-sprite">
+                        <img id="victory-champion2-img" src="" alt="">
+                    </div>
+                    <div class="v-nametag" id="victory-champion2-name"></div>
+                </div>
             </div>
         </div>
 
@@ -2818,6 +3078,14 @@
         const connectionDot = document.getElementById('connection-dot');
         let isRunning = false;
         let matchOver = false; // true quando resta 1 (ou 0) jogador vivo — trava a partida até dar reset
+        // ---- Modo 2 vs 2: _teamMap (pid -> 0|1) é montado no início de cada partida a partir da ordem do roster
+        // (P1+P2 contra P3+P4). Vazio fora do modo 'teams'.
+        const FRIENDLY_FIRE = false;
+        let _teamMap = {};
+        const TEAM_COLORS = ['#e53935', '#1e88e5'], TEAM_NAMES = ['Time Vermelho', 'Time Azul'];
+        function sameTeam(a, b) { return a !== b && _teamMap[a] !== undefined && _teamMap[a] === _teamMap[b]; }
+        function isAlly(a, b) { return !FRIENDLY_FIRE && window.mpMode === 'teams' && sameTeam(a, b); }
+        function teamOfPlayerObj(pl) { for (const k in players) if (players[k] === pl) return _teamMap[k]; return undefined; }
         let championId = null; // id do jogador vencedor, para exibir na tela de fim de partida
         let lastTime = 0;
         const cameraState = { focusX: 800, focusY: 450, zoom: 1 }; // WORLD_WIDTH/2, WORLD_HEIGHT/2 iniciais
@@ -3226,7 +3494,7 @@
         const JELLY_PRESSURE = 0.0043;    // pressureMult original (0.00035) reescalado pro raio mini
         const JELLY_DAMPING = 0.998;
         const JELLY_GRAVITY = 0.025;      // por sub-passo (~ 720 px/s², bem mais leve que a gravidade do jogo)
-        const JELLY_COOLDOWN = 130;
+        const JELLY_COOLDOWN = 900;       // ms de espera depois da cuspida (antes 130): ~1,3 s entre rajadas
         let jellyAccumulator = 0;
         const POLISH_PALETTES = {
             pink:  { base: '#FF1493' },
@@ -4591,23 +4859,186 @@
             });
         }
 
+        // ==========================================================================
+        // MAPA "Blue Note" (portado do ceu-noturno.html: CSS -> canvas)
+        // Camadas: céu, estrelas (pequenas, médias, grandes), lua, prédios e, por cima, a
+        // plataforma preta com o letreiro "BLUE NOTE / Bar" e os dois holofotes laterais.
+        // ==========================================================================
+        const BLUENOTE_PARALLAX = { sky: 0.01, s1: 0.02, s2: 0.03, s3: 0.04, moon: 0.05, buildings: 0.10 };
+        // posições (vw, vh) copiadas do box-shadow original; x/y em % da tela
+        const BN_S1 = [[5,8],[12,22],[18,5],[24,35],[31,14],[37,48],[43,9],[49,28],[55,55],[61,17],[67,40],[73,6],[79,31],[85,20],[91,45],[96,12],[8,60],[21,72],[34,65],[47,78],[58,70],[70,62],[83,75],[94,68],[15,42]];
+        const BN_S2 = [[9,15],[27,26],[41,19],[52,42],[64,10],[76,52],[88,30],[14,55],[38,58],[81,8]];
+        const BN_S3 = [[20,12],[56,24],[87,38],[33,50]];
+        const BN_BUILDINGS = [55, 80, 62, 95, 70, 85, 58, 90, 66, 78];
+
+        // 0..1 com vai-e-volta e ease-in-out (equivale a "animation: ... alternate ease-in-out")
+        function bnAlt(now, periodMs, delayMs) {
+            const ph = (((now - (delayMs || 0)) / periodMs) % 2 + 2) % 2;
+            const u = ph < 1 ? ph : 2 - ph;
+            return (1 - Math.cos(Math.PI * u)) / 2;
+        }
+
+        function drawBlueNoteBackground(followX, followY) {
+            const M = 3000;
+            const now = Date.now();
+            const W = WORLD_WIDTH, H = WORLD_HEIGHT;
+
+            // 1. Céu: linear-gradient(#050816 0%, #0b1330 60%, #1a2147 100%)
+            ctx.save();
+            hillsLayerShift(followX, followY, BLUENOTE_PARALLAX.sky);
+            const sky = ctx.createLinearGradient(0, -0.2 * H, 0, 1.2 * H);
+            sky.addColorStop(0, '#050816');
+            sky.addColorStop(0.6, '#0b1330');
+            sky.addColorStop(1, '#1a2147');
+            ctx.fillStyle = sky;
+            ctx.fillRect(-M, -M, W + 2 * M, H + 2 * M);
+            ctx.restore();
+
+            // 2. Estrelas: pequenas (fixas), médias (piscam 4s) e grandes (piscam 6s, atraso 1s)
+            const drawStars = (list, factor, r, alpha, glow) => {
+                ctx.save();
+                hillsLayerShift(followX, followY, factor);
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#fff';
+                if (glow && !DORFIC_LITE) { ctx.shadowColor = '#fff'; ctx.shadowBlur = 3; }
+                for (const [vx, vy] of list) {
+                    ctx.beginPath();
+                    ctx.arc(vx / 100 * W, vy / 100 * H, r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            };
+            drawStars(BN_S1, BLUENOTE_PARALLAX.s1, 0.9, 1, false);
+            drawStars(BN_S2, BLUENOTE_PARALLAX.s2, 1.5, 0.4 + 0.6 * bnAlt(now, 4000, 0), false);
+            drawStars(BN_S3, BLUENOTE_PARALLAX.s3, 2.2, 0.4 + 0.6 * bnAlt(now, 6000, 1000), true);
+
+            // 3. Lua: 56px, #f4efd8, brilho 0 0 40px 8px rgba(244,239,216,.25)
+            ctx.save();
+            hillsLayerShift(followX, followY, BLUENOTE_PARALLAX.moon);
+            if (!DORFIC_LITE) { ctx.shadowColor = 'rgba(244,239,216,0.25)'; ctx.shadowBlur = 40; }
+            ctx.fillStyle = '#f4efd8';
+            ctx.beginPath();
+            ctx.arc(W * 0.88 - 28, H * 0.12 + 28, 28, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // 4. Prédios: 10 colunas lado a lado (largura 108% da tela, altura 66%), cor #1c1f26
+            ctx.save();
+            hillsLayerShift(followX, followY, BLUENOTE_PARALLAX.buildings);
+            const n = BN_BUILDINGS.length, bw = (W * 1.08) / n, bx0 = -W * 0.04, baseY = H * 1.02;
+            ctx.fillStyle = '#1c1f26';
+            for (let i = 0; i < n; i++) {
+                ctx.fillRect(bx0 + i * bw, baseY - (BN_BUILDINGS[i] / 100) * H * 0.66, bw + 1, 2200);
+            }
+            ctx.restore();
+        }
+
+        // Plataforma do Blue Note: borda superior preta (a superfície onde se pisa), bloco preto
+        // mais estreito embaixo com o letreiro, e dois holofotes nas laterais com feixes balançando.
+        function drawBlueNoteStageFill(stage) {
+            const x = stage.x, y = stage.y, w = stage.width, h = stage.height;
+            const now = Date.now();
+            const vw = w / 70;              // 1vw do original (a plataforma ocupava 70vw)
+            const over = 4 * vw;            // borda superior sobra 4vw de cada lado
+
+
+            // Bloco preto (corpo da plataforma), um pouco mais estreito que a borda
+            const bx = x + over, bw = w - 2 * over, by = y + h - 2, bh = 30 * vw * 0.5625 + 2;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(bx, by, bw, bh);
+
+            // Borda superior (a superfície do palco, arredondada)
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            const r = 10;
+            ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h); ctx.lineTo(x, y + h); ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Letreiro: "BLUE NOTE" (Bebas Neue azul neon) e "Bar" (Yellowtail cinza) deslocado à direita
+            const cx = bx + bw / 2;
+            const cy = by + (bh - 3 * vw * 0.5625) / 2;   // centralizado, com padding-bottom 3vh
+            const fs = 8 * vw, fb = 4.5 * vw;
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            if ('letterSpacing' in ctx) ctx.letterSpacing = (0.1 * fs) + 'px';
+            ctx.font = fs + 'px "Bebas Neue", Impact, "Arial Narrow", sans-serif';
+            ctx.fillStyle = '#2f8cff';
+            const titleY = cy - fb * 0.45;
+            if (!DORFIC_LITE) {
+                ctx.shadowColor = 'rgba(47,140,255,0.8)'; ctx.shadowBlur = 12;
+                ctx.fillText('BLUE NOTE', cx + 0.05 * fs, titleY);
+                ctx.shadowColor = 'rgba(47,140,255,0.5)'; ctx.shadowBlur = 28;
+            }
+            ctx.fillText('BLUE NOTE', cx + 0.05 * fs, titleY);
+            ctx.shadowBlur = 0;
+            if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+            ctx.font = fb + 'px Yellowtail, "Brush Script MT", cursive';
+            ctx.fillStyle = '#8a8f98';
+            ctx.fillText('Bar', cx + 1.6 * fb, titleY + fs * 0.5 + fb * 0.35);
+            ctx.restore();
+
+            // Holofotes: 7vw para fora de cada ponta do bloco; feixe gira 4°..28° (6s, vai-e-volta)
+            const groundY = by + bh - 3 * vw * 0.5625;
+            const beamH = 70 * vw * 0.5625, beamW = 14 * vw;
+            const spots = [
+                { px: bx - 7 * vw, dir: 1, delay: 0 },
+                { px: bx + bw + 7 * vw, dir: -1, delay: 3000 }   // atraso negativo (-3s) no CSS
+            ];
+            for (const L of spots) {
+                const e = bnAlt(now, 6000, -L.delay);
+                const ang = L.dir * (4 + 24 * e) * Math.PI / 180;
+                // pé
+                ctx.fillStyle = '#0d0e12';
+                ctx.fillRect(L.px - 0.4 * vw, groundY, 0.8 * vw, 4 * vw * 0.5625);
+                ctx.save();
+                ctx.translate(L.px, groundY);
+                ctx.rotate(ang);
+                // feixe: polygon(44% 100%, 56% 100%, 100% 0, 0 0)
+                const g = ctx.createLinearGradient(0, 0, 0, -beamH);
+                g.addColorStop(0, 'rgba(190,215,255,0.45)');
+                g.addColorStop(1, 'rgba(190,215,255,0)');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.moveTo(-0.06 * beamW, 0); ctx.lineTo(0.06 * beamW, 0);
+                ctx.lineTo(beamW / 2, -beamH); ctx.lineTo(-beamW / 2, -beamH);
+                ctx.closePath();
+                ctx.fill();
+                // cabeça 3vw x 2.4vw + lente
+                ctx.fillStyle = '#0d0e12';
+                ctx.fillRect(-1.5 * vw, -1.2 * vw, 3 * vw, 2.4 * vw);
+                ctx.fillStyle = '#dbe8ff';
+                if (!DORFIC_LITE) { ctx.shadowColor = 'rgba(190,215,255,0.7)'; ctx.shadowBlur = vw; }
+                ctx.beginPath();
+                ctx.ellipse(0, -1.2 * vw - 0.15 * vw + 0.3 * vw, 1.2 * vw, 0.3 * vw, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
         // Mapas disponíveis: cada um define seu próprio fundo (drawBackground) e cor/estilo
         // do palco (drawStageFill). Geometria do palco (getStageRect) é igual em todos.
         const MAPS = [
             { name: 'Cubos', thumb: 'linear-gradient(160deg,#cdeaf9 0%,#a3d4ee 45%,#7fabda 100%)', drawBackground: drawParallaxBackground, drawStageFill: drawCubesStageFill },
             { name: 'Colinas', thumb: 'linear-gradient(180deg,#5fb0f0 0%,#a8dcf5 55%,#4fae4a 56%,#2f7d32 100%)', drawBackground: drawHillsBackground, drawStageFill: drawHillsStageFill },
             { name: 'DORFic', thumb: 'linear-gradient(180deg,#ffb400 0%,#ff8a00 30%,#f4620a 58%,#ec4308 100%)', drawBackground: drawDorficBackground, drawStageFill: drawDorficStageFill },
-            { name: 'Vector', thumb: 'radial-gradient(circle at 50% 62%,#ff70b0 0,#c4103e 38%,#7a0524 100%)', drawBackground: drawVectorBackground, drawStageFill: drawVectorStageFill }
+            { name: 'Vector', thumb: 'radial-gradient(circle at 50% 62%,#ff70b0 0,#c4103e 38%,#7a0524 100%)', drawBackground: drawVectorBackground, drawStageFill: drawVectorStageFill },
+            { name: 'Blue Note', thumb: 'linear-gradient(180deg,#050816 0%,#0b1330 60%,#1a2147 100%)', drawBackground: drawBlueNoteBackground, drawStageFill: drawBlueNoteStageFill }
         ];
         let currentMapIndex = 0;
 
         function getStageRect() {
             const stageWidth = Math.min(620, WORLD_WIDTH * 0.6);
+            // Blue Note: palco largo como a plataforma do original (70% da tela)
+            const bnMap = MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Blue Note';
             const stageHeight = 40;
             return {
-                x: WORLD_WIDTH / 2 - stageWidth / 2,
+                x: WORLD_WIDTH / 2 - (bnMap ? WORLD_WIDTH * 0.7 : stageWidth) / 2,
                 y: WORLD_HEIGHT / 2 + 120,
-                width: stageWidth,
+                width: bnMap ? WORLD_WIDTH * 0.7 : stageWidth,
                 height: stageHeight
             };
         }
@@ -4615,7 +5046,7 @@
         // Duas plataformas flutuantes pequenas acima da plataforma principal
         function getFloatingPlatforms() {
             if (MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Vector') return getVectorPlatforms();
-            if (MAPS[currentMapIndex] && (MAPS[currentMapIndex].name === 'Colinas' || MAPS[currentMapIndex].name === 'DORFic')) return [];
+            if (MAPS[currentMapIndex] && (MAPS[currentMapIndex].name === 'Colinas' || MAPS[currentMapIndex].name === 'DORFic' || MAPS[currentMapIndex].name === 'Blue Note')) return [];
             const stage = getStageRect();
             const platWidth = Math.min(150, stage.width * 0.24);
             const platHeight = 18;
@@ -4807,7 +5238,7 @@
                 const p = players[id];
 
                 // Remover jogadores inativos (timeout de 30 segundos)
-                if (now - p.lastUpdate > 30000 && id !== myUserId) {
+                if (now - p.lastUpdate > 30000 && id !== myUserId && !(window.TOURN && TOURN.active)) { // torneio: lobby/chave/VS não enviam pacotes; quem sai é tratado por onPlayerLeft
                     delete players[id];
                     continue;
                 }
@@ -5132,12 +5563,24 @@
         function checkMatchEnd() {
             if (typeof DEMO !== 'undefined' && DEMO.active) { DEMO.onElimination(); return; }
             if (!isRunning) return; // fora de partida (ex.: já voltou pra seleção): pacote atrasado de outro jogador não pode reabrir a tela de vitória
+            if (window.TOURN && TOURN.active) { // torneio: só os 2 lutadores contam, e só com a luta valendo
+                if (TOURN.finished || !TOURN.live || introLock || !TOURN.fighters || matchOver) return; // entradas/contagem/VS nunca encerram a luta
+                // lutador que ainda não apareceu em 'players' conta como vivo (se ele saiu, o host trata por W.O. em onPlayerLeft)
+                const aliveF = TOURN.fighters.filter(id => !(players[id] && players[id].eliminated));
+                if (aliveF.length <= 1) {
+                    matchOver = true;
+                    championId = aliveF.length === 1 ? aliveF[0] : null;
+                    TOURN.onFightEnd(championId);
+                }
+                return;
+            }
             const allIds = Object.keys(players);
             if (allIds.length === 0) return;
             const alive = allIds.filter(id => !players[id].eliminated);
-            if (alive.length <= 1 && !matchOver) {
+            const _teamsOver = window.mpMode === 'teams' && alive.length > 0 && _teamMap[alive[0]] !== undefined && alive.every(id => _teamMap[id] === _teamMap[alive[0]]);
+            if ((alive.length <= 1 || _teamsOver) && !matchOver) {
                 matchOver = true;
-                championId = alive.length === 1 ? alive[0] : null;
+                championId = alive.length >= 1 ? alive[0] : null;
                 if (window.TOURN && TOURN.active) { TOURN.onFightEnd(championId); return; } // torneio: o host decide o resultado e mostra a chave
                 triggerVictoryScreen();
             }
@@ -5299,10 +5742,38 @@
 
             const champ = championId && players[championId] ? players[championId] : null;
             const charDef = CHARACTERS[(champ && champ.character) || 'renanzinho'] || CHARACTERS.renanzinho;
-            victoryChampionImg.src = (charDef.sprites.idle && charDef.sprites.idle.src) || '';
+            const spriteOf = pl => { const d = CHARACTERS[(pl && pl.character) || 'renanzinho'] || CHARACTERS.renanzinho; return (d.sprites.idle && d.sprites.idle.src) || ''; };
+            const champ2El = document.getElementById('victory-champion2');
+            const champ2Img = document.getElementById('victory-champion2-img');
+            const champ2Name = document.getElementById('victory-champion2-name');
+            champ2El.style.display = 'none';
+            victoryOverlay.classList.remove('duo');
+            victoryChampionEl.dataset.x = '0';
+            victoryChampionImg.src = spriteOf(champ);
             victoryChampionName.textContent = champ ? champ.name : '???';
             victoryPlateName.textContent = champ ? champ.name : 'Empate';
-            victoryOverlay.style.setProperty('--v-accent', victoryAccent((champ && champ.character) || 'renanzinho'));
+            let duoAccent = null;
+            if (champ && window.mpMode === 'teams' && _teamMap[championId] !== undefined) { // 2v2: mostra a dupla vencedora (os 2 jogadores)
+                const tid = _teamMap[championId];
+                const ids = Object.keys(players).filter(k => _teamMap[k] === tid);
+                const mate = ids.find(k => k !== championId);
+                duoAccent = TEAM_COLORS[tid];
+                if (mate && players[mate]) {
+                    victoryOverlay.classList.add('duo');
+                    victoryChampionEl.dataset.x = '-95';
+                    champ2El.dataset.x = '95';
+                    champ2Img.src = spriteOf(players[mate]);
+                    champ2Name.textContent = players[mate].name;
+                    champ2El.style.display = '';
+                    victoryChampionName.textContent = champ.name;
+                }
+                const duo = ids.map(k => players[k].name).join(' & ');
+                victoryPlateName.innerHTML = '';
+                const lbl = document.createElement('span');
+                lbl.textContent = TEAM_NAMES[tid] + ' · ' + duo;
+                victoryPlateName.appendChild(lbl);
+            }
+            victoryOverlay.style.setProperty('--v-accent', duoAccent || victoryAccent((champ && champ.character) || 'renanzinho'));
             victoryOverlay.classList.remove('cine', 'impact');
             stopVictoryConfetti();
 
@@ -5382,7 +5853,7 @@
         // 4 jogadores -> 3 quadrados, etc.).
         function showLoserPanel() {
             const allIds = Object.keys(players);
-            let losers = allIds.filter(id => id !== championId);
+            let losers = allIds.filter(id => id !== championId && !sameTeam(id, championId));
             // Se soubermos quando cada um foi eliminado, o último a cair fica em 2º
             const hasOrder = losers.length > 0 && losers.every(id => players[id] && players[id].eliminatedAt);
             if (hasOrder) losers.sort((a, b) => players[b].eliminatedAt - players[a].eliminatedAt);
@@ -5397,6 +5868,7 @@
                 const sq = document.createElement('div');
                 sq.className = 'loser-square';
                 sq.style.setProperty('--i', idx);
+                if (window.mpMode === 'teams' && _teamMap[id] !== undefined) sq.style.borderBottomColor = TEAM_COLORS[_teamMap[id]];
 
                 const rank = document.createElement('div');
                 rank.className = 'loser-rank';
@@ -5574,7 +6046,7 @@
             if (!p.isShielding) return;
             if (!p.attackUntil || now >= p.attackUntil) return; // segurança extra, caso já tenha acabado
             for (const id in players) {
-                if (id === myUserId) continue;
+                if (id === myUserId || isAlly(id, myUserId)) continue;
                 if (p.shieldHitIds.includes(id)) continue;
                 const target = players[id];
                 const dx = Math.abs(target.x - p.x);
@@ -5695,7 +6167,7 @@
             if (speed < (isOut ? FLAIL_HIT_MIN_SPEED_OUT : FLAIL_HIT_MIN_SPEED_IN)) return;
             const list = isOut ? f.hitOut : f.hitIn;
             for (const id in players) {
-                if (id === f.ownerId || list.includes(id)) continue;
+                if (id === f.ownerId || isAlly(id, f.ownerId) || list.includes(id)) continue;
                 const target = players[id];
                 if (target.eliminated) continue;
                 const tS = getSizeScale(target);
@@ -5957,7 +6429,7 @@
 
                 if (isOwnerLocal(n.ownerId)) {
                     for (const id in players) {
-                        if (id === n.ownerId) continue;
+                        if (id === n.ownerId || isAlly(id, n.ownerId)) continue;
                         if (n.kind === 'hofy' && n.hitIds && n.hitIds.includes(id)) continue;
                         const target = players[id];
                         const tS = getSizeScale(target);
@@ -6088,7 +6560,7 @@
                 const cfg = DDRAW.shapes[d.shape];
                 const pos = danDrawingPos(d, age);
                 for (const id in players) {
-                    if (id === d.ownerId || d.hitIds.includes(id)) continue;
+                    if (id === d.ownerId || isAlly(id, d.ownerId) || d.hitIds.includes(id)) continue;
                     const target = players[id];
                     const tS = getSizeScale(target);
                     if (Math.abs(target.x - pos.x) < cfg.hw + PLAYER_SIZE * 0.4 * tS && Math.abs(target.y - pos.y) < cfg.hh + PLAYER_SIZE * 0.5 * tS) {
@@ -6207,7 +6679,7 @@
             if (!p.onGround) return null;
             const feetY = p.y + PLAYER_SIZE / 2;
             for (const q of inkPuddles) {
-                if (q.ownerId === myUserId || Date.now() - q.spawnTime < 260) continue;
+                if (q.ownerId === myUserId || isAlly(myUserId, q.ownerId) || Date.now() - q.spawnTime < 260) continue;
                 if (Math.abs(p.x - q.x) < INK_W / 2 && Math.abs(feetY - q.y) < 6) return q;
             }
             return null;
@@ -6393,7 +6865,7 @@
                 // só o dono detecta o acerto
                 if (isOwnerLocal(m.ownerId)) {
                     for (const id in players) {
-                        if (id === m.ownerId) continue;
+                        if (id === m.ownerId || isAlly(id, m.ownerId)) continue;
                         const target = players[id];
                         if (target.eliminated) continue;
                         const tS = getSizeScale(target);
@@ -6484,7 +6956,7 @@
 
                 if (isOwnerLocal(b.ownerId)) {
                     for (const id in players) {
-                        if (id === b.ownerId || b.hitIds.includes(id)) continue;
+                        if (id === b.ownerId || isAlly(id, b.ownerId) || b.hitIds.includes(id)) continue;
                         const target = players[id];
                         const tS = getSizeScale(target);
                         if (Math.abs(target.x - b.x) < (b.charged ? CHARGED_BULLET_HIT_RADIUS : 26) * tS && Math.abs(target.y - b.y) < PLAYER_SIZE * (b.charged ? 1.05 : 0.9) * tS) {
@@ -6698,7 +7170,7 @@
                 if (isOwnerLocal(ball.ownerId)) {
                     const cc = jellyCentroid(ball);
                     for (const id in players) {
-                        if (id === ball.ownerId || ball.hitIds.includes(id)) continue;
+                        if (id === ball.ownerId || isAlly(id, ball.ownerId) || ball.hitIds.includes(id)) continue;
                         const target = players[id];
                         if (target.eliminated) continue;
                         const tS = getSizeScale(target);
@@ -6809,7 +7281,7 @@
                 // Dano: só o dono processa a colisão (mesmo padrão dos outros ataques), propaga por rede
                 if (isOwnerLocal(c.ownerId)) {
                     for (const id in players) {
-                        if (id === c.ownerId || c.hitIds.includes(id)) continue;
+                        if (id === c.ownerId || isAlly(id, c.ownerId) || c.hitIds.includes(id)) continue;
                         const target = players[id];
                         const tS = getSizeScale(target);
                         if (Math.abs(target.x - c.x) < 34 * tS && Math.abs(target.y - c.y) < PLAYER_SIZE * 0.9 * tS) {
@@ -6915,7 +7387,7 @@
             spawnPolishSplash(b.x, b.y, b.color);
             if (isOwnerLocal(b.ownerId)) {
                 for (const id in players) {
-                    if (id === b.ownerId) continue; // não leva dano da própria explosão
+                    if (id === b.ownerId || isAlly(id, b.ownerId)) continue; // não leva dano da própria explosão
                     const target = players[id];
                     const dx = target.x - b.x;
                     const dy = target.y - b.y;
@@ -7011,7 +7483,7 @@
 
                 if (isOwnerLocal(b.ownerId)) {
                     for (const id in players) {
-                        if (id === b.ownerId || b.hitIds.includes(id)) continue;
+                        if (id === b.ownerId || isAlly(id, b.ownerId) || b.hitIds.includes(id)) continue;
                         const target = players[id];
                         const tS = getSizeScale(target);
                         if (Math.abs(target.x - b.x) < SPIT_HIT_RADIUS * tS && Math.abs(target.y - b.y) < PLAYER_SIZE * 0.9 * tS) {
@@ -7193,7 +7665,7 @@
             if (!p.onGround) return null;
             const feetY = p.y + PLAYER_SIZE / 2;
             for (const q of waterPuddles) {
-                if (q.ownerId === myUserId) continue;
+                if (q.ownerId === myUserId || isAlly(myUserId, q.ownerId)) continue;
                 syncPuddleToPlatform(q);
                 if (Math.abs(p.x - q.x) < WATER_PUDDLE_W / 2 && Math.abs(feetY - q.y) < 6) return q;
             }
@@ -7318,7 +7790,7 @@
                     // só o dono detecta o toque de oponentes
                     if (isOwnerLocal(c.ownerId)) {
                         for (const id in players) {
-                            if (id === c.ownerId) continue;
+                            if (id === c.ownerId || isAlly(id, c.ownerId)) continue;
                             const target = players[id];
                             if (target.eliminated) continue;
                             const tS = getSizeScale(target);
@@ -7346,7 +7818,7 @@
             MP.broadcastToAll({ type: 'cupExplode', id: c.id, x: c.x, y: c.y, silent: !!silent });
             if (silent) return;
             for (const id in players) {
-                if (id === c.ownerId) continue; // o dono não leva dano do próprio copo
+                if (id === c.ownerId || isAlly(id, c.ownerId)) continue; // o dono não leva dano do próprio copo
                 const target = players[id];
                 if (target.eliminated) continue;
                 const tS = getSizeScale(target);
@@ -7545,7 +8017,7 @@
                     const dir = p.facingLeft ? -1 : 1;
                     const cx = p.x, cy = p.y + PLAYER_SIZE / 2 - BALL_RADIUS;
                     for (const id in players) {
-                        if (id === myUserId) continue;
+                        if (id === myUserId || isAlly(id, myUserId)) continue;
                         const target = players[id];
                         if (target.eliminated) continue;
                         const tS = getSizeScale(target);
@@ -7577,7 +8049,7 @@
                     const R = DAN_SPIN_RADIUS * sc;
                     const cx = p.x, cy = p.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * sc) / 2;
                     for (const id in players) {
-                        if (id === myUserId || p.spinHitIds.includes(id)) continue;
+                        if (id === myUserId || isAlly(id, myUserId) || p.spinHitIds.includes(id)) continue;
                         const target = players[id];
                         if (target.eliminated) continue;
                         const tS = getSizeScale(target);
@@ -7609,7 +8081,7 @@
                 const hitboxX = p.x + dir * def.range * 0.55;
 
                 for (const id in players) {
-                    if (id === myUserId) continue;
+                    if (id === myUserId || isAlly(id, myUserId)) continue;
                     const target = players[id];
                     const dx = Math.abs(target.x - hitboxX);
                     const dy = Math.abs(target.y - p.y);
@@ -8623,6 +9095,14 @@
             ctx.fillStyle = '#000000';
             ctx.font = 'bold 12px sans-serif';
             ctx.textAlign = 'center';
+            const _tid = window.mpMode === 'teams' ? teamOfPlayerObj(player) : undefined;
+            if (_tid !== undefined) { // 2v2: nome na cor do time, com contorno branco e seta acima
+                const ny = -SPRITE_HEIGHT * sizeS + PLAYER_SIZE/2 - 10;
+                ctx.lineWidth = 3; ctx.strokeStyle = '#ffffff'; ctx.lineJoin = 'round';
+                ctx.strokeText(player.name, 0, ny);
+                ctx.fillStyle = TEAM_COLORS[_tid];
+                ctx.beginPath(); ctx.moveTo(-6, ny - 20); ctx.lineTo(6, ny - 20); ctx.lineTo(0, ny - 11); ctx.closePath(); ctx.fill();
+            }
             ctx.fillText(player.name, 0, -SPRITE_HEIGHT * sizeS + PLAYER_SIZE/2 - 10);
 
             ctx.restore();
@@ -9140,6 +9620,7 @@
         });
 
         function openReadyScreen() {
+            readyOverlay.classList.toggle('aurora', window.mpMode === 'teams'); // 2 vs 2: fundo aurora
             readyOverlay.style.display = 'block';
             readyBtn.style.display = 'inline-block';
             _readyState[myUserId] = false;
@@ -9191,14 +9672,18 @@
 
         function renderReadyList() {
             const pids = (MP.role === 'host' ? Object.keys(_hostNickMap) : _rosterOrder).filter(pid => _hostNickMap[pid]);
+            const _teams = window.mpMode === 'teams';
+            const _tc = i => _teams ? ` t${i < 2 ? 0 : 1}` : '';
+            const _tb = i => _teams ? `<div class="ready-pcard-team">${i < 2 ? 'Vermelho' : 'Azul'}</div>` : '';
+            const _vs = i => (_teams && i === 2) ? '<div class="ready-teamvs">VS</div>' : '';
             const cards = pids.map((pid, i) => {
                 const name = nickFor(pid) + (pid === myUserId ? ' (você)' : '');
                 const ready = _readyState[pid];
                 const charId = (pid === myUserId ? myPlayerState.character : (_characterMap[pid] || (players[pid] && players[pid].character))) || 'renanzinho';
                 const iconSrc = (CHARACTERS[charId] || CHARACTERS.renanzinho).sprites.idle.src;
-                return `<div class="ready-pcard p${(i % 4) + 1}${ready ? ' is-ready' : ''}">
+                return _vs(i) + `<div class="ready-pcard p${(i % 4) + 1}${_tc(i)}${ready ? ' is-ready' : ''}">
                     <div class="ready-pcard-check">✓</div>
-                    <div class="ready-pcard-tag">P${i + 1}</div>
+                    <div class="ready-pcard-tag">P${i + 1}</div>${_tb(i)}
                     <div class="ready-pcard-stage">
                         <div class="ready-pcard-disk"></div>
                         <img src="${iconSrc}">
@@ -9208,8 +9693,8 @@
                 </div>`;
             });
             for (let i = pids.length; i < maxPlayers(); i++) {
-                cards.push(`<div class="ready-pcard empty p${i + 1}">
-                    <div class="ready-pcard-tag">P${i + 1}</div>
+                cards.push(_vs(i) + `<div class="ready-pcard empty p${i + 1}${_tc(i)}">
+                    <div class="ready-pcard-tag">P${i + 1}</div>${_tb(i)}
                     <div class="ready-pcard-stage"></div>
                     <div class="ready-pcard-name">---</div>
                     <div class="ready-pcard-status">Vaga aberta</div>
@@ -9217,8 +9702,8 @@
             }
             readyPlayerList.innerHTML = cards.join('');
             const countEl = document.getElementById('ready-count');
-            if (countEl) countEl.textContent = `${pids.length}/${maxPlayers()} jogadores` + (window.mpMode === 'tournament' && pids.length < 3 ? ' · mínimo 3 para o torneio' : '');
-            const allReady = pids.length >= (window.mpMode === 'tournament' ? 3 : 2) && pids.every(pid => _readyState[pid]);
+            if (countEl) countEl.textContent = `${pids.length}/${maxPlayers()} jogadores` + (window.mpMode === 'tournament' && pids.length < 3 ? ' · mínimo 3 para o torneio' : '') + (window.mpMode === 'teams' && pids.length < 4 ? ' · 2 vs 2 precisa de 4 jogadores' : '');
+            const allReady = pids.length >= minPlayers() && pids.every(pid => _readyState[pid]);
             readyStartBtn.style.display = (MP.role === 'host' && allReady) ? 'inline-block' : 'none';
         }
 
@@ -9232,7 +9717,7 @@
         });
 
         readyStartBtn.addEventListener('click', () => {
-            if (Object.keys(_hostNickMap).length < (window.mpMode === 'tournament' ? 3 : 2)) return;
+            if (Object.keys(_hostNickMap).length < minPlayers()) return;
             if (window.mpMode === 'tournament') { TOURN.hostStart(); return; } // torneio: o host monta a chave
             MP.broadcastToAll({ type: 'gameStart' });
             runCountdownThenBegin();
@@ -9341,6 +9826,8 @@
 
         function runCountdownThenBegin() {
             readyOverlay.style.display = 'none';
+            _teamMap = {};
+            if (window.mpMode === 'teams') introOrder().forEach((id, i) => { _teamMap[id] = i < 2 ? 0 : 1; }); // P1+P2 x P3+P4
             const sequence = ['3', '2', '1', 'LUTAR!'];
             introLock = true; introStart = Date.now();
             introEnd = introStart + Math.max(1, introOrder().length) * INTRO_SLOT;
@@ -9354,7 +9841,7 @@
                 }
                 const val = sequence[i];
                 countdownNumberEl.textContent = val;
-                if (val === 'LUTAR!') introLock = false; // libera os controles quando aparece o LUTAR!
+                if (val === 'LUTAR!') { introLock = false; if (window.TOURN && TOURN.active) checkMatchEnd(); } // libera os controles quando aparece o LUTAR!
                 countdownNumberEl.className = ''; // reseta animação
                 void countdownNumberEl.offsetWidth; // força reflow pra reiniciar a animação CSS
                 countdownNumberEl.classList.add(val === 'LUTAR!' ? 'fight' : 'pop');
@@ -9382,7 +9869,7 @@
                 el = document.createElement('div');
                 el.className = 'rc-cursor';
                 const idx = Math.max(0, Object.keys(_hostNickMap).indexOf(pid));
-                const col = RC_PORT_COLORS[idx % RC_PORT_COLORS.length];
+                const col = window.mpMode === 'teams' ? TEAM_COLORS[idx < 2 ? 0 : 1] : RC_PORT_COLORS[idx % RC_PORT_COLORS.length];
                 el.style.setProperty('--rc', col);
                 const charDef = CHARACTERS[_characterMap[pid]] || CHARACTERS.renanzinho;
                 const face = (charDef && charDef.sprites && charDef.sprites.idle && charDef.sprites.idle.src) || '';
@@ -9433,7 +9920,7 @@
             const $ = id => document.getElementById(id);
             const bracketEl = $('t-bracket'), vsEl = $('t-vs'), peekBtn = $('t-peek-btn');
             const BRACKET_DRAW_MS = 6500, BRACKET_WAIT_MS = 5000, VS_MS = 5500, RESULT_DELAY_MS = 1800;
-            let timers = [], drawTimer = null, cdTimer = null, nextTimer = null, peeking = false;
+            let timers = [], drawTimer = null, cdTimer = null, nextTimer = null, resultTimer = null, guardTimer = null, peeking = false;
             let V = { draw: false, reveal: 99, next: null, banner: '', secs: 0 };
             const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
             const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -9509,6 +9996,12 @@
                 if (!m) return hostFinish();
                 const mt = T.bracket.rounds[m.r][m.i];
                 sendAll({ phase: 'match', bracket: T.bracket, a: mt.a, b: mt.b, r: m.r, i: m.i, map: pickMap() });
+                // vigia: se a luta não chegou a começar (VS sem luta), volta pra chave e tenta de novo em vez de travar
+                if (guardTimer) clearTimeout(guardTimer);
+                guardTimer = setTimeout(() => {
+                    guardTimer = null;
+                    if (MP.role === 'host' && T.active && !T.finished && T.inFight && !T.live) { T.inFight = false; afterResult('A luta não começou. Tentando de novo...'); }
+                }, VS_MS + 12000);
             }
             function hostFinish() {
                 const B = T.bracket, last = B.rounds[B.rounds.length - 1][0];
@@ -9531,8 +10024,14 @@
             function onFightEnd(champ) {
                 T.live = false;
                 if (MP.role !== 'host' || !T.inFight) return;
-                T.inFight = false;
-                later(() => hostResult(champ), RESULT_DELAY_MS);
+                T.inFight = false; T.resultPending = true;
+                if (resultTimer) clearTimeout(resultTimer);
+                // timer próprio: onState() limpa os timers comuns e o resultado se perderia (luta repetida/chave travada)
+                resultTimer = setTimeout(() => {
+                    resultTimer = null; T.resultPending = false;
+                    if (!T.active || T.finished || T.inFight) return;
+                    hostResult(champ);
+                }, RESULT_DELAY_MS);
             }
             // Só no host: alguém caiu. Lutador => adversário vence por W.O.; os demais ficam fora da chave
             function onPlayerLeft(pid) {
@@ -9545,7 +10044,7 @@
                     const oppOut = !opp || T.bracket.dropped[opp];
                     settle(T.cur.r, T.cur.i, oppOut ? null : opp);
                     afterResult(oppOut ? nm + ' desconectou.' : nm + ' desconectou — ' + infoOf(opp).n + ' vence por W.O.!');
-                } else if (!T.inFight) {
+                } else if (!T.inFight && !T.resultPending) { // com resultado pendente, o hostResult já resolve (nextMatch considera quem saiu)
                     const m = nextMatch();
                     if (!m) return hostFinish();
                     sendAll({ phase: 'bracket', bracket: T.bracket, draw: false, banner: nm + ' desconectou.', next: m, wait: 3500 });
@@ -9665,9 +10164,10 @@
             function startFight() {
                 isRunning = false; // garante que beginGameplay religue o loop do jogo
                 restartMatch();    // todos com 3 vidas e dano zerado; limpa projéteis e poças
-                const st = getStageRect();
+                const st = getStageRect(), nowTs = Date.now();
                 for (const id in players) {
                     const p = players[id];
+                    p.lastUpdate = nowTs; // ficou um tempão sem pacotes (lobby/chave/VS): não pode parecer inativo
                     if (!isF(id)) { markSpectator(p); continue; }
                     if (id !== myUserId) { // lutador remoto já aparece no ponto de entrada (sem "deslizar" de longe)
                         p.x = introSlot(id).x; p.y = st.y - PLAYER_SIZE / 2 - 1; p.renderTargetX = p.x; p.renderTargetY = p.y;
@@ -9699,7 +10199,8 @@
             }
 
             function onHostLost() {
-                clearTimers(); T.active = false; T.finished = false; T.inFight = false; T.live = false; T.fighters = null;
+                clearTimers(); if (resultTimer) clearTimeout(resultTimer); if (guardTimer) clearTimeout(guardTimer); resultTimer = guardTimer = null; T.resultPending = false;
+                T.active = false; T.finished = false; T.inFight = false; T.live = false; T.fighters = null;
                 _manualDisconnect = true; isRunning = false; matchOver = true; introLock = false;
                 bracketEl.className = ''; vsEl.classList.remove('show'); peekBtn.style.display = 'none';
                 countdownOverlay.classList.remove('show');
@@ -9709,7 +10210,8 @@
             $('tl-btn').addEventListener('click', () => location.reload());
 
             function reset() {
-                clearTimers(); T.active = false; T.finished = false; T.inFight = false; T.live = false;
+                clearTimers(); if (resultTimer) clearTimeout(resultTimer); if (guardTimer) clearTimeout(guardTimer); resultTimer = guardTimer = null; T.resultPending = false;
+                T.active = false; T.finished = false; T.inFight = false; T.live = false;
                 T.fighters = null; T.cur = null; T.bracket = null; peeking = false;
                 bracketEl.className = ''; vsEl.classList.remove('show'); peekBtn.style.display = 'none';
             }
@@ -9736,6 +10238,7 @@
         }
 
         const MAX_PLAYERS = 4; // limite máximo de jogadores por sala
+        function minPlayers() { return window.mpMode === 'tournament' ? 3 : window.mpMode === 'teams' ? 4 : 2; } // 2v2 precisa de exatamente 4
         function maxPlayers() { return window.mpMode === 'tournament' ? 8 : MAX_PLAYERS; } // torneio aceita até 8
 
         const lobbyStatus = document.getElementById('lobby-status');
@@ -11237,6 +11740,53 @@ document.addEventListener('visibilitychange', () => {
     document.addEventListener('visibilitychange', sync);
     window.addEventListener('resize', () => { if (raf) resize(); });
     sync();
+})();
+</script>
+<script>
+// Escala dos menus de multiplayer (lobby e seleção de personagem), normal e torneio:
+// o layout de projeto é mantido e ampliado/reduzido para caber em qualquer tela.
+(function () {
+    const root = document.documentElement.style;
+    function fit() {
+        const w = innerWidth, h = innerHeight;
+        root.setProperty('--lobby-zoom', Math.min(2.5, w / 720, h / 580).toFixed(3));
+        root.setProperty('--ready-zoom', Math.min(2.5, w / 820, h / 700).toFixed(3));
+    }
+    fit();
+    addEventListener('resize', fit);
+    addEventListener('orientationchange', fit);
+})();
+</script>
+<script>
+// Boneco 3D do fundo do 2v2: cúpula (meio oval) + esfera no topo. Cada anel é um prisma hexagonal (6 faces laterais, só as arestas).
+(function () {
+    const rings = [ // [largura, altura, y]
+        [130,35,155],[126,35,120],[118,35,85],[106,35,50],[86,35,15],[52,35,-20],
+        [39,20,-162.5],[62,20,-142.5],[74,20,-122.5],[79,20,-102.5],[79,20,-82.5],[74,20,-62.5],[62,20,-42.5],[39,20,-22.5]
+    ];
+    const html = '<div class="bd-rig"><div class="bd-spin">' + rings.map(r =>
+        '<div class="bd-prism" style="--w:' + r[0] + ';--h:' + r[1] + ';--ty:' + r[2] + ';">' + '<div class="bd-face"></div>'.repeat(6) + '</div>').join('') + '</div></div>';
+    document.querySelectorAll('.bg-dome').forEach(el => { el.innerHTML = html; });
+})();
+</script>
+<script>
+// Fundo animado do 2v2: 4 temas em crossfade (aurora verde-água, cortina verde-azul, ondas azuis, ciano com bolhas)
+(function () {
+    let bok = [];
+    for (let k = 0; k < 20; k++) { // bolhas (posições fixas, pseudo-aleatórias)
+        const x = (k * 37 + 11) % 100, y = 28 + ((k * 53 + 7) % 34), r = 9 + (k * 7) % 22, a = (0.28 + ((k * 13) % 30) / 100).toFixed(2);
+        bok.push('radial-gradient(circle at ' + x + '% ' + y + '%, rgba(255,255,255,' + a + ') 0 ' + (r * 0.6) + 'px, rgba(255,255,255,' + (a * 0.4).toFixed(2) + ') ' + (r * 0.6 + 1) + 'px ' + r + 'px, transparent ' + (r + 1) + 'px)');
+    }
+    const waves = [['50%', '-4deg', '11s', '26%'], ['58%', '3deg', '14s', '22%'], ['44%', '5deg', '17s', '20%'], ['64%', '-2deg', '20s', '18%']]
+        .map(w => '<div class="au-w" style="--t:' + w[0] + ';--r:' + w[1] + ';--d:' + w[2] + ';--h:' + w[3] + '"></div>').join('');
+    const html =
+        '<div class="au-bg" aria-hidden="true">' +
+        '<div class="au-t au-t1"><div class="au-a"></div><div class="au-b"></div></div>' +
+        '<div class="au-t au-t2"><div class="au-a"></div><div class="au-b"></div><div class="au-floor"></div></div>' +
+        '<div class="au-t au-t3"><div class="au-a"></div><div class="au-b">' + waves + '</div></div>' +
+        '<div class="au-t au-t4"><div class="au-a"></div><div class="au-b" style="background:' + bok.join(',') + '"></div><div class="au-floor"></div></div>' +
+        '<div class="au-vig"></div></div>';
+    ['lobby-overlay', 'ready-overlay'].forEach(id => { const el = document.getElementById(id); if (el) el.insertAdjacentHTML('afterbegin', html); });
 })();
 </script>
 </body>
