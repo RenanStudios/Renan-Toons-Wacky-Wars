@@ -31,8 +31,28 @@ Também há vibração em controles (Gamepad API) quando o navegador suporta.
 | **Hofy** | Canta (nota que atravessa oponentes) | — | Taca o microfone (desliza até acertar) | — |
 | **FooshLooket** | Cospe água que forma poça (no ar, é o pulo duplo) | — | Vira bola e quica | — |
 | **Dan** | Desenha uma forma que ganha vida | Pinta poça de tinta (lentidão) | Giro com o pincel | — |
+| **Suzan** | Batida de notebook | — | Solta o `print("hello world!")` | Bola jelly de bugs que persegue e atordoa |
 
-> Hofy e Dan não têm pulo duplo.
+> Hofy, Dan e Suzan não têm pulo duplo.
+
+### Suzan
+
+A nerd do grupo The White Ones, de Dan. Luta de longe, com programação:
+
+- **Z, batida de notebook:** golpe único e curto (4 de dano), sem combo. É a defesa dela quando alguém cola.
+- **X, `print("hello world!")`:** uma fileira de letras verdes (cor de terminal) sai da mão dela, letra por letra, fica esticada um instante e volta. Na ida empurra quem estiver no caminho (5 de dano); na volta puxa em direção a ela (3 de dano). Cada alvo apanha uma vez na ida e uma vez na volta, e a fileira só pode ser usada de novo depois que volta (mais um pequeno cooldown).
+- **↓ + X, bola jelly de bugs:** uma bola de gelatina glitchada, de tamanho médio, que sai da mão dela e **persegue os oponentes** por **3 s**. Quem ela toca fica **atordoado por 1 s** (sem andar nem atacar; sem dano nem knockback). O cooldown é de **4 s** a partir do spawn.
+  - A bola vai atrás do oponente vivo mais próximo, mas passa para outro alvo logo depois de atordoar alguém (só volta ao mesmo se não houver outro). O mesmo alvo só pode ser atordoado de novo depois de 1,6 s. Escudo ativo bloqueia o atordoamento e aliados são ignorados no 2 vs 2.
+  - Visual: gelatina que ondula e estica na direção do movimento, com aberração cromática (ciano, magenta e amarelo multiplicados, que juntos dão preto), faixas deslocadas aleatórias de glitch e caracteres de terminal (`0`, `1`, `NaN`, `null`, `404`, `ERR`) piscando por dentro. Some aos poucos nos últimos 300 ms.
+  - Implementação: bloco `BOLA JELLY DE BUGS DA SUZAN` do `index.html` (`glitchBalls`, `startGlitchBall`, `updateGlitchBalls`, `drawGlitchBalls`, `applyGlitchStun`; constantes `GLITCH_*`). Como os outros projéteis, cada cliente anima a bola localmente e só o dono detecta os acertos, avisando os outros pelas mensagens `glitchBall` (spawn) e `glitchStun` (atordoamento). O atordoamento usa o hitstun do jogo, com uma trava (`stunLockUntil`) para não ser cancelado ao pousar.
+
+### Dica: o personagem sem nome
+
+Entre no jogo sem escolher ninguém e você controla um retângulo de cara de paisagem (olhos desencontrados, boca torta e um tracinho embaixo). Ele não tem ataques nem pulo duplo, só anda e pula, e muda de cor conforme a ação: branco parado, vermelho andando, azul pulando. Ele também tem **corpo de gelatina**, com a malemolência de um travesseiro ou de um saco de pancada: o topo balança atrasado quando ele anda, para, vira ou leva um golpe, e o corpo incha e achata em pulos, pousos e golpes, oscilando até assentar. A cara de paisagem continua a mesma.
+
+- **Como funciona:** o sprite é desenhado em 14 faixas horizontais ligadas por molas (a base presa ao chão, o topo livre) mais uma mola de incha/achata. Cada faixa é um paralelogramo, então o contorno não quebra. Isso mexe só no desenho: hitbox, velocidade e pulo não mudam, e o flash vermelho de dano acompanha a deformação. Funciona também para jogadores remotos, usando o movimento que chega pela rede.
+- **Desempenho:** 14 `drawImage` por jogador desse tipo e nenhuma alocação por quadro; os demais personagens são desenhados como antes.
+- **Ajuste:** constantes `SOFT_*` no bloco `CORPO MOLE` do `index.html` (`SOFT_DAMP` menor balança por mais tempo; `SOFT_MAX` maior leva o topo mais longe).
 
 ## Mapas
 
@@ -141,6 +161,9 @@ HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio par
 
 ## Changelog
 
+- **Corpo de gelatina no personagem sem nome:** o retângulo de cara de paisagem ganhou malemolência de travesseiro/saco de pancada (balanço atrasado do topo, incha e achata em pulos, pousos e golpes), feito em 14 faixas com molas e só no desenho, sem mudar hitbox nem física.
+- **Suzan · bola jelly de bugs (↓ + X):** bola de gelatina glitchada que persegue os oponentes por 3 s e atordoa por 1 s (cooldown de 4 s); passa para outro alvo depois de atordoar alguém.
+- **Novo personagem · Suzan:** nerd dos White Ones, com batida de notebook (Z) e `print("hello world!")` (X); sem pulo duplo.
 - **2 vs 2 · cards por time:** os cards de jogador do lobby/seleção passam a usar a cor do time (P1+P2 vermelho, P3+P4 azul), com etiqueta de time e "VS" entre as duplas; as luvas dos cursores também seguem o time.
 - **2 vs 2 · vitória em dupla:** a tela de vitória mostra os dois jogadores do time vencedor (antes só um), com placa do time, cor de destaque do time e aro de luz mais largo; os cartões de colocação ganham a cor do time.
 - **2 vs 2 · fundo Frutiger Aero animado:** novo fundo de gradientes com 4 temas em *crossfade* (aurora verde-água, cortina verde-azul, ondas azuis e ciano com bolhas), feito só com `transform`/`opacity` para não travar; respeita `prefers-reduced-motion`.
