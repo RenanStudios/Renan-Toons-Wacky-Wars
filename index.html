@@ -2698,7 +2698,8 @@
             ['Doper', 'Doper Sprites/d_idle.png', 'Gerente e bartender do Bar Blue Note, na cidade de Urbânia. Namorado da Hofy, ele sempre acaba no meio das situações mais caóticas que acontecem no bar. Nenhum dia de trabalho é tranquilo.', 'Bar Blue Note, Urbânia', 'Gerente e bartender', 'BAR'],
             ['Hofy', 'Hofy Sprites/h_idle.png', 'Dançarina, cantora e gerente do Bar Blue Note, em Urbânia. Namorada do Doper, ela o acompanha em todas as desventuras do bar e está sempre disposta a topar qualquer coisa.', 'Dançarina e cantora', 'Gerente do Blue Note', 'BAR'],
             ['FooshLooket', 'FooshLooket Sprites/f_idle.png', 'Uma criatura de uma espécie aquática famosa pela astúcia e inteligência, capaz de construir vilarejos e sociedades submarinas inteiras. Este é o Vermelho, mas existem também o Azul, o Verde, o Amarelo e todas as cores que você imaginar.', 'Criatura aquática', 'Cor: Vermelho', 'AQUÁTICO'],
-            ['Dan', 'Dan Sprites/da_idle1.png', 'Um ser humanoide criado no Macromedia Flash 8 para um site flash dos anos 2000. Líder do grupo The White Ones, ao lado de Suzan, Jim, Davis e Lila, ele vive num mundo em que a internet é um universo imenso e cada site é um lugar único.', 'Criado no Flash 8', 'Líder dos The White Ones', 'FLASH']
+            ['Dan', 'Dan Sprites/da_idle1.png', 'Um ser humanoide criado no Macromedia Flash 8 para um site flash dos anos 2000. Líder do grupo The White Ones, ao lado de Suzan, Jim, Davis e Lila, ele vive num mundo em que a internet é um universo imenso e cada site é um lugar único.', 'Criado no Flash 8', 'Líder dos The White Ones', 'FLASH'],
+            ['Suzan', 'Suzan Sprites/s_idle1.png', 'A nerd do grupo The White Ones, liderado por Dan. Divertida e destemida, ela sabe bastante sobre programação e por isso nunca sai de casa sem o notebook na mão.', 'Divertida e destemida', 'Integrante dos The White Ones', 'NERD']
         ];
         const $ = id => document.getElementById(id);
         let idx = 0;
@@ -2961,7 +2962,10 @@
                     <img src="Dan Sprites/da_idle1.png" alt="Dan">
                     <div class="char-slot-name">Dan</div>
                 </div>
-                <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
+                <div class="char-slot playable" data-character="suzan">
+                    <img src="Suzan Sprites/s_idle1.png" alt="Suzan">
+                    <div class="char-slot-name">Suzan</div>
+                </div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
@@ -3123,7 +3127,48 @@
             return img;
         }
 
+        // Sprites feitos por código (sem arquivos de imagem): retângulo arredondado com contorno escuro.
+        // Mesma proporção dos demais sprites (86x154); os pés ficam encostados na base.
+        function makeRectSprite(fill, topInset) {
+            const c = document.createElement('canvas');
+            c.width = 86; c.height = 154;
+            const g = c.getContext('2d');
+            const x = 8, w = 70, y = topInset || 6, h = 150 - y;
+            g.beginPath();
+            if (g.roundRect) g.roundRect(x, y, w, h, 8); else g.rect(x, y, w, h);
+            g.fillStyle = fill; g.fill();
+            g.lineWidth = 4; g.strokeStyle = '#2b2f36'; g.stroke();
+
+            // Poker face: olho esquerdo (bolinha com risquinho), olho direito menor e achatado,
+            // uma linha comprida meio torta (boca) e um tracinho embaixo — desenhado em código
+            g.fillStyle = '#111'; g.strokeStyle = '#111'; g.lineCap = 'round';
+            const fy = 46;
+            g.beginPath(); g.ellipse(17, fy - 4, 3.6, 3.2, 0, 0, Math.PI * 2); g.fill();
+            g.lineWidth = 2; g.beginPath(); g.moveTo(20, fy - 2); g.lineTo(20, fy + 3); g.stroke();
+            g.beginPath(); g.ellipse(60, fy - 12, 3.2, 1.8, -0.2, 0, Math.PI * 2); g.fill();
+            g.lineWidth = 3.4; g.beginPath(); g.moveTo(12, fy + 9); g.lineTo(70, fy); g.stroke();
+            g.lineWidth = 2.6; g.beginPath(); g.moveTo(37, fy + 12); g.lineTo(50, fy + 9); g.stroke();
+            const img = new Image();
+            img.src = c.toDataURL('image/png');
+            return img;
+        }
+
         const CHARACTERS = {
+            // Basey: o personagem-base. Um retângulo inanimado que se move como algo animado.
+            // Só anda e pula (sem ataques, sem pulo duplo). A cor muda conforme a ação:
+            // branco = parado, vermelho = andando, azul = pulando.
+            basey: {
+                sprites: {
+                    idle: makeRectSprite('#ffffff'),
+                    walk: [6, 11, 6, 11].map(top => makeRectSprite('#e53935', top)), // leve "quicar" ao andar
+                    jump: makeRectSprite('#1e88e5'),
+                    punch: [],
+                    kick: null,
+                    djump: null,
+                    bucket: null
+                },
+                attacks: {}
+            },
             renanzinho: {
                 sprites: {
                     idle: loadSprite('Renanzinho Sprites/r_idle.png'),
@@ -3300,6 +3345,28 @@
                     // X: giro com o pincel (estilo spin attack do Link) — acerta em volta dele, dos dois lados (hitbox circular, ver updateAttack)
                     spin: { duration: 500, activeStart: 80, activeEnd: 420, damage: 6, baseKnockback: 170, growth: 0.8, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 500 }
                 }
+            },
+            // Suzan: a nerd do The White Ones. Z: batida de notebook. X: print("hello world!"). Sem pulo duplo
+            suzan: {
+                sprites: {
+                    idle: loadSprite('Suzan Sprites/s_idle1.png'),
+                    idleFrames: ['s_idle1.png', 's_idle2.png', 's_idle3.png', 's_idle4.png', 's_idle5.png', 's_idle6.png'].map(src => loadSprite('Suzan Sprites/' + src)),
+                    walk: ['s_walk1.png', 's_walk2.png', 's_walk3.png', 's_walk4.png'].map(src => loadSprite('Suzan Sprites/' + src)),
+                    jump: loadSprite('Suzan Sprites/s_walk3.png'),
+                    punch: [loadSprite('Suzan Sprites/s_punch.png')], // Z: batida de notebook
+                    kick: null,
+                    djump: null,
+                    bucket: null,
+                    code: loadSprite('Suzan Sprites/s_code.png') // X: digitando o print("hello world!")
+                },
+                attacks: {
+                    // Z: batida de notebook (corpo a corpo, golpe único)
+                    punch1: { duration: 220, activeStart: 60, activeEnd: 130, damage: 4, baseKnockback: 90, growth: 0.55, range: 62, sprite: 0, next: null, comboWindow: 0 },
+                    // X: print("hello world!") — fileira de letras que sai e volta (dano vem das letras, não de hitbox melee)
+                    helloPrint: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 },
+                    // ↓ + X: bola jelly de bugs/glitch que persegue os oponentes e atordoa (sem hitbox melee)
+                    glitchBall: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 }
+                }
             }
         };
         const BALL_SPEED = 330;  // px/s no início do avanço da bola do FooshLooket (cai até 50% no fim)
@@ -3334,7 +3401,7 @@
             return (def && def.sizeScale) || 1;
         }
 
-        const activeCharacter = CHARACTERS.renanzinho; // personagem único jogável por enquanto
+        const activeCharacter = CHARACTERS.basey; // personagem-base (retângulo feito por código)
 
         const spriteIdle = activeCharacter.sprites.idle;
         const spritesWalk = activeCharacter.sprites.walk;
@@ -3342,7 +3409,7 @@
         const spritesPunch = activeCharacter.sprites.punch;
         const spriteKick = activeCharacter.sprites.kick;
         const spriteDjump = activeCharacter.sprites.djump;
-        const spriteBucket = activeCharacter.sprites.bucket;
+        const spriteBucket = CHARACTERS.renanzinho.sprites.bucket; // o balde é golpe exclusivo do Renanzinho
 
         // Estado local do SEU jogador
         const myPlayerState = {
@@ -3351,7 +3418,7 @@
             color: getRandomColor(),
             name: "Pinguim_" + Math.floor(Math.random() * 1000),
             damage: 0,
-            character: 'renanzinho',
+            character: 'basey',
             lives: 3,
             eliminated: false
         };
@@ -3982,7 +4049,7 @@
             if (speed < 220) return; // só deixa rastro em voos rápidos (golpe forte)
             if (now - lastTrailSpawn < TRAIL_SPAWN_INTERVAL) return;
             lastTrailSpawn = now;
-            const charDef = CHARACTERS[player.character] || CHARACTERS.renanzinho;
+            const charDef = CHARACTERS[player.character] || CHARACTERS.basey;
             let sprite = charDef.sprites.jump;
             motionTrails.push({
                 x: player.x, y: player.y,
@@ -4314,7 +4381,7 @@
                 const elim = !!p.eliminated;
                 const col = elim ? '#8a8f9c' : HUD_PALETTE[i % HUD_PALETTE.length];
                 const rgb = hudDamageRGB(st.shown);
-                const charDef = CHARACTERS[p.character] || CHARACTERS.renanzinho;
+                const charDef = CHARACTERS[p.character] || CHARACTERS.basey;
                 const img = charDef.sprites && charDef.sprites.idle;
                 const imgOk = img && img.complete && img.naturalWidth > 0;
 
@@ -5248,7 +5315,7 @@
                 // Recuperação ao pousar: o hitstun é um tempo fixo (proporcional ao knockback) e em golpes fortes
                 // durava mais que o voo, deixando o jogador paralisado no chão. Agora acaba assim que ele pousa
                 // (o intervalo de 150 ms evita cancelar no instante do golpe, quando ainda está saindo do chão).
-                if ((id === myUserId || p.demoBot) && p.hitstunUntil && now < p.hitstunUntil && p.onGround && now - (p.hitFlashTime || 0) > 150) {
+                if ((id === myUserId || p.demoBot) && p.hitstunUntil && now < p.hitstunUntil && p.onGround && now - (p.hitFlashTime || 0) > 150 && now > (p.stunLockUntil || 0)) {
                     p.hitstunUntil = 0;
                     if (id === myUserId) MP.sendState();
                 }
@@ -5336,7 +5403,7 @@
                         if (dir !== 0) {
                             isMoving = true;
                             p.facingLeft = dir < 0;
-                            const charDef = CHARACTERS[p.character] || CHARACTERS.renanzinho;
+                            const charDef = CHARACTERS[p.character] || CHARACTERS.basey;
                             const speed = PLAYER_SPEED * (charDef.moveSpeedMultiplier || 1) * (now < (p.inkSlowUntil || 0) ? INK_SLOW : 1);
                             p.x += dir * speed * effectiveDelta;
                         }
@@ -5477,6 +5544,10 @@
             drawMics();
             updateFlails(deltaTime * 1000);
             drawFlails();
+            updateHelloPrints();
+            drawHelloPrints();
+            updateGlitchBalls(deltaTime * 1000);
+            drawGlitchBalls();
             updateJellyBalls(deltaTime * 1000);
             drawJellyBalls();
             updateWaterPuddles();
@@ -5741,8 +5812,8 @@
             if (vAnimFrameId) return; // já animando
 
             const champ = championId && players[championId] ? players[championId] : null;
-            const charDef = CHARACTERS[(champ && champ.character) || 'renanzinho'] || CHARACTERS.renanzinho;
-            const spriteOf = pl => { const d = CHARACTERS[(pl && pl.character) || 'renanzinho'] || CHARACTERS.renanzinho; return (d.sprites.idle && d.sprites.idle.src) || ''; };
+            const charDef = CHARACTERS[(champ && champ.character) || 'basey'] || CHARACTERS.basey;
+            const spriteOf = pl => { const d = CHARACTERS[(pl && pl.character) || 'basey'] || CHARACTERS.basey; return (d.sprites.idle && d.sprites.idle.src) || ''; };
             const champ2El = document.getElementById('victory-champion2');
             const champ2Img = document.getElementById('victory-champion2-img');
             const champ2Name = document.getElementById('victory-champion2-name');
@@ -5773,7 +5844,7 @@
                 lbl.textContent = TEAM_NAMES[tid] + ' · ' + duo;
                 victoryPlateName.appendChild(lbl);
             }
-            victoryOverlay.style.setProperty('--v-accent', duoAccent || victoryAccent((champ && champ.character) || 'renanzinho'));
+            victoryOverlay.style.setProperty('--v-accent', duoAccent || victoryAccent((champ && champ.character) || 'basey'));
             victoryOverlay.classList.remove('cine', 'impact');
             stopVictoryConfetti();
 
@@ -5862,7 +5933,7 @@
             losers.forEach((id, idx) => {
                 const p = players[id];
                 if (!p) return;
-                const charDef = CHARACTERS[p.character] || CHARACTERS.renanzinho;
+                const charDef = CHARACTERS[p.character] || CHARACTERS.basey;
                 const spriteSrc = (charDef.sprites.idle && charDef.sprites.idle.src) || '';
 
                 const sq = document.createElement('div');
@@ -6299,7 +6370,7 @@
 
         // ↓ + Z (Renanzinho): usa o sprite r_punch2 durante o arremesso e libera o balde na corda
         function startBucketThrow(p) {
-            if (!p || (p.character && p.character !== 'renanzinho')) return;
+            if (!p || p.character !== 'renanzinho') return;
             const now = Date.now();
             if (p.hitstunUntil && now < p.hitstunUntil) return;
             if (p.isDoubleJumping) return;
@@ -6324,6 +6395,316 @@
             SFX.playSwing(0.9);
             MP.sendState();
             MP.broadcastToAll({ type: 'flailThrow', flail: data });
+        }
+
+        // ==========================================
+        // PRINT("HELLO WORLD!") DA SUZAN (X)
+        // Uma fileira de letras sai da mão dela em linha reta, letra por letra (a ponta sai primeiro),
+        // fica esticada um instante e volta pra mão, letra por letra (a base entra primeiro).
+        // Como o balde do Renanzinho: cada cliente anima localmente; só o dono detecta acertos.
+        // ==========================================
+        const HELLO_TEXT = 'print("hello world!")';
+        const HELLO_CHAR_W = 13;       // largura de cada letra (px); o alcance total é ~ 21 letras x 13 px
+        const HELLO_FONT = 'bold 22px "Courier New", Consolas, monospace';
+        const HELLO_GAP = 16;          // distância da mão até a primeira letra, com tudo esticado
+        const HELLO_SPEED = 620;       // px/s: velocidade da fileira indo e voltando
+        const HELLO_HOLD_MS = 160;     // tempo esticado antes de voltar
+        const HELLO_COOLDOWN = 400;    // ms depois que a fileira volta até poder usar de novo
+        const HELLO_OUT_DAMAGE = 5, HELLO_OUT_KB = 120, HELLO_OUT_GROWTH = 0.7; // ida: empurra pra frente
+        const HELLO_IN_DAMAGE = 3,  HELLO_IN_KB = 60,   HELLO_IN_GROWTH = 0.4;  // volta: puxa em direção a ela
+        const HELLO_HIT_RADIUS = 26;   // folga horizontal de cada letra contra o corpo do alvo
+        let helloPrints = []; // { id, ownerId, dir, spawnTime, hitOut, hitIn }
+
+        function helloLayout() {
+            const len = HELLO_TEXT.length * HELLO_CHAR_W;
+            const outMs = (len + HELLO_GAP) / HELLO_SPEED * 1000;
+            return { len, outMs, totalMs: outMs * 2 + HELLO_HOLD_MS };
+        }
+
+        function createHelloPrint(data) {
+            return { id: data.id, ownerId: data.ownerId, dir: data.dir, spawnTime: Date.now(), hitOut: [], hitIn: [] };
+        }
+
+        // Estado no instante "now": T = distância da mão até a letra mais próxima (negativo = ainda dentro da mão)
+        function helloState(h, now) {
+            const L = helloLayout();
+            const t = now - h.spawnTime;
+            if (t >= L.totalMs) return null;
+            if (t < L.outMs) return { T: -L.len + HELLO_SPEED * t / 1000, phase: 'out' };
+            if (t < L.outMs + HELLO_HOLD_MS) return { T: HELLO_GAP, phase: 'out' };
+            return { T: HELLO_GAP - HELLO_SPEED * (t - L.outMs - HELLO_HOLD_MS) / 1000, phase: 'in' };
+        }
+
+        // Letras já fora da mão, com posição no mundo. O texto sempre fica legível (da esquerda pra direita),
+        // então virada pra esquerda a letra mais próxima da mão é o último caractere.
+        function helloLetters(h, a, st) {
+            const n = HELLO_TEXT.length, out = [];
+            for (let k = 0; k < n; k++) {
+                const x = st.T + (k + 0.5) * HELLO_CHAR_W;
+                if (x <= 2) continue; // ainda dentro da mão
+                out.push({ ch: h.dir > 0 ? HELLO_TEXT[k] : HELLO_TEXT[n - 1 - k], x: a.x + h.dir * x, y: a.y });
+            }
+            return out;
+        }
+
+        function updateHelloPrints() {
+            const now = Date.now();
+            for (let i = helloPrints.length - 1; i >= 0; i--) {
+                const h = helloPrints[i];
+                const a = flailAnchorFor(h.ownerId, h.dir); // a fileira acompanha a mão da Suzan
+                const st = a && helloState(h, now);
+                if (!st) { helloPrints.splice(i, 1); continue; }
+                if (!isOwnerLocal(h.ownerId)) continue; // só o dono detecta acertos
+                const isOut = st.phase === 'out';
+                const list = isOut ? h.hitOut : h.hitIn;
+                const letters = helloLetters(h, a, st);
+                for (const id in players) {
+                    if (id === h.ownerId || isAlly(id, h.ownerId) || list.includes(id)) continue;
+                    const target = players[id];
+                    if (!target || target.eliminated) continue;
+                    const tS = getSizeScale(target);
+                    const top = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * tS;
+                    const bottom = target.y + PLAYER_SIZE / 2;
+                    if (a.y < top - 8 || a.y > bottom + 8) continue;
+                    if (!letters.some(l => Math.abs(target.x - l.x) < HELLO_HIT_RADIUS * tS)) continue;
+                    list.push(id); // cada alvo apanha uma vez na ida e uma vez na volta
+                    const dmg = isOut ? HELLO_OUT_DAMAGE : HELLO_IN_DAMAGE;
+                    const kb = (isOut ? HELLO_OUT_KB : HELLO_IN_KB) + (target.damage || 0) * (isOut ? HELLO_OUT_GROWTH : HELLO_IN_GROWTH);
+                    const hdir = isOut ? h.dir : (a.x >= target.x ? 1 : -1);
+                    applyHit(id, dmg, kb, hdir);
+                    MP.broadcastToAll({ type: 'hit', targetId: id, damage: dmg, knockback: kb, dir: hdir });
+                    SFX.playHit(isOut ? 'medium' : 'light');
+                    rumble(isOut ? 0.35 : 0.2, isOut ? 100 : 70);
+                }
+            }
+        }
+
+        function drawHelloPrints() {
+            if (!helloPrints.length) return;
+            const now = Date.now();
+            ctx.save();
+            ctx.font = HELLO_FONT;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#06210f'; // contorno escuro pra ler em qualquer fundo
+            ctx.fillStyle = '#39ff7a';   // verde de terminal
+            for (const h of helloPrints) {
+                const a = flailAnchorFor(h.ownerId, h.dir);
+                const st = a && helloState(h, now);
+                if (!st) continue;
+                for (const l of helloLetters(h, a, st)) {
+                    ctx.strokeText(l.ch, l.x, l.y);
+                    ctx.fillText(l.ch, l.x, l.y);
+                }
+            }
+            ctx.restore();
+        }
+
+        // X (Suzan): solta o print("hello world!")
+        function startHelloPrint(p) {
+            if (!p || p.character !== 'suzan') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+            if (p.helloCooldownUntil && now < p.helloCooldownUntil) return;
+            if (helloPrints.some(h => h.ownerId === myUserId)) return; // a fileira anterior ainda não voltou
+
+            const def = CHARACTERS.suzan.attacks.helloPrint;
+            p.attackName = 'helloPrint';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.hasHitThisAttack = false;
+            p.pendingCombo = false;
+            p.queuedAttack = null;
+            p.attackSquashTime = now;
+            p.helloCooldownUntil = now + helloLayout().totalMs + HELLO_COOLDOWN;
+
+            const dir = p.facingLeft ? -1 : 1;
+            const data = { id: 'hello_' + now + '_' + Math.floor(Math.random() * 100000), ownerId: myUserId, dir };
+            helloPrints.push(createHelloPrint(data));
+            SFX.playSwing(0.7);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'helloPrint', hp: data });
+        }
+
+        // ==========================================
+        // BOLA JELLY DE BUGS DA SUZAN (↓ + X)
+        // Uma bola de gelatina glitchada que flutua atrás do oponente mais próximo por 3 s.
+        // Quem ela toca fica atordoado por 1 s. Cada cliente anima localmente; só o dono detecta acertos.
+        // ==========================================
+        const GLITCH_BALL_RADIUS = 36;      // raio (px): nem grande nem pequena
+        const GLITCH_BALL_LIFETIME = 3000;  // ms que a bola dura
+        const GLITCH_BALL_COOLDOWN = 4000;  // ms entre um spawn e o próximo (conta a partir do spawn)
+        const GLITCH_BALL_FADE_MS = 300;    // some aos poucos no final
+        const GLITCH_BALL_SPEED = 210;      // px/s
+        const GLITCH_BALL_TURN = 3.2;       // agilidade pra virar em direção ao alvo
+        const GLITCH_STUN_MS = 1000;        // atordoamento ao ser tocado
+        const GLITCH_REHIT_MS = 1600;       // tempo até poder atordoar o mesmo alvo de novo
+        const GLITCH_GLYPHS = ['0', '1', 'x', '!', '#', '?', 'NaN', 'null', '404', 'ERR'];
+        let glitchBalls = []; // { id, ownerId, x, y, vx, vy, spawnTime, hitAt, seed }
+
+        function glitchRand(seed) { const v = Math.sin(seed * 127.1) * 43758.5453; return v - Math.floor(v); }
+
+        function createGlitchBall(data) {
+            return { id: data.id, ownerId: data.ownerId, x: data.x, y: data.y, vx: data.dir * 260, vy: -40,
+                     spawnTime: Date.now(), hitAt: {}, seed: Math.random() * 1000 };
+        }
+
+        // Atordoa: trava movimento e ataques (usa o hitstun) sem dano nem knockback
+        function applyGlitchStun(targetId, ms) {
+            const t = players[targetId];
+            if (!t || t.eliminated || t.isShielding) return;
+            const now = Date.now();
+            t.hitstunUntil = now + ms;
+            t.stunLockUntil = now + ms; // impede a recuperação automática ao pousar
+            t.hitFlashTime = now;
+            t.knockbackVx = 0;
+            t.attackName = null;
+            t.attackUntil = 0;
+            t.queuedAttack = null;
+            if (targetId === myUserId) MP.sendState();
+        }
+
+        function updateGlitchBalls(deltaMs) {
+            const now = Date.now(), dt = Math.min(deltaMs, 100) / 1000;
+            for (let i = glitchBalls.length - 1; i >= 0; i--) {
+                const b = glitchBalls[i];
+                if (now - b.spawnTime >= GLITCH_BALL_LIFETIME) { glitchBalls.splice(i, 1); continue; }
+
+                // persegue o oponente vivo mais próximo
+                let tx = 0, ty = 0, best = Infinity, score = Infinity;
+                for (const id in players) {
+                    if (id === b.ownerId || isAlly(id, b.ownerId)) continue;
+                    const t = players[id];
+                    if (!t || t.eliminated) continue;
+                    const cy = t.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * getSizeScale(t)) / 2;
+                    const d = Math.hypot(t.x - b.x, cy - b.y);
+                    // quem acabou de ser atordoado fica por último na fila: a bola vai atrás de outro alvo
+                    const sc = d + (b.hitAt[id] && now - b.hitAt[id] < GLITCH_REHIT_MS ? 1e6 : 0);
+                    if (sc < score) { score = sc; best = d; tx = t.x; ty = cy; }
+                }
+                if (best < Infinity) {
+                    const d = best || 1, k = Math.min(1, GLITCH_BALL_TURN * dt);
+                    b.vx += (((tx - b.x) / d) * GLITCH_BALL_SPEED - b.vx) * k;
+                    b.vy += (((ty - b.y) / d) * GLITCH_BALL_SPEED - b.vy) * k;
+                }
+                b.x = Math.max(0, Math.min(WORLD_WIDTH, b.x + b.vx * dt));
+                b.y = Math.max(0, Math.min(WORLD_HEIGHT, b.y + b.vy * dt));
+
+                if (!isOwnerLocal(b.ownerId)) continue; // só o dono detecta acertos
+                for (const id in players) {
+                    if (id === b.ownerId || isAlly(id, b.ownerId)) continue;
+                    if (b.hitAt[id] && now - b.hitAt[id] < GLITCH_REHIT_MS) continue;
+                    const target = players[id];
+                    if (!target || target.eliminated) continue;
+                    const tS = getSizeScale(target);
+                    const cy = target.y + PLAYER_SIZE / 2 - (SPRITE_HEIGHT * tS) / 2;
+                    if (Math.abs(target.x - b.x) < 22 * tS + GLITCH_BALL_RADIUS * 0.85 &&
+                        Math.abs(cy - b.y) < (SPRITE_HEIGHT * tS) / 2 + GLITCH_BALL_RADIUS * 0.6) {
+                        b.hitAt[id] = now;
+                        applyGlitchStun(id, GLITCH_STUN_MS);
+                        MP.broadcastToAll({ type: 'glitchStun', targetId: id, ms: GLITCH_STUN_MS });
+                        SFX.playHit('light');
+                        rumble(0.3, 90);
+                    }
+                }
+            }
+        }
+
+        function drawGlitchBalls() {
+            if (!glitchBalls.length) return;
+            const now = Date.now();
+            for (const b of glitchBalls) {
+                const age = now - b.spawnTime, remaining = GLITCH_BALL_LIFETIME - age;
+                const tick = Math.floor(now / 80);
+                const glitching = glitchRand(tick + b.seed) < 0.4;
+                const amp = glitching ? 5 + glitchRand(tick * 3.1 + b.seed) * 9 : 2.5;
+                const ang = glitchRand(tick * 1.7 + b.seed) * Math.PI * 2;
+                const ox = Math.cos(ang) * amp, oy = Math.sin(ang) * amp;
+                const mv = Math.atan2(b.vy, b.vx), squash = Math.min(Math.hypot(b.vx, b.vy) / 700, 0.25);
+                const cm = Math.cos(mv), sm = Math.sin(mv);
+                const R = GLITCH_BALL_RADIUS * Math.min(1, age / 150 + 0.4); // "pipoca" ao nascer
+
+                // contorno gelatinoso: ondula e estica um pouco na direção do movimento
+                const blob = (dx, dy) => {
+                    ctx.beginPath();
+                    for (let i = 0; i <= 36; i++) {
+                        const a = i / 36 * Math.PI * 2;
+                        const w = 1 + 0.07 * Math.sin(a * 3 + now / 120) + 0.05 * Math.sin(a * 5 - now / 90);
+                        const x = Math.cos(a) * R * w, y = Math.sin(a) * R * w;
+                        const al = (x * cm + y * sm) * (1 + squash), ac = (-x * sm + y * cm) * (1 - squash * 0.6);
+                        const px = b.x + dx + al * cm - ac * sm, py = b.y + dy + al * sm + ac * cm;
+                        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                };
+
+                ctx.save();
+                if (remaining < GLITCH_BALL_FADE_MS) ctx.globalAlpha = Math.max(0, remaining / GLITCH_BALL_FADE_MS);
+                ctx.fillStyle = '#fff'; blob(0, 0); ctx.fill(); // base clara pra aberração cromática aparecer em qualquer fundo
+                ctx.globalCompositeOperation = 'multiply';     // ciano + magenta + amarelo: juntos dão preto
+                ctx.fillStyle = '#0ff'; blob(-ox, -oy); ctx.fill();
+                ctx.fillStyle = '#f0f'; blob(ox, oy); ctx.fill();
+                ctx.fillStyle = '#ff0'; blob(oy * 0.8, -ox * 0.8); ctx.fill();
+                ctx.globalCompositeOperation = 'source-over';
+
+                if (glitching) { // faixas deslocadas, como o glitch do jelly-ball
+                    for (let k = 0; k < 2; k++) {
+                        const by = b.y + (glitchRand(tick * 5 + k + b.seed) * 2 - 1) * R;
+                        const bh = 5 + glitchRand(tick * 7 + k) * 14;
+                        const dx = (glitchRand(tick * 9 + k + b.seed) < 0.5 ? -1 : 1) * (8 + glitchRand(tick * 11 + k) * 18);
+                        ctx.save();
+                        ctx.beginPath(); ctx.rect(b.x - R * 2, by, R * 4, bh); ctx.clip();
+                        ctx.fillStyle = '#16161c'; blob(dx, 0); ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                // bugs: caracteres de terminal piscando e orbitando dentro da bola
+                ctx.font = 'bold 13px "Courier New", Consolas, monospace';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.lineJoin = 'round'; ctx.lineWidth = 3;
+                ctx.strokeStyle = '#06210f'; ctx.fillStyle = '#39ff7a';
+                for (let k = 0; k < 5; k++) {
+                    const a = glitchRand(k * 7.3 + b.seed) * Math.PI * 2 + (now / 600) * (k % 2 ? 1 : -1);
+                    const rr = R * (0.2 + glitchRand(k * 3.7 + b.seed) * 0.9);
+                    const ch = GLITCH_GLYPHS[Math.floor(glitchRand(Math.floor(now / 140) + k * 13 + b.seed) * GLITCH_GLYPHS.length)];
+                    ctx.strokeText(ch, b.x + Math.cos(a) * rr, b.y + Math.sin(a) * rr);
+                    ctx.fillText(ch, b.x + Math.cos(a) * rr, b.y + Math.sin(a) * rr);
+                }
+                ctx.restore();
+            }
+        }
+
+        // ↓ + X (Suzan): solta a bola jelly de bugs (cooldown conta a partir do spawn)
+        function startGlitchBall(p) {
+            if (!p || p.character !== 'suzan') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+            if (p.glitchCooldownUntil && now < p.glitchCooldownUntil) return;
+
+            const def = CHARACTERS.suzan.attacks.glitchBall;
+            p.attackName = 'glitchBall';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.hasHitThisAttack = false;
+            p.pendingCombo = false;
+            p.queuedAttack = null;
+            p.attackSquashTime = now;
+            p.glitchCooldownUntil = now + GLITCH_BALL_COOLDOWN;
+
+            const dir = p.facingLeft ? -1 : 1;
+            const a = flailAnchorFor(myUserId, dir);
+            const data = { id: 'glitch_' + now + '_' + Math.floor(Math.random() * 100000), ownerId: myUserId, dir, x: a.x + dir * 30, y: a.y };
+            glitchBalls.push(createGlitchBall(data));
+            SFX.playSwing(0.9);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'glitchBall', gb: data });
         }
 
         // ==========================================
@@ -7934,7 +8315,7 @@
         // Inicia um golpe de melee para qualquer jogador (soco com combo em 2 hits, ou chute avulso)
         function startAttack(p, name) {
             if (!p) return;
-            const charAttacks = (CHARACTERS[p.character] || CHARACTERS.renanzinho).attacks;
+            const charAttacks = (CHARACTERS[p.character] || CHARACTERS.basey).attacks;
             const def = charAttacks[name];
             if (!def) return;
             if (p.hitstunUntil && Date.now() < p.hitstunUntil) return; // não pode atacar tomando hitstun
@@ -7978,7 +8359,7 @@
         // Atualiza o golpe em andamento: detecta o fim, encadeia combo, e checa a hitbox contra oponentes
         function updateAttack(p, now) {
             if (!p.attackUntil) return;
-            const charAttacks = (CHARACTERS[p.character] || CHARACTERS.renanzinho).attacks;
+            const charAttacks = (CHARACTERS[p.character] || CHARACTERS.basey).attacks;
 
             if (now >= p.attackUntil) {
                 // Golpe terminou: se havia um combo enfileirado (soco 2), encadeia sem gap
@@ -8837,6 +9218,80 @@
             ctx.restore();
         }
 
+        // ==========================================
+        // CORPO MOLE DO BASEY (travesseiro / saco de pancada)
+        // O sprite é fatiado em faixas horizontais ligadas por molas: a base fica presa ao chão e o topo balança
+        // atrasado em relação ao movimento (inércia). Uma segunda mola faz o corpo "respirar" (achata e incha) em
+        // pulos, pousos e golpes. Cada faixa é um paralelogramo (cisalhamento), então o contorno não quebra e o
+        // rosto continua sendo o mesmo desenho. Custo: 14 drawImage por Basey e nenhuma alocação por quadro.
+        // ==========================================
+        const SOFT_N = 14;          // faixas do sprite
+        const SOFT_NEIGH = 600;     // rigidez entre faixas vizinhas (mantém a curva suave)
+        const SOFT_ANCHOR = 70;     // mola que devolve o corpo à posição reta
+        const SOFT_DAMP = 3.2;       // amortecimento (baixo = balança mais vezes)
+        const SOFT_LEAN = 0.04;     // inclinação contínua contra o movimento (px por px/s no topo)
+        const SOFT_MAX = 38;        // deslocamento lateral máximo do topo (px)
+        const SOFT_SQ_K = 160, SOFT_SQ_C = 2.6; // mola do incha/achata
+
+        function softBodyUpdate(p) {
+            const now = performance.now();
+            let s = p._soft;
+            if (!s) {
+                s = p._soft = { x: new Float32Array(SOFT_N), v: new Float32Array(SOFT_N), sq: 0, sv: 0, lx: p.x, vxs: 0, lvy: p.vy || 0, t: now };
+                return s;
+            }
+            let dt = (now - s.t) / 1000;
+            if (dt < 0.001) return s; // já atualizado neste quadro
+            s.t = now;
+            dt = Math.min(dt, 0.05);
+
+            // velocidade horizontal pelo deslocamento (funciona também para jogadores remotos), suavizada
+            const dx = p.x - s.lx; s.lx = p.x;
+            const vxRaw = Math.abs(dx) > 150 ? s.vxs : dx / dt; // teleporte (respawn): ignora
+            const vxNew = s.vxs + (vxRaw - s.vxs) * (1 - Math.exp(-dt * 25));
+            const dvx = Math.max(-900, Math.min(900, vxNew - s.vxs));
+            s.vxs = vxNew;
+            const vy = p.vy || 0, dvy = Math.max(-1400, Math.min(1400, vy - s.lvy));
+            s.lvy = vy;
+
+            // impulsos: quanto mais alto na faixa, mais ela fica pra trás
+            for (let k = 0; k < SOFT_N; k++) s.v[k] -= dvx * ((SOFT_N - k) / SOFT_N) * 0.95;
+            if (Math.abs(dvy) > 160) s.sv -= dvy * 0.0055; // pouso, pulo e golpe (a gravidade comum fica de fora)
+
+            const n = Math.min(6, Math.ceil(dt * 120)), h = dt / n, x = s.x, v = s.v;
+            for (let it = 0; it < n; it++) {
+                for (let k = 0; k < SOFT_N; k++) {
+                    const up = k > 0 ? x[k - 1] : x[0];            // topo livre
+                    const dn = k < SOFT_N - 1 ? x[k + 1] : 0;      // base presa ao chão
+                    const tgt = -s.vxs * ((SOFT_N - k) / SOFT_N) * SOFT_LEAN;
+                    v[k] += (SOFT_NEIGH * (up + dn - 2 * x[k]) + SOFT_ANCHOR * (tgt - x[k]) - SOFT_DAMP * v[k]) * h;
+                }
+                for (let k = 0; k < SOFT_N; k++) x[k] = Math.max(-SOFT_MAX, Math.min(SOFT_MAX, x[k] + v[k] * h));
+                s.sv += (-SOFT_SQ_K * s.sq - SOFT_SQ_C * s.sv) * h;
+                s.sq = Math.max(-0.45, Math.min(0.45, s.sq + s.sv * h));
+            }
+            return s;
+        }
+
+        // Desenha img (sprite ou silhueta do flash) em faixas, com o balanço de softBodyUpdate
+        function drawSoftSprite(s, dir, img, dx, dy, dw, dh) {
+            const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+            const hy = 1 - s.sq * 0.3, bandH = (dh / SOFT_N) * hy, sh = ih / SOFT_N;
+            const bottom = dy + dh, cx = dx + dw / 2;
+            const ex = 0.8, exSrc = ex * sh / bandH; // sobreposição mínima pra não aparecer fresta entre faixas
+            for (let k = 0; k < SOFT_N; k++) {
+                const last = k === SOFT_N - 1;
+                const yt = bottom - (SOFT_N - k) * bandH;
+                const a = s.x[k] * dir, b = (last ? 0 : s.x[k + 1]) * dir;
+                const slope = (b - a) / bandH;
+                const sc = 1 + s.sq * 0.7 * Math.sin(Math.PI * (k + 0.5) / SOFT_N); // barriga incha ao achatar
+                ctx.save();
+                ctx.transform(sc, 0, slope, 1, a - slope * yt + cx * (1 - sc), 0);
+                ctx.drawImage(img, 0, k * sh, iw, last ? sh : sh + exSrc, dx, yt, dw, last ? bandH : bandH + ex);
+                ctx.restore();
+            }
+        }
+
         function drawPlayer(player, isMoving) {
             ctx.save();
             ctx.translate(player.x, player.y);
@@ -8846,8 +9301,8 @@
 
             drawChargeAura(player);
 
-            // Resolve os sprites do personagem escolhido por este jogador (fallback: Renanzinho)
-            const charDef = CHARACTERS[player.character] || CHARACTERS.renanzinho;
+            // Resolve os sprites do personagem escolhido por este jogador (fallback: Basey)
+            const charDef = CHARACTERS[player.character] || CHARACTERS.basey;
             const cSprites = charDef.sprites;
 
             // Escolhe o frame: atacando usa o sprite do golpe, pulando usa r_walk3, senão idle parado ou ciclo de 4 frames a 12fps enquanto anda
@@ -8877,6 +9332,8 @@
                     currentSprite = cSprites.sax || cSprites.idle;
                 } else if (player.attackName === 'sing') {
                     currentSprite = cSprites.sing || cSprites.idle;
+                } else if (player.attackName === 'helloPrint' || player.attackName === 'glitchBall') {
+                    currentSprite = cSprites.code || cSprites.idle;
                 } else if (player.attackName === 'brush' || player.attackName === 'inkPuddle') {
                     currentSprite = cSprites.brush || cSprites.idle;
                 } else if (player.attackName === 'spin') {
@@ -9008,7 +9465,9 @@
                     }
                     ctx.restore();
                 }
-                ctx.drawImage(currentSprite, -drawW/2 + spriteOffsetX, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
+                const soft = (player.character === 'basey' || !player.character) ? softBodyUpdate(player) : null; // Basey: corpo mole
+                if (soft) drawSoftSprite(soft, player.facingLeft ? -1 : 1, currentSprite, -drawW/2 + spriteOffsetX, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
+                else ctx.drawImage(currentSprite, -drawW/2 + spriteOffsetX, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
 
                 // Flash vermelho translúcido seguindo o CONTORNO REAL do sprite (silhueta),
                 // não um retângulo: desenha o sprite num canvas auxiliar, pinta só os pixels
@@ -9029,7 +9488,8 @@
 
                     ctx.save();
                     ctx.globalAlpha = alpha * 0.7;
-                    ctx.drawImage(flashCanvas, -drawW/2 + spriteOffsetX, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
+                    if (soft) drawSoftSprite(soft, player.facingLeft ? -1 : 1, flashCanvas, -drawW/2 + spriteOffsetX, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
+                    else ctx.drawImage(flashCanvas, -drawW/2 + spriteOffsetX, -SPRITE_HEIGHT + PLAYER_SIZE/2, drawW, drawH);
                     ctx.restore();
                 }
             } else {
@@ -9158,7 +9618,11 @@
                     // duplo já foi usado, cospe reto como uma bala
                     if (keysPressed['ArrowDown']) throwWater(me);
                     else if (me.onGround || !startDoubleJump()) spitStraight(me);
-                } else if (me && (!me.character || me.character === 'renanzinho') && keysPressed['ArrowDown']) {
+                } else if (me && me.character === 'suzan') {
+                    startAttack(me, 'punch1'); // Suzan: batida de notebook (sem pulo duplo)
+                } else if (me && (!me.character || me.character === 'basey')) {
+                    // Basey: só anda e pula (sem ataque, sem pulo duplo)
+                } else if (me && me.character === 'renanzinho' && keysPressed['ArrowDown']) {
                     startBucketThrow(me);
                 } else if (me && !me.onGround) {
                     if (!startDoubleJump()) {
@@ -9170,7 +9634,12 @@
             } else if (e.code === 'KeyX') {
                 e.preventDefault();
                 const me = players[myUserId];
-                if (me && me.character === 'renanAntigo') {
+                if (me && me.character === 'suzan') {
+                    if (keysPressed['ArrowDown']) startGlitchBall(me); // Suzan (↓ + X): bola jelly de bugs
+                    else startHelloPrint(me); // Suzan: print("hello world!")
+                } else if (me && (!me.character || me.character === 'basey')) {
+                    // Basey: sem ataques
+                } else if (me && me.character === 'renanAntigo') {
                     startDash(me);
                 } else if (me && me.character === 'aggie') {
                     startAttack(me, 'nail');
@@ -9466,6 +9935,18 @@
                     if (idx !== -1) notes.splice(idx, 1);
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'helloPrint') {
+                    if (data.hp.ownerId !== myUserId) helloPrints.push(createHelloPrint(data.hp));
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'glitchBall') {
+                    if (data.gb.ownerId !== myUserId) glitchBalls.push(createGlitchBall(data.gb));
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'glitchStun') {
+                    applyGlitchStun(data.targetId, data.ms);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
                 else if (data.type === 'flailThrow') {
                     if (data.flail.ownerId !== myUserId) flails.push(createFlail(data.flail));
                     if (this.role === 'host') this.broadcast(data, fromId);
@@ -9546,7 +10027,7 @@
                     ready[pid] = pid === myUserId ? !!amIReady : !!_readyState[pid];
                     characters[pid] = pid === myUserId
                         ? myPlayerState.character
-                        : (_characterMap[pid] || 'renanzinho');
+                        : (_characterMap[pid] || 'basey');
                 }
                 return { order, nickMap: _hostNickMap, ready, characters };
             },
@@ -9595,7 +10076,8 @@
             doper: 'Audios/doper.mp3',
             hofy: 'Audios/hofy.mp3',
             fooshlooket: 'Audios/fooshlooket.mp3',
-            dan: 'Audios/dan.mp3'
+            dan: 'Audios/dan.mp3',
+            suzan: 'Audios/suzan.mp3'
         };
         let _charSelectAudio = null;
         function playCharSelectAudio(characterId) {
@@ -9679,14 +10161,15 @@
             const cards = pids.map((pid, i) => {
                 const name = nickFor(pid) + (pid === myUserId ? ' (você)' : '');
                 const ready = _readyState[pid];
-                const charId = (pid === myUserId ? myPlayerState.character : (_characterMap[pid] || (players[pid] && players[pid].character))) || 'renanzinho';
-                const iconSrc = (CHARACTERS[charId] || CHARACTERS.renanzinho).sprites.idle.src;
+                const charId = (pid === myUserId ? myPlayerState.character : (_characterMap[pid] || (players[pid] && players[pid].character))) || 'basey';
+                // Basey é o personagem-base (ninguém escolheu ainda): o card fica sem imagem até escolher um personagem
+                const iconSrc = (charId === 'basey' || !CHARACTERS[charId]) ? '' : CHARACTERS[charId].sprites.idle.src;
                 return _vs(i) + `<div class="ready-pcard p${(i % 4) + 1}${_tc(i)}${ready ? ' is-ready' : ''}">
                     <div class="ready-pcard-check">✓</div>
                     <div class="ready-pcard-tag">P${i + 1}</div>${_tb(i)}
                     <div class="ready-pcard-stage">
                         <div class="ready-pcard-disk"></div>
-                        <img src="${iconSrc}">
+                        ${iconSrc ? `<img src="${iconSrc}">` : ''}
                     </div>
                     <div class="ready-pcard-name">${name}</div>
                     <div class="ready-pcard-status">${ready ? 'Pronto' : 'Aguardando'}</div>
@@ -9871,7 +10354,7 @@
                 const idx = Math.max(0, Object.keys(_hostNickMap).indexOf(pid));
                 const col = window.mpMode === 'teams' ? TEAM_COLORS[idx < 2 ? 0 : 1] : RC_PORT_COLORS[idx % RC_PORT_COLORS.length];
                 el.style.setProperty('--rc', col);
-                const charDef = CHARACTERS[_characterMap[pid]] || CHARACTERS.renanzinho;
+                const charDef = CHARACTERS[_characterMap[pid]] || CHARACTERS.basey;
                 const face = (charDef && charDef.sprites && charDef.sprites.idle && charDef.sprites.idle.src) || '';
                 el.innerHTML = RC_GLOVE_SVG +
                     '<div class="rc-tag"><span class="rc-port">P' + (idx + 1) + '</span>' +
@@ -9925,8 +10408,8 @@
             const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
             const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
             const isF = id => !!(T.fighters && T.fighters.indexOf(id) >= 0);
-            const infoOf = pid => (T.bracket && T.bracket.info[pid]) || { n: nickFor(pid), c: 'renanzinho' };
-            const icon = c => '<img src="' + ((CHARACTERS[c] || CHARACTERS.renanzinho).sprites.idle.src) + '" alt="">';
+            const infoOf = pid => (T.bracket && T.bracket.info[pid]) || { n: nickFor(pid), c: 'basey' };
+            const icon = c => '<img src="' + ((CHARACTERS[c] || CHARACTERS.basey).sprites.idle.src) + '" alt="">';
             const roundName = (r, total) => { const left = total - r; return left === 1 ? 'Final' : left === 2 ? 'Semifinais' : 'Quartas de final'; };
             function clearTimers() {
                 timers.forEach(clearTimeout); timers = [];
@@ -9949,7 +10432,7 @@
                 const rounds = [r0]; let m = pairs;
                 while (m > 1) { m /= 2; rounds.push(Array.from({ length: m }, () => ({}))); }
                 const info = {};
-                for (const id of ids) info[id] = { n: (ro.nickMap && ro.nickMap[id]) || nickFor(id), c: (ro.characters && ro.characters[id]) || 'renanzinho' };
+                for (const id of ids) info[id] = { n: (ro.nickMap && ro.nickMap[id]) || nickFor(id), c: (ro.characters && ro.characters[id]) || 'basey' };
                 return { rounds, info, dropped: {} };
             }
             // a/b: undefined = ainda não definido, null = vaga vazia (bye); w: undefined = sem resultado, null = sem vencedor
@@ -10062,7 +10545,7 @@
                 else if (pid === undefined) cls += ' tbd';
                 else if (pid === null) { name = 'BYE (avança direto)'; cls += ' bye'; }
                 else {
-                    const f = B.info[pid] || { n: '?', c: 'renanzinho' };
+                    const f = B.info[pid] || { n: '?', c: 'basey' };
                     name = f.n; img = icon(f.c);
                     if (B.dropped[pid]) cls += ' out';
                     if (m.w !== undefined) cls += m.w === pid ? ' win' : ' lose';
@@ -10149,8 +10632,8 @@
                 T.fighters = [s.a, s.b]; T.cur = { r: s.r, i: s.i };
                 currentMapIndex = s.map;
                 bracketEl.className = ''; peeking = false;
-                $('tv-img-a').src = (CHARACTERS[infoOf(s.a).c] || CHARACTERS.renanzinho).sprites.idle.src;
-                $('tv-img-b').src = (CHARACTERS[infoOf(s.b).c] || CHARACTERS.renanzinho).sprites.idle.src;
+                $('tv-img-a').src = (CHARACTERS[infoOf(s.a).c] || CHARACTERS.basey).sprites.idle.src;
+                $('tv-img-b').src = (CHARACTERS[infoOf(s.b).c] || CHARACTERS.basey).sprites.idle.src;
                 $('tv-name-a').textContent = infoOf(s.a).n;
                 $('tv-name-b').textContent = infoOf(s.b).n;
                 $('tv-info').textContent = roundName(s.r, T.bracket.rounds.length) + ' · Mapa: ' + ((MAPS[s.map] && MAPS[s.map].name) || '');
@@ -10411,7 +10894,7 @@
                     if (data.type === 'nick') {
                         _hostNickMap[conn.peer] = data.nick;
                         _readyState[conn.peer] = false;
-                        _characterMap[conn.peer] = data.character || 'renanzinho';
+                        _characterMap[conn.peer] = data.character || 'basey';
                         MP.broadcastRoster();
                     } else {
                         MP.onMsg(conn.peer, data);
@@ -10631,9 +11114,9 @@
         const INTRO_MS = 2700;   // cartela "A VS B": os bots ficam parados até ela terminar
 
         // Apresentação visual dos personagens (cartela de abertura)
-        const NAMES = { renanzinho: 'Renanzinho', aggie: 'Aggie', renanAntigo: 'Renan Antigo', blui: 'Blui e Reddie', doper: 'Doper', hofy: 'Hofy', fooshlooket: 'FooshLooket', dan: 'Dan' };
-        const TAGS = { renanzinho: 'Otimista e alegre', aggie: 'Rainha da manicure', renanAntigo: 'Criado em 2020', blui: 'Dupla gelatinosa',
-                       doper: 'Bartender do Blue Note', hofy: 'Dançarina e cantora', fooshlooket: 'Criatura aquática', dan: 'Líder dos White Ones' };
+        const NAMES = { basey: 'Basey', renanzinho: 'Renanzinho', aggie: 'Aggie', renanAntigo: 'Renan Antigo', blui: 'Blui e Reddie', doper: 'Doper', hofy: 'Hofy', fooshlooket: 'FooshLooket', dan: 'Dan', suzan: 'Suzan' };
+        const TAGS = { basey: 'Retângulo base', renanzinho: 'Otimista e alegre', aggie: 'Rainha da manicure', renanAntigo: 'Criado em 2020', blui: 'Dupla gelatinosa',
+                       doper: 'Bartender do Blue Note', hofy: 'Dançarina e cantora', fooshlooket: 'Criatura aquática', dan: 'Líder dos White Ones', suzan: 'Nerd dos White Ones' };
         const CARD_COLORS = [['#e53935', '#8e1b1b'], ['#1e88e5', '#0d3f7a']];
         function portraitSrc(ch) {
             const sp = CHARACTERS[ch] && CHARACTERS[ch].sprites && CHARACTERS[ch].sprites.idle;
@@ -11238,7 +11721,7 @@
             cleanup() {
                 for (const id of Object.keys(players)) if (players[id].demoBot) delete players[id];
                 this.bots = [];
-                for (const arr of [nailPolishBottles, nailClippers, bullets, notes, thrownMics, flails, jellyBalls,
+                for (const arr of [nailPolishBottles, nailClippers, bullets, notes, thrownMics, flails, helloPrints, glitchBalls, jellyBalls,
                                    thrownCups, cupShards, waterSpits, spitShots, waterPuddles, fallingBuckets, hitParticles,
                                    clawEffects, polishSplashes, damagePopups, impactLines, motionTrails]) arr.length = 0;
                 isRunning = false; matchOver = false; championId = null;
