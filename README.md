@@ -56,9 +56,35 @@ Entre no jogo sem escolher ninguém e você controla um retângulo de cara de pa
 
 ## Mapas
 
-Cubos · Colinas · DORFic · **Vector**
+Cubos · Colinas · DORFic · **Vector** · **Deserto**
 
-O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, uma vai de um lado para o outro). Os outros mapas têm só o palco principal (Cubos tem plataformas flutuantes fixas).
+O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, uma vai de um lado para o outro). O **Deserto** tem a plataforma principal ondulando (veja a seção abaixo). Os outros mapas têm só o palco principal (Cubos tem plataformas flutuantes fixas).
+
+## Mapa Deserto
+
+Cenário de arenito com céu azul, montanhas rosadas, torres e estruturas, e duas faixas de chão de areia, todas com *parallax* e rolando sozinhas para a esquerda. Por cima fica a plataforma de arenito (3 faixas de cor, contorno marrom e fileira de pontos laranja no meio).
+
+### Plataforma ondulante
+
+A cada ciclo de 18 s, a plataforma **inteira** (topo incluso) ondula durante 7,2 s, com uma onda que viaja pela peça, e depois volta a ficar reta. O topo curvo é **o chão de verdade**: os personagens andam, pulam e pousam sobre a curva e as diagonais.
+
+- **Desenho e física usam o mesmo cálculo** (`desertoLift`), então o que se vê é exatamente onde se pisa. O comentário antigo do código dizia que o topo era reto justamente para a física (chão plano) bater com o desenho; isso deixou de ser verdade.
+- **A onda só sobe.** O sistema de relevo do jogo (`groundOffset(x, stage)` do mapa, lido por `getGroundYAt`) só aceita chão que sobe, nunca um vale abaixo do topo do palco. Por isso a peça sobe de 0 a cerca de 50 px (num palco de 620 px) e volta; nos vales da onda ela encosta no nível de repouso. A amplitude é a constante `DESERTO_WAVE_AMP` (fração do comprimento do palco, `0.04`; a peça sobe até 2× isso).
+- **Inclinação suave.** A inclinação máxima da superfície é cerca de 0,31, bem abaixo do limite de parede da física (`SLOPE_MAX_RATIO = 2.5`), então não há degraus nem bloqueios.
+- **O chão carrega quem está parado.** Como a onda é animada, o chão sobe por baixo de quem está apoiado. O pouso original foi feito para relevo estático e deixaria o personagem atravessar o chão; a regra `groundCarry` (limite `GROUND_CARRY_MAX`) faz o chão levá-lo junto. Só vale para mapas com `movingGround: true`, então os outros mapas não mudam. Na simulação (60, 30 e 15 fps, parado e andando) não houve nenhum atravessamento nem bloqueio.
+- **Poças acompanham a onda.** As poças de tinta (Dan) e de água (FooshLooket) ficam coladas ao chão e inclinam com ele (`puddleOnHill`, `puddleGroundY`). Projéteis e objetos arremessados já tratavam o corpo do palco como sólido.
+- **Sincronia no online.** A onda usa o relógio do host (`vecNow()`, o mesmo do mapa Vector), então todos veem e sentem a mesma onda sem trocar mensagens. Funções: `desertoWaveTc`, `desertoWaveEnv`, `desertoLift`, `desertoLiftAt`.
+
+### Otimização para celular
+
+O fundo já era pintado uma vez em canvas offscreen e desenhado por *pattern fill*. Em aparelhos touch (`DORFIC_LITE`) foi otimizado ainda mais:
+
+- **Resolução do ladrilho pela escala real da tela** (`desertoLayerScale`): acompanha a escala de render do aparelho (com folga para o zoom da câmera), em múltiplos de 1/8, e nunca passa de 1×, o valor antigo. Em paisagem a memória dos ladrilhos cai de 6,7 MB para cerca de 2,6 MB (−61%); em retrato, para cerca de 0,9 MB. Notebooks com touch e desktops ficam como antes (desktop segue em 2×). Ao girar o aparelho os ladrilhos são refeitos só se ficariam borrados, e a barra de URL do navegador não dispara rebuild.
+- **Construção incremental e pré-aquecimento** (`desertoBuildStep`, `desertoPrewarm`): as 4 camadas são pintadas em tempo ocioso, uma por vez, logo depois do carregamento, para que escolher o Deserto não trave o primeiro frame. Se a partida começar antes, o desenho termina o que faltar. Os bitmaps antigos são liberados na hora (`desertoFreeLayers`).
+- **Sem alocação por frame:** os gradientes do céu e da névoa ficam em cache.
+- **Palco mais leve** (vale em todos os dispositivos): a onda é calculada uma vez por ponto (e não ~500 vezes por frame), a peça é desenhada com bordas retas quando está parada (cerca de 60% do ciclo), e os pontos laranja saem num único `fill` (de 29 para 4 `fill`s por frame). No celular a onda usa segmentos de 14 px em vez de 8 px (desvio máximo de ~0,36 px da curva exata). A geometria é idêntica à da versão anterior.
+
+> Esses números vêm de simulação e cálculo, não de medição em aparelho. Se algo estranho aparecer no celular, o painel Performance do Chrome conectado ao aparelho é a leitura mais confiável. Na intro (câmera com zoom 1,8×) o fundo distante pode ficar um pouco mais suave no celular; para mais nitidez, aumente a folga `1.25` em `desertoLayerScale`, ao custo de memória.
 
 ## Multiplayer
 
@@ -140,7 +166,7 @@ Implementação: helpers `rideAttach(obj, superfície, índice)` (ao pousar) e `
 
 ## Demonstração (attract mode)
 
-Depois de 15 s parado na tela de título, dois lutadores controlados por CPU lutam por 60 s com o motor real do jogo (nada é enviado pela rede) e depois volta ao título. Qualquer tecla ou toque encerra a demonstração. O mapa Vector não entra no sorteio da demonstração, porque depende do relógio do host.
+Depois de 15 s parado na tela de título, dois lutadores controlados por CPU lutam por 60 s com o motor real do jogo (nada é enviado pela rede) e depois volta ao título. Qualquer tecla ou toque encerra a demonstração. O mapa Vector não entra no sorteio da demonstração, porque depende do relógio do host. O Deserto entra no sorteio; a onda dele ainda não foi testada com os bots, então, se algum travar nela, basta excluí-lo do sorteio como é feito com o Vector.
 
 Visual da demonstração:
 
@@ -161,6 +187,9 @@ HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio par
 
 ## Changelog
 
+- **Deserto · plataforma ondulante também no topo:** a onda que antes só mexia na face de baixo agora move a peça inteira, e o topo curvo é o chão da física (personagens andam sobre curvas e diagonais sem bugs). A onda só sobe (0 a ~50 px) e usa o relógio do host, então é igual para todos no online.
+- **Deserto · física do chão animado:** o chão passa a carregar quem está parado sobre ele (`groundCarry`) em vez de deixá-lo atravessar; poças de tinta e de água acompanham a onda. Só afeta o Deserto.
+- **Deserto · otimização para celular:** ladrilhos do fundo com resolução pela escala real da tela (−61% de memória em paisagem), pintura das camadas em tempo ocioso (sem travada ao entrar no mapa), gradientes em cache e palco mais leve (29 → 4 `fill`s por frame, bordas retas quando parado), com a mesma aparência.
 - **Corpo de gelatina no personagem sem nome:** o retângulo de cara de paisagem ganhou malemolência de travesseiro/saco de pancada (balanço atrasado do topo, incha e achata em pulos, pousos e golpes), feito em 14 faixas com molas e só no desenho, sem mudar hitbox nem física.
 - **Suzan · bola jelly de bugs (↓ + X):** bola de gelatina glitchada que persegue os oponentes por 3 s e atordoa por 1 s (cooldown de 4 s); passa para outro alvo depois de atordoar alguém.
 - **Novo personagem · Suzan:** nerd dos White Ones, com batida de notebook (Z) e `print("hello world!")` (X); sem pulo duplo.
