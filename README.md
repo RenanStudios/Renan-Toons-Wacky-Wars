@@ -56,7 +56,7 @@ Entre no jogo sem escolher ninguém e você controla um retângulo de cara de pa
 
 ## Mapas
 
-Cubos · Colinas · DORFic · **Vector** · **Deserto**
+Cubos · Colinas · DORFic · **Vector** · **Deserto** · **Lado de Fora**
 
 O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, uma vai de um lado para o outro). O **Deserto** tem a plataforma principal ondulando (veja a seção abaixo). Os outros mapas têm só o palco principal (Cubos tem plataformas flutuantes fixas).
 
@@ -85,6 +85,23 @@ O fundo já era pintado uma vez em canvas offscreen e desenhado por *pattern fil
 - **Palco mais leve** (vale em todos os dispositivos): a onda é calculada uma vez por ponto (e não ~500 vezes por frame), a peça é desenhada com bordas retas quando está parada (cerca de 60% do ciclo), e os pontos laranja saem num único `fill` (de 29 para 4 `fill`s por frame). No celular a onda usa segmentos de 14 px em vez de 8 px (desvio máximo de ~0,36 px da curva exata). A geometria é idêntica à da versão anterior.
 
 > Esses números vêm de simulação e cálculo, não de medição em aparelho. Se algo estranho aparecer no celular, o painel Performance do Chrome conectado ao aparelho é a leitura mais confiável. Na intro (câmera com zoom 1,8×) o fundo distante pode ficar um pouco mais suave no celular; para mais nitidez, aumente a folga `1.25` em `desertoLayerScale`, ao custo de memória.
+
+## Mapa Lado de Fora
+
+Cenário adaptado do `Céu.html` (CSS para canvas): céu azul com nuvens à deriva, muro de tijolos ciano, telhado cinza e, na frente, a plataforma verde onde se luta.
+
+- **Plataforma sem fim à esquerda.** O chão se estende muito além da tela e só termina na direita (`LADO_RIGHT`, x = 1300). A área de luta começa em x = 300.
+- **Câmera travada à esquerda.** A borda esquerda da tela nunca passa de `LADO_CAMERA_LEFT` (x = 100), mesmo com zoom. O limite vem do campo `cameraLeft` do mapa, então outros mapas podem usá-lo.
+- **Morte pela esquerda.** Quem cruzar `LADO_DEATH_LEFT` (x = 50, logo depois da borda da tela) não cai: morre e perde uma vida.
+- **Parallax.** Céu (0,01), nuvens (0,05) e muro de tijolos (0,5) rolam em velocidades diferentes, e as nuvens também se movem sozinhas.
+- **Implementação:** bloco `MAPA "Lado de Fora"` do `index.html` (`ladoForaAssets`, `drawLadoForaBackground`, `drawLadoForaStageFill`; constantes `LADO_*`). Os gradientes ficam em cache, sem alocação por quadro.
+
+## Caixa de sugestões
+
+Na tela **Modo de Jogo** há um quarto botão, **Sugestões** (com uma lâmpada), no mesmo visual dos outros itens do menu: ícone redondo, texto vermelho em itálico, entrada animada e destaque ao passar o mouse. Ele abre uma janelinha onde o jogador escreve o nome e a sugestão (novo personagem, mapa, golpe, correção...).
+
+- **Regras:** nome obrigatório, sugestão com 5 a 1000 caracteres, intervalo de 60 s entre envios e um campo escondido contra robôs. As teclas digitadas na janela não movem o personagem nem acionam atalhos do jogo.
+- **Envio:** com o **EmailJS** configurado (3 chaves no topo do bloco `CAIXA DE SUGESTÕES`), a sugestão chega direto no e-mail do Renan, sem o jogador sair do jogo. Sem as chaves, abre uma nova mensagem do **Gmail** no navegador, já preenchida com destinatário, assunto e texto (antes abria o app de e-mail padrão).
 
 ## Multiplayer
 
@@ -183,10 +200,12 @@ Tudo isso fica no bloco `LUTA DE DEMONSTRAÇÃO` do `index.html` (CSS do overlay
 
 ## Tecnologias
 
-HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS.
+HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS. O EmailJS (opcional) envia as sugestões por e-mail.
 
 ## Changelog
 
+- **Novo mapa · Lado de Fora:** plataforma verde sem fim à esquerda, com céu, nuvens, muro de tijolos e telhado em parallax; câmera travada à esquerda e morte ao passar da borda da tela.
+- **Caixa de sugestões:** novo botão no menu de modo de jogo, no mesmo estilo dos demais, que abre um formulário de nome e sugestão; envio por EmailJS ou, como plano B, por uma mensagem nova do Gmail (antes abria o app de e-mail padrão).
 - **Deserto · plataforma ondulante também no topo:** a onda que antes só mexia na face de baixo agora move a peça inteira, e o topo curvo é o chão da física (personagens andam sobre curvas e diagonais sem bugs). A onda só sobe (0 a ~50 px) e usa o relógio do host, então é igual para todos no online.
 - **Deserto · física do chão animado:** o chão passa a carregar quem está parado sobre ele (`groundCarry`) em vez de deixá-lo atravessar; poças de tinta e de água acompanham a onda. Só afeta o Deserto.
 - **Deserto · otimização para celular:** ladrilhos do fundo com resolução pela escala real da tela (−61% de memória em paisagem), pintura das camadas em tempo ocioso (sem travada ao entrar no mapa), gradientes em cache e palco mais leve (29 → 4 `fill`s por frame, bordas retas quando parado), com a mesma aparência.
