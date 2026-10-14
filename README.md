@@ -56,9 +56,23 @@ Entre no jogo sem escolher ninguém e você controla um retângulo de cara de pa
 
 ## Mapas
 
-Cubos · Colinas · DORFic · **Vector** · **Deserto** · **Lado de Fora**
+Cubos · Colinas · DORFic · **Vector** · **Deserto** · **Lado de Fora** · **Media Player**
 
-O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, uma vai de um lado para o outro). O **Deserto** tem a plataforma principal ondulando (veja a seção abaixo). Os outros mapas têm só o palco principal (Cubos tem plataformas flutuantes fixas).
+O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, uma vai de um lado para o outro). O **Deserto** tem a plataforma principal ondulando (veja a seção abaixo). O **Media Player** tem a barra de tarefas como chão, o topo da janela como plataforma alta e duas plataformas que sobem e descem. Os outros mapas têm só o palco principal (Cubos tem plataformas flutuantes fixas).
+
+## Mapa Media Player
+
+Cenário adaptado do `Glossows_Media_Player.html`: um tocador de mídia retrô azul, com lista de playlists à esquerda, tela quadriculada no centro com uma caixa de som 3D, controles de EQ, balanço e volume à direita e a barra de controles e a barra de tarefas embaixo.
+
+- **Chão:** a própria barra de tarefas, de ponta a ponta da janela.
+- **Plataforma de cima:** o topo da janela central. Ela vai da borda esquerda da janela central até onde começam as configurações (volume, balanço, EQ). No lado das configurações não há colisão de plataforma, para dar para embarcar na plataforma móvel sem bugar.
+- **Plataformas móveis:** duas, uma à esquerda e outra à direita da janela, que sobem e descem em contrafase (ciclo de 3,2 s de ida, com o mesmo movimento suave do CSS original). No ponto mais baixo ficam uns 100 px acima do chão, dentro do alcance do pulo, e no mais alto ficam na altura do topo da janela, para dar para passar de uma para a plataforma de cima. Carregam quem está em cima. A largura delas é a constante `MP_PLAT_W`.
+- **Morte:** cair para fora da janela do media player (pelos lados ou por baixo) faz o jogador perder uma vida. Os limites vêm dos campos `deathLeft` e `deathRight` do mapa.
+- **Camadas e parallax:** o fundo quadriculado e a caixa de som 3D são recortados dentro da janela e se deslocam um pouco menos que o resto, o quadriculado um pouquinho menos que a caixa de som. A moldura do media player passa por cima dos dois, como se estivessem atrás dela. O resto da arte fica travado ao mundo, alinhado com o chão e a colisão. Os fatores de parallax estão em `drawMediaPlayerBackground`.
+- **Escala:** a arte é desenhada a 110% do tamanho original (`MP_S`), com a barra de tarefas em y = 800. O topo da janela fica acima da tela, e a câmera mostra essa parte quando os jogadores sobem.
+- **Sincronia no online.** A posição das plataformas móveis usa o relógio do host (`vecNow()`, como o Vector e o Deserto), então todos veem e sentem as mesmas plataformas sem trocar mensagens.
+- **Desempenho.** O HTML do mapa vira imagem SVG, que o navegador rasteriza de novo a cada desenho. Por isso as camadas são desenhadas uma única vez em canvas na memória (`mpAssets`) e reaproveitadas. No celular (`DORFIC_LITE`) o cache usa 80% da resolução. As posições das plataformas são calculadas uma vez por frame (cache de 4 ms), não há sombras com blur e o quadriculado é desenhado direto no canvas com um padrão repetido.
+- **Implementação:** bloco `MAPA "Media Player"` do `index.html` (`getMediaPlayerStage`, `getMediaPlayerPlatforms`, `drawMediaPlayerBackground`, `drawMediaPlayerStageFill`, `drawMediaPlayerPlatform`; constantes `MP_*`). A barra de tarefas é redesenhada no espaço do mundo, exatamente sobre a plataforma principal, em `drawMediaPlayerStageFill`.
 
 ## Mapa Deserto
 
@@ -72,6 +86,7 @@ A cada ciclo de 18 s, a plataforma **inteira** (topo incluso) ondula durante 7,2
 - **A onda só sobe.** O sistema de relevo do jogo (`groundOffset(x, stage)` do mapa, lido por `getGroundYAt`) só aceita chão que sobe, nunca um vale abaixo do topo do palco. Por isso a peça sobe de 0 a cerca de 50 px (num palco de 620 px) e volta; nos vales da onda ela encosta no nível de repouso. A amplitude é a constante `DESERTO_WAVE_AMP` (fração do comprimento do palco, `0.04`; a peça sobe até 2× isso).
 - **Inclinação suave.** A inclinação máxima da superfície é cerca de 0,31, bem abaixo do limite de parede da física (`SLOPE_MAX_RATIO = 2.5`), então não há degraus nem bloqueios.
 - **O chão carrega quem está parado.** Como a onda é animada, o chão sobe por baixo de quem está apoiado. O pouso original foi feito para relevo estático e deixaria o personagem atravessar o chão; a regra `groundCarry` (limite `GROUND_CARRY_MAX`) faz o chão levá-lo junto. Só vale para mapas com `movingGround: true`, então os outros mapas não mudam. Na simulação (60, 30 e 15 fps, parado e andando) não houve nenhum atravessamento nem bloqueio.
+- **Rede de segurança contra atravessar o chão.** O `groundCarry` só cobre subidas pequenas por frame. Se o chão subir por cima do jogador de uma vez (pico de lag, ressincronização do relógio do host, nascer em cima da onda), a regra `groundEmbed` empurra o jogador para a superfície em vez de deixá-lo atravessar. Ela vale quando os pés estão até 160 px abaixo da superfície e ainda acima do fundo do palco, então quem cai pela borda continua caindo. Vale para mapas com onda (`movingGround`) e com relevo (Colinas).
 - **Poças acompanham a onda.** As poças de tinta (Dan) e de água (FooshLooket) ficam coladas ao chão e inclinam com ele (`puddleOnHill`, `puddleGroundY`). Projéteis e objetos arremessados já tratavam o corpo do palco como sólido.
 - **Sincronia no online.** A onda usa o relógio do host (`vecNow()`, o mesmo do mapa Vector), então todos veem e sentem a mesma onda sem trocar mensagens. Funções: `desertoWaveTc`, `desertoWaveEnv`, `desertoLift`, `desertoLiftAt`.
 
@@ -92,9 +107,16 @@ Cenário adaptado do `Céu.html` (CSS para canvas): céu azul com nuvens à deri
 
 - **Plataforma sem fim à esquerda.** O chão se estende muito além da tela e só termina na direita (`LADO_RIGHT`, x = 1300). A área de luta começa em x = 300.
 - **Câmera travada à esquerda.** A borda esquerda da tela nunca passa de `LADO_CAMERA_LEFT` (x = 100), mesmo com zoom. O limite vem do campo `cameraLeft` do mapa, então outros mapas podem usá-lo.
-- **Morte pela esquerda.** Quem cruzar `LADO_DEATH_LEFT` (x = 50, logo depois da borda da tela) não cai: morre e perde uma vida.
+- **Morte pela esquerda.** Quem cruzar `LADO_DEATH_LEFT` (x = 50, logo depois da borda da tela) não cai: morre e perde uma vida. O campo `deathRight` do mapa faz o mesmo pela direita (usado no Media Player).
 - **Parallax.** Céu (0,01), nuvens (0,05) e muro de tijolos (0,5) rolam em velocidades diferentes, e as nuvens também se movem sozinhas.
 - **Implementação:** bloco `MAPA "Lado de Fora"` do `index.html` (`ladoForaAssets`, `drawLadoForaBackground`, `drawLadoForaStageFill`; constantes `LADO_*`). Os gradientes ficam em cache, sem alocação por quadro.
+
+## Início da partida (entradas e 3, 2, 1, LUTAR!)
+
+Os jogadores entram em cena um por vez, depois vem a contagem 3, 2, 1, LUTAR!, e só então os controles são liberados.
+
+- **Ponto de nascimento na altura real do chão.** Cada jogador nasce no seu ponto da entrada (`introSlot`) na altura do chão **naquele ponto** (`getGroundYAt`), e não na altura de repouso do palco. Em mapas com ladeira (Colinas) ou com a onda ativa (Deserto), o chão pode estar acima do repouso, e nascer na altura de repouso deixava o jogador enterrado, caindo através do chão e perdendo uma vida antes da luta.
+- **Ninguém perde vida na entrada nem na contagem.** Enquanto os controles estão travados (`introLock`), se alguém sair da área jogável por qualquer motivo, ele volta ao ponto de nascimento sem perder vida e sem tocar o som de queda. Depois do LUTAR!, a regra normal volta: cair para fora tira uma vida.
 
 ## Caixa de sugestões
 
@@ -166,7 +188,7 @@ Visual do lobby do torneio:
 
 Tela **VS** entre as lutas do torneio: agora dura **5,5 s** (antes 3,8 s). O tempo é controlado pela constante `VS_MS`, junto das demais temporizações do torneio (`BRACKET_DRAW_MS`, `BRACKET_WAIT_MS`, `RESULT_DELAY_MS`). As animações de entrada da tela terminam em cerca de 1,25 s, então o VS fica parado na tela pelo restante do tempo.
 
-## Plataformas móveis (mapa Vector)
+## Plataformas móveis (mapas Vector e Media Player)
 
 A posição das plataformas é uma função do relógio sincronizado (`vecNow()`), então todos os clientes calculam a mesma posição sem trocar mensagens.
 
@@ -183,7 +205,7 @@ Implementação: helpers `rideAttach(obj, superfície, índice)` (ao pousar) e `
 
 ## Demonstração (attract mode)
 
-Depois de 15 s parado na tela de título, dois lutadores controlados por CPU lutam por 60 s com o motor real do jogo (nada é enviado pela rede) e depois volta ao título. Qualquer tecla ou toque encerra a demonstração. O mapa Vector não entra no sorteio da demonstração, porque depende do relógio do host. O Deserto entra no sorteio; a onda dele ainda não foi testada com os bots, então, se algum travar nela, basta excluí-lo do sorteio como é feito com o Vector.
+Depois de 15 s parado na tela de título, dois lutadores controlados por CPU lutam por 60 s com o motor real do jogo (nada é enviado pela rede) e depois volta ao título. Qualquer tecla ou toque encerra a demonstração. Os mapas Vector e Media Player não entram no sorteio da demonstração, porque dependem do relógio do host. O Deserto entra no sorteio; a onda dele ainda não foi testada com os bots, então, se algum travar nela, basta excluí-lo do sorteio como é feito com o Vector.
 
 Visual da demonstração:
 
@@ -200,10 +222,15 @@ Tudo isso fica no bloco `LUTA DE DEMONSTRAÇÃO` do `index.html` (CSS do overlay
 
 ## Tecnologias
 
-HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS. O EmailJS (opcional) envia as sugestões por e-mail.
+HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos. O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS. O mapa Media Player usa uma imagem SVG gerada a partir do HTML da arte (`foreignObject`), desenhada uma vez em canvas na memória. O EmailJS (opcional) envia as sugestões por e-mail.
 
 ## Changelog
 
+- **Início da partida · spawn corrigido:** o jogador agora nasce na altura real do chão no seu ponto de entrada, e não na altura de repouso do palco. Antes, em mapas com ladeira ou com a onda do Deserto ativa, ele nascia enterrado, atravessava o chão e perdia uma vida ainda no 3, 2, 1. Durante as entradas e a contagem, quem sair da área volta ao ponto de nascimento sem perder vida.
+- **Deserto · correção do chão:** o chão não deixa mais o jogador atravessar quando a onda sobe de repente por cima dele (lag, ressincronização do relógio do host, nascer na onda). A regra `groundEmbed` empurra o jogador de volta para a superfície, e também vale para mapas com relevo. Quem cai pela borda continua caindo.
+- **Novo mapa · Media Player:** tocador de mídia retrô adaptado do `Glossows_Media_Player.html`. A barra de tarefas é o chão, o topo da janela central é uma plataforma alta e há duas plataformas móveis que sobem e descem em contrafase. A caixa de som 3D e o fundo quadriculado têm parallax em camadas atrás da moldura. Cair fora da janela faz perder uma vida. Arte desenhada uma vez em canvas na memória, para não travar.
+- **Mapas · campo `deathRight`:** além do `deathLeft` do Lado de Fora, os mapas agora também podem definir um limite de morte à direita.
+- **Demonstração:** o Media Player também fica fora do sorteio de mapas, por depender do relógio do host.
 - **Novo mapa · Lado de Fora:** plataforma verde sem fim à esquerda, com céu, nuvens, muro de tijolos e telhado em parallax; câmera travada à esquerda e morte ao passar da borda da tela.
 - **Caixa de sugestões:** novo botão no menu de modo de jogo, no mesmo estilo dos demais, que abre um formulário de nome e sugestão; envio por EmailJS ou, como plano B, por uma mensagem nova do Gmail (antes abria o app de e-mail padrão).
 - **Deserto · plataforma ondulante também no topo:** a onda que antes só mexia na face de baixo agora move a peça inteira, e o topo curvo é o chão da física (personagens andam sobre curvas e diagonais sem bugs). A onda só sobe (0 a ~50 px) e usa o relógio do host, então é igual para todos no online.
