@@ -4902,6 +4902,120 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         }
 
         // ==========================================================================
+        // MAPA "Media Player" (adaptado do Glossows_Media_Player.html: CSS -> imagem SVG em camadas)
+        //  • Chão = barra de tarefas. Plataforma de cima = topo da janela central (só do centro p/ esquerda)
+        //  • 2 plataformas móveis (sobem/descem em contrafase). Lado dos controles de volume: sem plataforma
+        //  • Cair fora da janela do media player = morrer
+        // ==========================================================================
+        const MP_S = 1.1, MP_OX = (WORLD_WIDTH - 1460 * 1.1) / 2, MP_OY = 800 - 1003 * 1.1;   // escala do mapa; chão (barra de tarefas) fica em y=800
+        const MP_ART_W = 1460, MP_ART_H = 1078;
+        const MP_PLAT_W = 190;   // largura das plataformas móveis (mundo); centradas onde ficavam na arte
+        const MP_CSS = "\n*{box-sizing:border-box;margin:0;padding:0}\n\n#stage{position:absolute;left:0;top:0;width:1460px;height:1078px;transform-origin:0 0;overflow:hidden;\n font-family:\"Arial Narrow\",\"Segoe UI\",Arial,sans-serif;color:#fff;\n background:linear-gradient(#2f7cf5,#1a5ae0 60%,#1648c8);border:3px solid #0b3bb5}\n.abs{position:absolute}\n#tb{box-shadow:0 40px 0 #8e9ab4,-40px 0 0 #8e9ab4,40px 0 0 #8e9ab4}#title{box-shadow:0 -40px 0 #3b8bff,-40px 0 0 #3b8bff,40px 0 0 #3b8bff}\n/* barra de t\u00edtulo */\n#title{left:0;top:0;width:1460px;height:62px;background:linear-gradient(#3b8bff,#1e63ea 50%,#164fd0);border-bottom:3px solid #0d3fb8}\n#title b{position:absolute;left:72px;top:12px;font:700 36px \"Arial Narrow\",Arial,sans-serif;letter-spacing:.5px;text-shadow:0 2px 2px #0a2a80}\n.logo{position:absolute;left:18px;top:12px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7a7a,#d40f0f 60%,#7a0000);border:3px solid #fff;box-shadow:0 0 0 2px #1a50d0,0 2px 4px #000a}\n.logo::after{content:\"\";position:absolute;left:12px;top:8px;width:14px;height:18px;background:#fff;clip-path:polygon(0 0,100% 50%,0 100%)}\n.wb{position:absolute;top:12px;width:42px;height:40px;border:3px solid #fff;border-radius:6px;background:linear-gradient(#5aa0ff,#1a56d8);box-shadow:0 2px 3px #0a2a80}\n.wb.x{background:linear-gradient(#ff7a5a,#d2200c)}\n.wb.min::after{content:\"\";position:absolute;left:8px;bottom:6px;width:16px;height:6px;background:#fff}\n.wb.max::after{content:\"\";position:absolute;left:8px;top:7px;width:16px;height:16px;border:3px solid #fff;border-top-width:5px}\n.wb.x::before,.wb.x::after{content:\"\";position:absolute;left:5px;top:15px;width:26px;height:5px;background:#fff;transform:rotate(45deg)}\n.wb.x::after{transform:rotate(-45deg)}\n/* menu */\n#menu{left:6px;top:65px;width:1448px;height:60px;background:linear-gradient(#2f80ff,#1a5cea);border-bottom:2px solid #0d3fb8}\n#menu span{position:absolute;top:10px;font-size:36px;text-shadow:0 2px 2px #0a2a80}\n/* pain\u00e9is */\n.panel{background:linear-gradient(#2a7bff,#1d63f0);border:3px solid #7db4ff;border-radius:6px;box-shadow:inset 0 0 0 2px #0d46c8,0 0 0 2px #0a3aa8}\n#left{left:8px;top:130px;width:250px;height:735px}\n#left h2{position:absolute;left:28px;top:166px;left:28px;top:166px;font:700 44px \"Arial Narrow\",Arial,sans-serif;color:#d9124a;letter-spacing:.5px;text-shadow:0 1px 0 #fff6;display:none}\n.pl{position:absolute;left:28px;width:218px;height:100px;border:3px solid #8cc0ff;border-radius:10px;background:linear-gradient(#3a8cff,#1d63ee);box-shadow:inset 0 0 0 2px #1048c8,0 2px 3px #0a2a80;padding:6px 10px;line-height:1.1}\n.pl b{display:block;font-size:30px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 1px #0a2a80;letter-spacing:-.5px;transform-origin:0 0}\n.pl small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:20px;font-family:Arial,sans-serif;font-size:19px;margin-top:2px;text-shadow:0 1px 1px #0a2a80}\n.pl i{font-style:normal;display:block;font-family:Arial,sans-serif;font-size:19px;text-shadow:0 1px 1px #0a2a80}\n#plh{left:36px;top:168px;font:700 44px \"Arial Narrow\",Arial,sans-serif;color:#d9124a;letter-spacing:.5px}\n#plu{left:28px;top:219px;width:218px;height:6px;background:#d9124a;border-radius:2px}\n/* display central */\n#center{left:265px;top:133px;width:1186px;height:732px}\n#view{left:283px;top:157px;width:956px;height:685px;border:3px solid #1e3f9a;overflow:hidden;background:#0b3ec9;box-shadow:inset 0 0 0 2px #6a8fe0}\n#view::before{content:\"\";position:absolute;left:-60%;top:-60%;width:220%;height:220%;transform:translate(var(--bx,0px),var(--by,0px)) rotate(45deg);\n background:conic-gradient(#0a3fd0 25%,#7090d2 0 50%,#0a3fd0 0 75%,#7090d2 0);background-size:184px 184px;background-position:60px 20px}\n/* caixa de som (3D com clip-path) */\n#spk{left:400px;top:175px;width:570px;height:650px;filter:drop-shadow(-6px 14px 14px #000a)}\n#spk .side,#spk .front{position:absolute;inset:0}\n#spk .side{clip-path:polygon(0 100px,157px 5px,157px 643px,0 555px);background:linear-gradient(90deg,#01030a,#050b20 55%,#10205a)}\n#spk .front{clip-path:polygon(157px 5px,565px 50px,565px 610px,157px 643px);background:radial-gradient(ellipse at 30% 15%,#1d44a0 0%,transparent 55%),linear-gradient(160deg,#0f2a6e 0%,#0a1e52 35%,#0a1736 70%,#0b1330);box-shadow:inset 0 0 0 4px #000}\n#spk .edge{position:absolute;inset:0;clip-path:polygon(157px 5px,163px 7px,163px 643px,157px 643px);background:linear-gradient(#5a78d0,#1a2a68)}\n.screw{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a3356,#02040c 70%)}\n/* cone */\n#c1{left:608px;top:300px;width:312px;height:312px;border-radius:50%;background:radial-gradient(circle,#0a1740 60%,#050a22 100%);box-shadow:0 0 0 4px #04081c,0 0 14px 6px #0a1a50 inset}\n#c2{left:622px;top:314px;width:284px;height:284px;border-radius:50%;background:conic-gradient(from 200deg,#111 0,#555 12%,#222 30%,#6a6a6a 50%,#1a1a1a 70%,#555 88%,#111);box-shadow:0 0 0 3px #000}\n#c3{left:637px;top:329px;width:254px;height:254px;border-radius:50%;background:conic-gradient(from 90deg,#1a1a1a,#8a8a8a 25%,#1a1a1a 45%,#aaa 60%,#2a2a2a 80%,#1a1a1a);box-shadow:inset 0 0 0 8px #0a0a0a}\n#c4{left:648px;top:340px;width:232px;height:232px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#101a3a,#0a1230 70%);box-shadow:inset 0 0 0 6px #1b1b1b}\n#c5{left:662px;top:354px;width:204px;height:204px;border-radius:50%;background:conic-gradient(from 60deg,#2a2a2a,#d8d8d8 20%,#555 40%,#e8e8e8 55%,#444 75%,#2a2a2a)}\n#c6{left:672px;top:364px;width:184px;height:184px;border-radius:50%;background:radial-gradient(circle at 45% 45%,#6b6b6b,#1b1b1b 75%);box-shadow:inset 0 0 0 4px #000}\n#cap{left:704px;top:396px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#4aa0ff,#0a52e8 45%,#0a2ea0 100%);box-shadow:0 3px 6px #0009}\n/* sliders EQ */\n.sl{position:absolute;width:7px;border-radius:4px;background:linear-gradient(90deg,#3de8d6,#1fb6c8);box-shadow:0 0 0 1px #0a4a9a}\n.kn{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fff,#d6dce8 50%,#8b94a8);box-shadow:0 2px 3px #0a2a80,inset 0 0 0 1px #6a748a}\n.lb{position:absolute;font:700 23px \"Arial Narrow\",Arial,sans-serif;color:#d9124a;letter-spacing:-.5px;white-space:nowrap}\n.dash{position:absolute;height:5px;background:#d9124a;border-radius:2px}\n#pct{left:1255px;top:672px;width:200px;text-align:center;font:700 62px \"Arial Narrow\",Arial,sans-serif;color:#7ff03a;text-shadow:0 2px 0 #1a6a10,0 0 8px #3a8a20}\n/* barra de controles */\n#ctl{left:6px;top:872px;width:1448px;height:126px;background:linear-gradient(#2a76f8,#1650d8);border-top:3px solid #8cc0ff}\n#pill{left:245px;top:888px;width:975px;height:90px;border-radius:45px;background:linear-gradient(#4a96ff,#1c5ee8);border:3px solid #0d3fb8;box-shadow:inset 0 0 0 3px #7db4ff}\n#bump{left:628px;top:842px;width:144px;height:80px;border-radius:72px 72px 0 0;background:linear-gradient(#3a8cff,#2a76f8);border:3px solid #8cc0ff;border-bottom:0}\n.rb{position:absolute;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#3d6ee8,#0f2f9a 70%);border:4px solid #0a246a;box-shadow:0 2px 4px #0008,inset 0 0 0 2px #5a88f0}\n.rb.pw::before{content:\"\";position:absolute;left:14px;top:13px;width:22px;height:22px;border:5px solid #e8123a;border-top-color:transparent;border-radius:50%}\n.rb.pw::after{content:\"\";position:absolute;left:23px;top:8px;width:5px;height:18px;background:#e8123a}\n.rb.cx::before,.rb.cx::after{content:\"\";position:absolute;left:10px;top:20px;width:30px;height:7px;background:#e8123a;transform:rotate(45deg);border-radius:2px}\n.rb.cx::after{transform:rotate(-45deg)}\n.rb.st::before{content:\"\";position:absolute;left:12px;top:12px;width:24px;height:24px;background:linear-gradient(#ff3a3a,#c80a0a);border:2px solid #7a0000}\n.rb.rc::before{content:\"\";position:absolute;left:8px;top:8px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#ff7a6a,#e8100a 60%,#9a0000)}\n.rb.rw,.rb.ff{background:radial-gradient(circle at 40% 30%,#3d6ee8,#0f2f9a 70%)}\n.rb.rw::before,.rb.ff::before,.rb.rw::after,.rb.ff::after{content:\"\";position:absolute;top:13px;width:17px;height:24px;background:#ffc81a;clip-path:polygon(100% 0,0 50%,100% 100%)}\n.rb.rw::before{left:7px}.rb.rw::after{left:21px}\n.rb.ff::before,.rb.ff::after{clip-path:polygon(0 0,100% 50%,0 100%)}\n.rb.ff::before{left:9px}.rb.ff::after{left:23px}\n#play{left:648px;top:861px;width:106px;height:106px;border-radius:50%;background:radial-gradient(circle at 40% 25%,#ff8a7a,#e8190a 50%,#a00000);border:5px solid #fff;box-shadow:0 0 0 4px #0a3ab8,0 4px 8px #0009}\n#play::before{content:\"\";position:absolute;left:30px;top:20px;width:48px;height:56px;background:linear-gradient(90deg,#ffe24a,#ffb000);clip-path:polygon(0 0,100% 50%,0 100%)}\n#spi{left:946px;top:910px;width:30px;height:46px;background:linear-gradient(90deg,#9fb8e8,#e8f0ff);clip-path:polygon(0 30%,35% 30%,100% 0,100% 100%,35% 70%,0 70%)}\n#vt{left:987px;top:929px;width:198px;height:16px;border-radius:8px;background:linear-gradient(#5aff4a,#2ab81a 60%,#5aff4a);border:2px solid #0a5a1a;box-shadow:inset 0 2px 3px #0a4a0a}\n#vk{left:1086px;top:921px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fff,#d6dce8 50%,#8b94a8);box-shadow:0 2px 3px #0008}\n/* barra de tarefas */\n#tb{left:0;top:1000px;width:1460px;height:78px;background:linear-gradient(#b8c2d8,#8e9ab4);border-top:3px solid #e8eefc}\n#ini{left:5px;top:1002px;width:206px;height:68px;border-radius:8px;background:linear-gradient(#4ab04a,#1f7a1f);border:3px solid #0d5a0d;box-shadow:inset 0 0 0 2px #7ad07a}\n#ini b{position:absolute;left:74px;top:12px;font:700 38px \"Arial Narrow\",Arial,sans-serif;text-shadow:0 2px 2px #063}\n.wl{position:absolute;width:20px;height:20px}\n.tbtn{position:absolute;top:1008px;height:56px;border:3px solid #7db4ff;border-radius:6px;background:linear-gradient(#3a8cff,#1d63ee);box-shadow:inset 0 0 0 2px #1048c8}\n.tbtn.g{background:linear-gradient(#b8c4de,#9aa8c8);border-color:#e8eefc;color:#fff;box-shadow:inset 0 0 0 2px #7a88a8}\n.tbtn span{position:absolute;left:66px;top:9px;font:28px \"Arial Narrow\",Arial,sans-serif;text-shadow:0 2px 1px #0a2a80}\n.tbtn.g span{text-shadow:0 2px 1px #4a5878}\n.ti{position:absolute;left:14px;top:6px;width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7a7a,#d40f0f 60%,#7a0000);border:3px solid #fff}\n.ti::after{content:\"\";position:absolute;left:10px;top:7px;width:11px;height:14px;background:#fff;clip-path:polygon(0 0,100% 50%,0 100%)}\n.fo{position:absolute;left:18px;top:14px;width:36px;height:28px;background:linear-gradient(#ffe46a,#e8b020);border:2px solid #8a6010;border-radius:3px;transform:skewX(-8deg)}\n.fo::after{content:\"\";position:absolute;left:14px;top:6px;width:18px;height:18px;border-radius:50%;background:#7a3ad8;border:2px solid #fff}\n#stage{background:none !important;border-color:transparent !important}";
+        const MP_L1 = "<div id=\"stage\">\n <div id=\"title\" class=\"abs\"><div class=\"logo\"></div><b>GLOSSOWS MEDIA PLAYER</b>\n  <div class=\"wb min\" style=\"left:1308px\"></div><div class=\"wb max\" style=\"left:1355px\"></div><div class=\"wb x\" style=\"left:1402px\"></div></div>\n <div id=\"menu\" class=\"abs\"><span style=\"left:32px\">Arquivo</span><span style=\"left:192px\">Gravar</span><span style=\"left:331px\">Crona</span><span style=\"left:460px\">Op\u00e7\u00f5es</span></div>\n\n <div id=\"left\" class=\"abs panel\"></div>\n <div id=\"plh\" class=\"abs\">PLAYLISTS</div><div id=\"plu\" class=\"abs\"></div>\n <div class=\"pl\" style=\"top:247px\"><b>Funk do Orkut</b><small>MC Scrapbook Fera</small><i>(2:47)</i></div>\n <div class=\"pl\" style=\"top:357px;height:105px\"><b>Gatinhodansen MSN</b><small>Os Nicks Zuados</small><i>(2:58)</i></div>\n <div class=\"pl\" style=\"top:473px;height:105px\"><b style=\"font-size:26px;letter-spacing:-1.2px;margin-top:5px;margin-bottom:6px\">Eurodance - Pior Que Offline</b><small>DJ Lan House</small><i>(3:37)</i></div>\n <div class=\"pl\" style=\"top:590px;height:105px\"><b>Megaboy 2K - Loading...</b><small>Capcrom Sound Tim</small><i>(1:20)</i></div>\n <div class=\"pl\" style=\"top:706px;height:103px\"><b style=\"font-size:26px;letter-spacing:-1.2px;margin-top:5px;margin-bottom:6px\">Raciocinais PC's - Vida Lag</b><small>Raciocinais PC's</small><i>(5:43)</i></div>\n\n <div id=\"center\" class=\"abs panel\"></div>\n <div id=\"view\" class=\"abs\"></div></div>";
+        const MP_L2 = "<div id=\"stage\"><div id=\"spk\" class=\"abs\"><div class=\"side\"></div><div class=\"front\"></div><div class=\"edge\"></div></div>\n <div class=\"screw\" style=\"left:764px;top:241px\"></div><div class=\"screw\" style=\"left:764px;top:681px\"></div>\n <div id=\"c1\" class=\"abs\"></div><div id=\"c2\" class=\"abs\"></div><div id=\"c3\" class=\"abs\"></div><div id=\"c4\" class=\"abs\"></div><div id=\"c5\" class=\"abs\"></div><div id=\"c6\" class=\"abs\"></div><div id=\"cap\" class=\"abs\"></div></div>";
+        const MP_L3 = "<div id=\"stage\"><div class=\"sl\" style=\"left:1266px;top:220px;height:146px\"></div><div class=\"kn\" style=\"left:1255px;top:260px\"></div>\n <div class=\"sl\" style=\"left:1304px;top:220px;height:146px\"></div><div class=\"kn\" style=\"left:1293px;top:277px\"></div>\n <div class=\"sl\" style=\"left:1341px;top:220px;height:146px\"></div><div class=\"kn\" style=\"left:1330px;top:306px\"></div>\n <div class=\"sl\" style=\"left:1377px;top:220px;height:146px\"></div><div class=\"kn\" style=\"left:1366px;top:275px\"></div>\n <div class=\"sl\" style=\"left:1415px;top:220px;height:146px\"></div><div class=\"kn\" style=\"left:1404px;top:268px\"></div>\n <div class=\"lb\" style=\"left:1258px;top:373px\">BASS</div><div class=\"lb\" style=\"left:1324px;top:373px\">MID</div><div class=\"lb\" style=\"left:1369px;top:373px\">TREBLE</div>\n \n <div class=\"sl\" style=\"left:1266px;top:458px;height:146px\"></div><div class=\"kn\" style=\"left:1255px;top:518px\"></div>\n <div class=\"sl\" style=\"left:1304px;top:458px;height:146px\"></div><div class=\"kn\" style=\"left:1293px;top:519px\"></div>\n <div class=\"sl\" style=\"left:1341px;top:458px;height:146px\"></div><div class=\"kn\" style=\"left:1330px;top:506px\"></div>\n <div class=\"sl\" style=\"left:1377px;top:458px;height:146px\"></div><div class=\"kn\" style=\"left:1366px;top:506px\"></div>\n <div class=\"sl\" style=\"left:1415px;top:458px;height:146px\"></div><div class=\"kn\" style=\"left:1404px;top:478px\"></div>\n <div class=\"dash\" style=\"left:1260px;top:621px;width:34px\"></div><div class=\"lb\" style=\"left:1303px;top:610px\">BALANCE</div><div class=\"dash\" style=\"left:1396px;top:621px;width:32px\"></div>\n <div id=\"pct\" class=\"abs\">120%</div>\n <div class=\"dash\" style=\"left:1260px;top:759px;width:32px\"></div><div class=\"lb\" style=\"left:1300px;top:747px;font-size:26px\">VOLUME</div><div class=\"dash\" style=\"left:1397px;top:759px;width:32px\"></div>\n\n <div id=\"ctl\" class=\"abs\"></div><div id=\"bump\" class=\"abs\"></div><div id=\"pill\" class=\"abs\"></div>\n <div class=\"rb pw\" style=\"left:309px;top:903px\"></div>\n <div class=\"rb cx\" style=\"left:403px;top:903px\"></div>\n <div class=\"rb st\" style=\"left:497px;top:903px\"></div>\n <div class=\"rb rw\" style=\"left:587px;top:903px\"></div>\n <div id=\"play\" class=\"abs\"></div>\n <div class=\"rb ff\" style=\"left:758px;top:903px\"></div>\n <div class=\"rb rc\" style=\"left:846px;top:903px\"></div>\n <div id=\"spi\" class=\"abs\"></div><div id=\"vt\" class=\"abs\"></div><div id=\"vk\" class=\"abs\"></div>\n\n <div id=\"tb\" class=\"abs\"></div>\n <div id=\"ini\" class=\"abs\"><b>Iniciar</b>\n  <div style=\"position:absolute;left:18px;top:6px;width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 50% 85%,#7ffff0 0,#12b8b0 35%,#046a78 75%,#023a4a);border:2px solid #d8fffa;box-shadow:0 0 8px #5ffff0,inset 0 -4px 8px #5ffff0aa\"><i style=\"position:absolute;left:6px;top:2px;width:30px;height:20px;border-radius:50%;background:linear-gradient(#fffffff0,#ffffff20)\"></i></div></div>\n <div class=\"tbtn\" style=\"left:222px;width:300px\"><div class=\"ti\"></div><span style=\"font-size:21px;top:15px;left:60px\">Glossows Media Player</span></div>\n <div class=\"tbtn g\" style=\"left:532px;width:270px\"><div class=\"fo\"></div><span>Meus arquivos</span></div>\n </div>";
+        const MP_L1_OVR = '#stage{background:linear-gradient(#2f7cf5,#1a5ae0 60%,#1648c8) !important;border-color:#0b3bb5 !important}';
+        const MP_TB_Y = 1003;   // topo da barra de tarefas na arte (1000 + borda 3)
+        function mpR() { return DORFIC_LITE ? 0.8 : 1; }  // resolução do cache (menor no celular); lazy por causa da ordem das consts
+        let _mpAssets = null;
+        function mpAssets() {
+            if (_mpAssets) return _mpAssets;
+            const A = _mpAssets = { imgs: {}, n: 0, ready: false, base: null, spk: null };
+            const finish = () => {
+                const R = mpR(), W = Math.ceil(MP_ART_W * R), H = Math.ceil(MP_ART_H * R);
+                const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+                A.base = mk(); A.spk = mk();
+                const b = A.base.getContext('2d');
+                b.drawImage(A.imgs.l1, 0, 0, W, H); b.drawImage(A.imgs.l3, 0, 0, W, H);
+                A.spk.getContext('2d').drawImage(A.imgs.l2, 0, 0, W, H);
+                A.imgs = null; A.ready = true;   // imagens SVG são re-rasterizadas a cada frame: por isso o cache em canvas
+            };
+            [['l1', MP_L1, MP_L1_OVR], ['l2', MP_L2, ''], ['l3', MP_L3, '']].forEach(([k, frag, extra]) => {
+                const css = MP_CSS.replace('#stage{background:none !important;border-color:transparent !important}', extra || '#stage{background:none !important;border-color:transparent !important}');
+                const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + MP_ART_W + '" height="' + MP_ART_H + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="position:relative;width:' + MP_ART_W + 'px;height:' + MP_ART_H + 'px"><style>' + css + '</style>' + frag + '</div></foreignObject></svg>';
+                const im = new Image();
+                im.onload = () => { A.imgs[k] = im; if (++A.n === 3) finish(); };
+                im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+            });
+            return A;
+        }
+        function mpPos(artX, artY) { return { x: MP_OX + artX * MP_S, y: MP_OY + artY * MP_S }; }
+        function getMediaPlayerStage() {
+            const p = mpPos(0, MP_TB_Y);
+            return { x: p.x, y: p.y, width: MP_ART_W * MP_S, height: (MP_ART_H - MP_TB_Y) * MP_S, isStage: true };
+        }
+        // Plataformas: [topo da janela (fixa), móvel esquerda, móvel direita]. Cache curto: é chamada várias vezes por frame
+        let _mpPlatCache = null, _mpPlatT = 0;
+        function getMediaPlayerPlatforms() {
+            const now = Date.now();
+            if (_mpPlatCache && now - _mpPlatT < 4) return _mpPlatCache;
+            const t = vecNow() / 1000, plats = [];
+            const top = mpPos(265, 136);
+            plats.push({ x: top.x, y: top.y, width: (1255 - 265) * MP_S, height: 16 });
+            const Y0 = 140, Y1 = MP_TB_Y - 100 / MP_S, TRAVEL = (Y1 - Y0) * MP_S;   // desce até ~100px acima do chão (alcançável no pulo)
+            [[53, 0], [1295, 1.6]].forEach(([ax, delay]) => {
+                const ph = ((t + delay) / 3.2) % 2, tri = ph < 1 ? ph : 2 - ph, dir = ph < 1 ? 1 : -1;
+                const e = (1 - Math.cos(Math.PI * tri)) / 2;
+                const y = MP_OY + Y0 * MP_S + TRAVEL * e;
+                const vy = TRAVEL * (Math.PI / 2) * Math.sin(Math.PI * tri) * dir / 3.2;
+                plats.push({ x: MP_OX + (ax + 55) * MP_S - MP_PLAT_W / 2, y, width: MP_PLAT_W, height: 30 * MP_S, moving: true, vx: 0, vy });
+            });
+            _mpPlatT = now; return (_mpPlatCache = plats);
+        }
+        // O fundo é desenhado com parallax; fator 1 = travado ao mundo (alinhado com o chão/colisão)
+        let _mpChk = null;
+        function mpCheckerPattern() {   // conic-gradient(#0a3fd0 25%,#7090d2 0 50%,#0a3fd0 0 75%,#7090d2 0), tile 184px
+            if (_mpChk) return _mpChk;
+            const c = document.createElement('canvas'); c.width = c.height = 184;
+            const x = c.getContext('2d');
+            x.fillStyle = '#0a3fd0'; x.fillRect(0, 0, 184, 184);
+            x.fillStyle = '#7090d2'; x.fillRect(92, 0, 92, 92); x.fillRect(0, 92, 92, 92);
+            // dark: top-right & bottom-left ; light: the other two -> invertido abaixo para casar com o CSS
+            const d = document.createElement('canvas'); d.width = d.height = 184;
+            const y = d.getContext('2d');
+            y.fillStyle = '#7090d2'; y.fillRect(0, 0, 184, 184);
+            y.fillStyle = '#0a3fd0'; y.fillRect(92, 0, 92, 92); y.fillRect(0, 92, 92, 92);
+            return (_mpChk = ctx.createPattern(d, 'repeat'));
+        }
+        function drawMediaPlayerBackground(followX, followY, camZoom) {
+            const A = mpAssets(), w = MP_ART_W * MP_S, h = MP_ART_H * MP_S;
+            ctx.fillStyle = '#0a1230'; ctx.fillRect(-3000, -3000, 7600, 7000);
+            if (!A.ready) { ctx.save(); hillsLayerShift(followX, followY, 1); ctx.fillStyle = '#1a5ae0'; ctx.fillRect(MP_OX, MP_OY, w, h); ctx.restore(); return; }
+            ctx.save(); hillsLayerShift(followX, followY, 1);
+            ctx.drawImage(A.base, MP_OX, MP_OY, w, h);
+            ctx.restore();
+            // Janela interna (travada ao mundo): quadriculado (mais ao fundo) e caixa de som 3D (no meio)
+            // ficam recortados aqui, então a moldura do media player sempre passa por cima deles.
+            ctx.save(); hillsLayerShift(followX, followY, 1);
+            ctx.beginPath(); ctx.rect(MP_OX + 291 * MP_S, MP_OY + 165 * MP_S, 946 * MP_S, 675 * MP_S); ctx.clip();
+            // quadriculado: se mexe um pouquinho menos que a caixa de som
+            ctx.save();
+            ctx.translate(followX * 0.10, followY * 0.10);
+            ctx.translate(MP_OX + 764 * MP_S, MP_OY + 500 * MP_S); ctx.rotate(Math.PI / 4); ctx.scale(MP_S, MP_S);
+            ctx.fillStyle = mpCheckerPattern(); ctx.fillRect(-2500, -2500, 5000, 5000);
+            ctx.restore();
+            // caixa de som
+            ctx.translate(followX * 0.07, followY * 0.07);
+            ctx.drawImage(A.spk, MP_OX, MP_OY, w, h);
+            ctx.restore();
+        }
+        // A barra de tarefas é redesenhada aqui, no espaço do mundo, exatamente sobre a plataforma principal
+        function drawMediaPlayerStageFill(stage) {
+            const A = mpAssets();
+            if (!A.ready) { ctx.fillStyle = '#8e9ab4'; ctx.fillRect(stage.x, stage.y, stage.width, stage.height); return; }
+            ctx.drawImage(A.base, 0, MP_TB_Y * mpR(), A.base.width, A.base.height - MP_TB_Y * mpR(), stage.x, stage.y, stage.width, stage.height);
+        }
+        function drawMediaPlayerPlatform(fp) {
+            if (!fp.moving) return;   // o topo da janela já é a arte
+            const x = fp.x, y = fp.y, w = fp.width, h = fp.height;
+            const g = ctx.createLinearGradient(0, y, 0, y + h);
+            g.addColorStop(0, '#8cc8ff'); g.addColorStop(.5, '#2a76f8'); g.addColorStop(1, '#0a2a80');
+            ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h);
+        }
+
+
+        // ==========================================================================
         // MAPA "Blue Note" (portado do ceu-noturno.html: CSS -> canvas)
         // Camadas: céu, estrelas (pequenas, médias, grandes), lua, prédios e, por cima, a
         // plataforma preta com o letreiro "BLUE NOTE / Bar" e os dois holofotes laterais.
@@ -5132,6 +5246,42 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             const sun = ctx.createRadialGradient(WORLD_WIDTH * .85, WORLD_HEIGHT * .12, 0, WORLD_WIDTH * .85, WORLD_HEIGHT * .12, 441);
             sun.addColorStop(0, 'rgba(255,255,255,.55)'); sun.addColorStop(1, 'rgba(255,255,255,0)');
             A.sun = sun;
+            // janelas verde-escuro com grade de jogo da velha (ladrilho 96x58)
+            const jt = mk(96, 58), j = jt.getContext('2d');
+            j.fillStyle = '#0a2616'; j.fillRect(0, 0, 96, 58);
+            j.fillStyle = '#8a9096';
+            j.fillRect(0, 58 / 3 - 1.5, 96, 3); j.fillRect(0, 58 * 2 / 3 - 1.5, 96, 3);
+            j.fillRect(0, 0, 4, 58); j.fillRect(30.5, 0, 3, 58); j.fillRect(62.5, 0, 3, 58);
+            const js = j.createLinearGradient(0, 0, 0, 5);
+            js.addColorStop(0, 'rgba(0,0,0,.5)'); js.addColorStop(1, 'rgba(0,0,0,0)');
+            j.fillStyle = js; j.fillRect(0, 0, 96, 5);
+            A.winPat = ctx.createPattern(jt, 'repeat-x');
+            // chapisco fraco da plataforma (ruído gerado em canvas, ladrilhável 200x200)
+            const NS = 200, noiseLayer = (seed, rgb) => {
+                let sd = seed >>> 0;
+                const rnd = () => { sd = (sd + 0x6D2B79F5) | 0; let t = Math.imul(sd ^ (sd >>> 15), 1 | sd); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+                const oct = cell => { const n = NS / cell, g = new Float32Array(n * n); for (let i = 0; i < g.length; i++) g[i] = rnd(); return { n, g, cell }; };
+                const o1 = oct(4), o2 = oct(2);
+                const smp = (o, x, y) => {
+                    const fx = x / o.cell, fy = y / o.cell, x0 = Math.floor(fx), y0 = Math.floor(fy);
+                    let tx = fx - x0, ty = fy - y0; tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+                    const xa = x0 % o.n, xb = (x0 + 1) % o.n, ya = y0 % o.n, yb = (y0 + 1) % o.n;
+                    const top = o.g[ya * o.n + xa] + (o.g[ya * o.n + xb] - o.g[ya * o.n + xa]) * tx;
+                    const bot = o.g[yb * o.n + xa] + (o.g[yb * o.n + xb] - o.g[yb * o.n + xa]) * tx;
+                    return top + (bot - top) * ty;
+                };
+                const cv = mk(NS, NS), cx2 = cv.getContext('2d'), im = cx2.createImageData(NS, NS);
+                for (let y = 0; y < NS; y++) for (let x = 0; x < NS; x++) {
+                    const v = (smp(o1, x, y) + .5 * smp(o2, x, y)) / 1.5, al = Math.max(0, Math.min(1, (v - .58) * 10)), k = (y * NS + x) * 4;
+                    im.data[k] = rgb[0]; im.data[k + 1] = rgb[1]; im.data[k + 2] = rgb[2]; im.data[k + 3] = al * 255;
+                }
+                cx2.putImageData(im, 0, 0);
+                return cv;
+            };
+            const nt = mk(NS, NS), n2 = nt.getContext('2d');
+            n2.globalAlpha = .4; n2.drawImage(noiseLayer(5, [61, 94, 36]), 0, 0);
+            n2.globalAlpha = .2; n2.drawImage(noiseLayer(11, [242, 255, 199]), 0, 0);
+            A.chapPat = ctx.createPattern(nt, 'repeat');
             return (_ladoAssets = A);
         }
         function drawLadoForaBackground(followX, followY, camZoom) {
@@ -5160,6 +5310,13 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             ctx.save(); hillsLayerShift(followX, followY, LADO_PARALLAX.wall);
             ctx.translate(0, wallTop);
             ctx.fillStyle = A.wallPat; ctx.fillRect(vx, 0, vw, vb - wallTop);
+            // faixa de concreto + janelas entre a telha e o muro
+            const cg = ctx.createLinearGradient(0, 12, 0, 52);
+            ctx.fillStyle = '#b4b9be'; ctx.fillRect(vx, 12, vw, 40);
+            cg.addColorStop(0, 'rgba(0,0,0,.35)'); cg.addColorStop(.3, 'rgba(0,0,0,0)'); cg.addColorStop(1, 'rgba(0,0,0,.12)');
+            ctx.fillStyle = cg; ctx.fillRect(vx, 12, vw, 40);
+            ctx.fillStyle = '#7b8187'; ctx.fillRect(vx, 52, vw, 2); ctx.fillRect(vx, 112, vw, 2);
+            ctx.save(); ctx.translate(0, 54); ctx.fillStyle = A.winPat; ctx.fillRect(vx, 0, vw, 58); ctx.restore();
             const sh = ctx.createLinearGradient(0, 16, 0, 28);
             sh.addColorStop(0, 'rgba(0,30,50,.45)'); sh.addColorStop(1, 'rgba(0,30,50,0)');
             ctx.fillStyle = sh; ctx.fillRect(vx, 16, vw, 12);
@@ -5176,6 +5333,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             }
             const cz = cameraState.zoom || 1, sx = Math.max(x, cameraState.focusX - WORLD_WIDTH / (2 * cz) - 400);
             ctx.fillStyle = A.stageGrad; ctx.fillRect(sx, y, x + w - sx, Math.max(40, cameraState.focusY + WORLD_HEIGHT / (2 * cz) + 400 - y));
+            if (A.chapPat) { ctx.fillStyle = A.chapPat; ctx.fillRect(sx, y, x + w - sx, Math.max(40, cameraState.focusY + WORLD_HEIGHT / (2 * cz) + 400 - y)); }
             ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(sx, y, x + w - sx, 3);
         }
 
@@ -5194,7 +5352,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             { name: 'Vector', thumb: 'radial-gradient(circle at 50% 62%,#ff70b0 0,#c4103e 38%,#7a0524 100%)', drawBackground: drawVectorBackground, drawStageFill: drawVectorStageFill },
             { name: 'Blue Note', thumb: 'linear-gradient(180deg,#050816 0%,#0b1330 60%,#1a2147 100%)', drawBackground: drawBlueNoteBackground, drawStageFill: drawBlueNoteStageFill },
             { name: 'Deserto', thumb: 'linear-gradient(#f7cf97,#f7cf97) 50% 44%/56% 6% no-repeat,linear-gradient(#b9824f,#b9824f) 50% 50%/56% 8% no-repeat,linear-gradient(180deg,#1e90ff 0%,#5cb8ff 40%,#bfe6ff 66%,#f4d58d 67%,#c98f3f 100%)', drawBackground: drawDesertoBackground, drawStageFill: drawDesertoStageFill, groundOffset: (x, stage) => -desertoLiftAt(x, stage), movingGround: true },
-            { name: 'Lado de Fora', thumb: 'linear-gradient(#bcd78c,#97b363) 0 100%/80% 30% no-repeat,linear-gradient(#5a5e63,#5a5e63) 0 15%/100% 7% no-repeat,linear-gradient(180deg,#2d78d8 0%,#8fc3f2 15%,#0cb7f2 16%,#0a9fd4 100%)', drawBackground: drawLadoForaBackground, drawStageFill: drawLadoForaStageFill, cameraLeft: LADO_CAMERA_LEFT, deathLeft: LADO_DEATH_LEFT, playRect: { x: 300, width: LADO_RIGHT - 300 } }
+            { name: 'Lado de Fora', thumb: 'linear-gradient(#bcd78c,#97b363) 0 100%/80% 30% no-repeat,linear-gradient(#5a5e63,#5a5e63) 0 15%/100% 7% no-repeat,linear-gradient(180deg,#2d78d8 0%,#8fc3f2 15%,#0cb7f2 16%,#0a9fd4 100%)', drawBackground: drawLadoForaBackground, drawStageFill: drawLadoForaStageFill, cameraLeft: LADO_CAMERA_LEFT, deathLeft: LADO_DEATH_LEFT, playRect: { x: 300, width: LADO_RIGHT - 300 } },
+            { name: 'Media Player', thumb: 'linear-gradient(#0a3fd0,#0a3fd0) 50% 40%/50% 55% no-repeat,linear-gradient(#8e9ab4,#8e9ab4) 50% 100%/100% 12% no-repeat,linear-gradient(180deg,#3b8bff 0%,#1a5ae0 60%,#1648c8 100%)', drawBackground: drawMediaPlayerBackground, drawStageFill: drawMediaPlayerStageFill, deathLeft: MP_OX - 12, deathRight: MP_OX + MP_ART_W * MP_S + 12 }
         ];
         let currentMapIndex = 0;
 
@@ -5203,6 +5362,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             // Blue Note: palco largo como a plataforma do original (70% da tela)
             const bnMap = MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Blue Note';
             const stageHeight = 40;
+            if (MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Media Player') return getMediaPlayerStage();
             if (MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Lado de Fora') {
                 // Plataforma "infinita" para a esquerda: só tem fim na direita (LADO_RIGHT)
                 return { x: LADO_STAGE_LEFT, y: WORLD_HEIGHT / 2 + 120, width: LADO_RIGHT - LADO_STAGE_LEFT, height: 520, isStage: true };
@@ -5277,6 +5437,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         // Duas plataformas flutuantes pequenas acima da plataforma principal
         function getFloatingPlatforms() {
             if (MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Vector') return getVectorPlatforms();
+            if (MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Media Player') return getMediaPlayerPlatforms();
             if (MAPS[currentMapIndex] && (MAPS[currentMapIndex].name === 'Colinas' || MAPS[currentMapIndex].name === 'Deserto' || MAPS[currentMapIndex].name === 'DORFic' || MAPS[currentMapIndex].name === 'Blue Note' || MAPS[currentMapIndex].name === 'Lado de Fora')) return [];
             const stage = getStageRect();
             const platWidth = Math.min(150, stage.width * 0.24);
@@ -5609,7 +5770,12 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     // Chão animado (onda do Deserto): ele sobe por baixo de quem está parado. Se o jogador estava
                     // apoiado e o chão passou dele, o chão o carrega junto em vez de deixá-lo atravessar.
                     const groundCarry = mapGroundMoves() && wasOnGround && p.vy >= 0 && p.y > groundY && p.y - groundY <= GROUND_CARRY_MAX;
-                    if (overStage && p.vy >= 0 && (cameFromAbove || groundCarry) && (p.y >= groundY || slopeSnap)) {
+                    // Rede de segurança: se o chão (onda do Deserto / relevo) subiu por cima do jogador de um frame pro outro
+                    // (pico de lag, ressincronização do relógio, spawn na onda), ele é empurrado pra cima da superfície
+                    // em vez de atravessar o chão. Só vale enquanto os pés ainda estão acima do fundo do palco.
+                    const groundEmbed = (mapGroundMoves() || mapHasHills()) && p.vy >= 0 && p.y > groundY &&
+                        p.y - groundY <= 160 && (p.y + PLAYER_SIZE / 2) <= (stage.y + stage.height);
+                    if (overStage && p.vy >= 0 && (cameFromAbove || groundCarry || groundEmbed) && (p.y >= groundY || slopeSnap)) {
                         // Aterrissou: encosta no chão e gera squash ao pousar
                         if (!wasOnGround) {
                             p.squashTime = now;
@@ -5680,9 +5846,16 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     // propósito (x/y = -9999), o que sem essa checagem disparava o som de
                     // queda repetidamente a cada frame.
                     if (!p.eliminated && (p.x < -VOID_MARGIN || p.x > WORLD_WIDTH + VOID_MARGIN || p.y > WORLD_HEIGHT + VOID_MARGIN ||
-                        (MAPS[currentMapIndex] && MAPS[currentMapIndex].deathLeft != null && p.x < MAPS[currentMapIndex].deathLeft))) {
-                        SFX.playFall();
-                        respawnPlayer(p);
+                        (MAPS[currentMapIndex] && MAPS[currentMapIndex].deathLeft != null && p.x < MAPS[currentMapIndex].deathLeft) ||
+                        (MAPS[currentMapIndex] && MAPS[currentMapIndex].deathRight != null && p.x > MAPS[currentMapIndex].deathRight))) {
+                        if (introLock) { // entradas + 3,2,1: nada de perder vida; recoloca no ponto de nascimento
+                            const _id = Object.keys(players).find(k => players[k] === p);
+                            p.x = introSlot(_id).x; p.y = getGroundYAt(p.x) - PLAYER_SIZE / 2 - 1;
+                            p.vy = 0; p.knockbackVx = 0; p.onGround = true; p.isJumping = false;
+                        } else {
+                            SFX.playFall();
+                            respawnPlayer(p);
+                        }
                     }
 
                     // Processa o golpe atual: ativa a hitbox na janela certa e verifica acerto nos oponentes
@@ -8823,7 +8996,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             const floatPlats = getFloatingPlatforms();
             const isVector = MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Vector';
             for (const fp of floatPlats) {
-                if (isVector) drawVectorPlatform(fp); else drawFloatingPlatform(fp);
+                if (isVector) drawVectorPlatform(fp); else if (MAPS[currentMapIndex] && MAPS[currentMapIndex].name === 'Media Player') drawMediaPlayerPlatform(fp); else drawFloatingPlatform(fp);
             }
             if (isVector) drawVectorGameplay(stage);
         }
@@ -10993,7 +11166,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
 
         // Inicia de fato o motor do jogo (gameplay)
         function beginGameplay() {
-            players[myUserId] = { ...myPlayerState, y: getStageRect().y - PLAYER_SIZE / 2 - 1, x: introSlot(myUserId).x, vy: 0, knockbackVx: 0, onGround: true, isJumping: false, doubleJumpUsed: false, isDoubleJumping: false, lastUpdate: Date.now() };
+            players[myUserId] = { ...myPlayerState, y: getGroundYAt(introSlot(myUserId).x) - PLAYER_SIZE / 2 - 1, x: introSlot(myUserId).x, vy: 0, knockbackVx: 0, onGround: true, isJumping: false, doubleJumpUsed: false, isDoubleJumping: false, lastUpdate: Date.now() };
             players[myUserId].facingLeft = players[myUserId].x > WORLD_WIDTH / 2;
             if (window.TOURN) TOURN.applySpectator(players[myUserId]); // torneio: quem só assiste fica fora do palco
             MP.sendState();
@@ -11914,7 +12087,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             setup() {
                 const st = getPlayRect();
                 this.prevMap = currentMapIndex;
-                const maps = MAPS.map((m, i) => i).filter(i => MAPS[i].name !== 'Vector'); // Vector depende do relógio do host
+                const maps = MAPS.map((m, i) => i).filter(i => MAPS[i].name !== 'Vector' && MAPS[i].name !== 'Media Player'); // Vector depende do relógio do host
                 currentMapIndex = maps[Math.floor(Math.random() * maps.length)];
 
                 const pool = Object.keys(KITS);
