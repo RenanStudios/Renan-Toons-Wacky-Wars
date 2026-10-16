@@ -336,23 +336,23 @@
         }
         /* itens em diagonal (45°), do topo-direita para baixo-esquerda, como no original */
         .mode-item {
-            position: absolute; display: flex; align-items: center; gap: calc(var(--u) * 12);
-            left: calc(var(--u) * (511 - 123 * var(--i))); top: calc(var(--u) * (84 + 118 * var(--i)));
+            position: absolute; display: flex; align-items: center; gap: calc(var(--u) * 10);
+            left: calc(var(--u) * (515 - 112 * var(--i))); top: calc(var(--u) * (84 + 108 * var(--i)));
             cursor: pointer; user-select: none;
             animation: mode-in 380ms ease-out backwards; animation-delay: calc(var(--i) * 70ms);
         }
         @keyframes mode-in { from { opacity: 0; transform: translate(calc(var(--u) * 90), calc(var(--u) * -45)); } }
         .mode-icon {
-            box-sizing: border-box; flex: none; width: calc(var(--u) * 148); height: calc(var(--u) * 148); border-radius: 50%;
-            border: calc(var(--u) * 7) solid #b9bcc1; box-shadow: 0 0 0 calc(var(--u) * 3) #000;
+            box-sizing: border-box; flex: none; width: calc(var(--u) * 128); height: calc(var(--u) * 128); border-radius: 50%;
+            border: calc(var(--u) * 6) solid #b9bcc1; box-shadow: 0 0 0 calc(var(--u) * 2.5) #000;
             background: radial-gradient(circle at 40% 30%, #303030, #0b0b0b);
             display: flex; align-items: center; justify-content: center; transition: transform 110ms ease;
         }
         .mode-icon svg { width: 76%; height: 76%; fill: #161616; stroke: #d6d9de; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
         .mode-label {
-            max-width: calc(var(--u) * 360); line-height: 0.95; text-transform: uppercase;
-            font-size: calc(var(--u) * 40); font-style: italic; font-weight: 900; color: #ff1616;
-            -webkit-text-stroke: calc(var(--u) * 8) #170000; paint-order: stroke fill;
+            max-width: calc(var(--u) * 270); line-height: 0.95; text-transform: uppercase;
+            font-size: calc(var(--u) * 35); font-style: italic; font-weight: 900; color: #ff1616;
+            -webkit-text-stroke: calc(var(--u) * 7) #170000; paint-order: stroke fill;
             text-shadow: calc(var(--u) * 2) calc(var(--u) * 3) 0 #000;
         }
         .mode-label small {
@@ -365,6 +365,51 @@
         .mode-item.locked .mode-icon { opacity: 0.65; }
         .mode-item.locked .mode-label { color: #8a1d1d; }
 
+
+        /* ===== MENU DE OPÇÕES (palco 4:3, mesmo estilo do Multijogador) — por enquanto só o idioma ===== */
+        #opt-overlay {
+            --u: min(calc(100vw / 960), calc(100vh / 720));
+            position: fixed; inset: 0; z-index: 101; display: none; overflow: hidden;
+            align-items: center; justify-content: center; background: #050505;
+            font-family: 'Arial Black', Arial, Helvetica, sans-serif; user-select: none; -webkit-user-select: none;
+        }
+        #opt-stage { position: relative; flex: none; width: calc(var(--u) * 960); height: calc(var(--u) * 720); overflow: hidden;
+            background:
+                repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 calc(var(--u) * 3), transparent calc(var(--u) * 3) calc(var(--u) * 26)),
+                radial-gradient(ellipse at 50% 40%, #1b2438 0%, #0b0f18 70%); }
+        #opt-title { position: absolute; left: calc(var(--u) * 40); top: calc(var(--u) * 38); height: calc(var(--u) * 92); width: calc(var(--u) * 520); z-index: 1; }
+        #opt-title::before { content: ''; position: absolute; inset: 0; background: linear-gradient(#21509c, #143469); transform: skewX(-10deg); box-shadow: calc(var(--u) * 6) calc(var(--u) * 6) 0 #04102b; }
+        #opt-title span { position: absolute; left: calc(var(--u) * 40); top: calc(var(--u) * 6);
+            font-family: 'Trebuchet MS', 'Segoe UI', Verdana, sans-serif; font-style: italic; font-weight: 800;
+            font-size: calc(var(--u) * 62); line-height: 1.25; letter-spacing: calc(var(--u) * 1); white-space: nowrap;
+            background: linear-gradient(#a6ceff 0%, #4e8fea 45%, #2a62c4 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(calc(var(--u) * 3) calc(var(--u) * 3) 0 #07163a); }
+        #opt-panel { position: absolute; left: calc(var(--u) * 40); top: calc(var(--u) * 180); width: calc(var(--u) * 880); height: calc(var(--u) * 360); z-index: 1;
+            animation: mp-in 420ms cubic-bezier(.2,.9,.3,1) backwards; }
+        #opt-panel::before { content: ''; position: absolute; inset: 0; transform: skewX(-4deg); background: linear-gradient(160deg, #1d2740 0%, #0d1322 100%);
+            border: calc(var(--u) * 6) solid #0a0a0a; box-shadow: calc(var(--u) * 8) calc(var(--u) * 8) 0 #000, inset 0 0 0 calc(var(--u) * 3) #2c3b5e; }
+        #opt-head { position: absolute; left: calc(var(--u) * 50); top: calc(var(--u) * 28); display: flex; align-items: center; gap: calc(var(--u) * 16); z-index: 1; }
+        #opt-head svg { width: calc(var(--u) * 48); height: calc(var(--u) * 48); fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+            filter: drop-shadow(calc(var(--u) * 3) calc(var(--u) * 3) 0 rgba(0,0,0,0.55)); }
+        #opt-head span { text-transform: uppercase; font-size: calc(var(--u) * 40); font-style: italic; font-weight: 900; color: #ffd23f;
+            -webkit-text-stroke: calc(var(--u) * 8) #120000; paint-order: stroke fill; text-shadow: calc(var(--u) * 2) calc(var(--u) * 3) 0 #000; letter-spacing: calc(var(--u) * 1); }
+        #opt-langs { position: absolute; left: calc(var(--u) * 50); right: calc(var(--u) * 50); top: calc(var(--u) * 112); height: calc(var(--u) * 210); display: flex; gap: calc(var(--u) * 40); z-index: 1; }
+        .opt-lang { position: relative; flex: 1; cursor: pointer; transition: transform 140ms ease, filter 140ms ease; filter: brightness(0.6) saturate(0.7); }
+        .opt-lang[data-l="pt"] { --c1: #22b455; --c2: #0b5226; --glow: rgba(40,200,90,0.55); }
+        .opt-lang[data-l="en"] { --c1: #2f7bff; --c2: #0b2f8a; --glow: rgba(60,120,255,0.55); }
+        .opt-lang:hover { filter: brightness(0.85) saturate(0.9); }
+        .opt-lang i { position: absolute; inset: 0; transform: skewX(-8deg); background: linear-gradient(160deg, var(--c1) 0%, var(--c2) 100%);
+            border: calc(var(--u) * 6) solid #0a0a0a; box-shadow: calc(var(--u) * 6) calc(var(--u) * 6) 0 #000; overflow: hidden; }
+        .opt-lang i::after { content: ''; position: absolute; left: -20%; right: -20%; top: 62%; bottom: -10%; background: rgba(0,0,0,0.36); transform: skewY(-6deg); }
+        .opt-lang b { position: absolute; left: 0; right: 0; top: calc(var(--u) * 22); text-align: center; z-index: 1; font-size: calc(var(--u) * 84); font-style: italic; font-weight: 900; line-height: 1; color: #fff;
+            -webkit-text-stroke: calc(var(--u) * 10) #120000; paint-order: stroke fill; text-shadow: calc(var(--u) * 3) calc(var(--u) * 4) 0 #000; }
+        .opt-lang span { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 26); text-align: center; z-index: 1; font-size: calc(var(--u) * 28); font-style: italic; font-weight: 900; letter-spacing: calc(var(--u) * 1); color: #f4f4f4;
+            text-shadow: calc(var(--u) * 2) calc(var(--u) * 3) 0 #000; }
+        .opt-lang.selected { transform: translateY(calc(var(--u) * -8)) scale(1.04); filter: none; z-index: 2; }
+        .opt-lang.selected i { border-color: #fff; box-shadow: calc(var(--u) * 6) calc(var(--u) * 6) 0 #000, 0 0 calc(var(--u) * 40) var(--glow); }
+        #opt-back { position: absolute; left: calc(var(--u) * 40); bottom: calc(var(--u) * 28); z-index: 2; cursor: pointer; padding: calc(var(--u) * 8) calc(var(--u) * 18);
+            font-size: calc(var(--u) * 20); color: #fff; background: #1a1a1a; border: calc(var(--u) * 3) solid #555; transform: skewX(-8deg); }
+        #opt-back:hover { background: #2b2b2b; border-color: #fff; }
 
         /* ===== MENU MULTIJOGADOR: NORMAL x TORNEIO (palco 4:3 centralizado, dois painéis inclinados lado a lado) ===== */
         #mp-overlay {
@@ -1637,6 +1682,33 @@
             .ready-pcard-tag { font-size: 9px; padding: 1px 10px 1px 6px; }
         }
 
+        /* ===== Painel de poderes na seleção de personagem (sugestão da Lara) ===== */
+        #char-powers {
+            max-width: 500px; margin: 0 auto 12px; min-height: 100px; padding: 7px 11px 9px;
+            text-align: left; color: #e8ecf7;
+            background: linear-gradient(#0a0e1c, #04060f);
+            border: 2px solid #aab4cc; border-radius: 8px;
+            box-shadow: 0 0 0 2px #0a0e1c, 0 3px 10px rgba(0,0,0,0.55);
+        }
+        #char-powers .cp-title { font-size: 12px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #fff200; margin-bottom: 6px; }
+        #char-powers .cp-title small { color: #aab4cc; font-weight: 700; letter-spacing: 0; text-transform: none; margin-left: 6px; }
+        #char-powers .cp-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 14px; }
+        #char-powers .cp-move { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; line-height: 1.25; }
+        #char-powers .cp-key {
+            flex: none; min-width: 42px; text-align: center; padding: 1px 4px; border-radius: 4px;
+            background: #e8ecf7; color: #0a0e1c; font-weight: 900; font-size: 10px; white-space: nowrap;
+            box-shadow: 0 2px 0 #7b86a3;
+        }
+        #char-powers .cp-move b { display: block; color: #fff; font-size: 11px; }
+        #char-powers .cp-move span.cp-d { color: #c3cbe0; }
+        #char-powers .cp-hint { font-size: 11px; color: #aab4cc; text-align: center; padding: 30px 0 0; }
+        #ready-overlay.aurora #char-powers {
+            background: linear-gradient(rgba(255,255,255,0.38), rgba(30,120,160,0.5)); border-color: rgba(255,255,255,0.85);
+            box-shadow: 0 3px 10px rgba(0,40,70,0.4); font-family: Tahoma, Verdana, sans-serif;
+        }
+        #ready-overlay.aurora #char-powers .cp-title { color: #fff; text-shadow: 0 1px 3px rgba(0,50,80,0.8); }
+        #ready-overlay.aurora #char-powers .cp-title small, #ready-overlay.aurora #char-powers .cp-hint, #ready-overlay.aurora #char-powers .cp-move span.cp-d { color: #e6fbff; }
+
         /* ===== CONTADOR REGRESSIVO (3, 2, 1, LUTAR!) ===== */
         #countdown-overlay {
             position: fixed;
@@ -2073,6 +2145,400 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Yellowtail&display=swap" rel="stylesheet">
+
+<style id="i18n-style">
+    html[lang="en"] #lobby-status:empty::before { content: 'Play with your friends!'; }
+</style>
+<script id="i18n-core">
+(function () {
+    'use strict';
+    // ---------------------------------------------------------------------------------
+    // IDIOMAS: Português (original, pt-BR) e Inglês. O jogo continua escrito em português;
+    // quando o idioma é Inglês, os textos que aparecem na tela são traduzidos na hora
+    // (dicionário PT -> EN abaixo). Nomes de personagens não mudam, exceto:
+    //   Renanzinho -> Lil' Renan  e  Renan Antigo -> Old Renan.
+    // Nada disso vai pela rede: cada jogador vê o jogo no próprio idioma, mesmo na mesma sala.
+    // Para traduzir um texto novo, basta adicionar "texto em português": "English text" em EN.
+    // ---------------------------------------------------------------------------------
+    var KEY = 'ww_lang', lang = 'pt';
+    try {
+        var saved = localStorage.getItem(KEY);
+        if (saved === 'pt' || saved === 'en') lang = saved;
+        else if (!/^pt/i.test(navigator.language || 'pt')) lang = 'en'; // 1ª visita: navegador que não é português abre em Inglês
+    } catch (e) {}
+
+    var EN = Object.assign(Object.create(null), {
+"Um garoto otimista e sempre alegre, que contagia todo mundo por onde passa. Rumores dizem que ele tem poderes, mas ninguém sabe se isso é verdade.": "An optimistic, always cheerful boy who rubs off on everyone around him. Rumors say he has powers, but nobody knows if that's true.",
+"Otimista e alegre": "Optimistic and cheerful",
+"Poderes: só rumores": "Powers: just rumors",
+"HERÓI": "HERO",
+"Uma garota confiante que adora manicure. Por isso, ela nunca sai de casa sem seus itens de manicure, sempre prontos para qualquer imprevisto. Estilo em primeiro lugar!": "A confident girl who loves manicures. That's why she never leaves home without her manicure kit, always ready for any mishap. Style comes first!",
+"Confiante": "Confident",
+"Paixão: manicure": "Passion: manicure",
+"ESTILO": "STYLE",
+"Uma versão antiga do Renanzinho, criada originalmente em 2020. É bastante excêntrico e seus traços são inconsistentes, como se nunca fosse igual de um momento para o outro. Mas não se engane: ele é poderoso.": "An old version of Lil' Renan, originally created in 2020. He is quite eccentric and his features are inconsistent, as if he were never the same from one moment to the next. But don't be fooled: he is powerful.",
+"Criado em 2020": "Created in 2020",
+"Versão antiga do Renanzinho": "Old version of Lil' Renan",
+"2020": "2020",
+"Uma dupla de bolas gelatinosas e grandes amigos, vindos de um grupo de várias outras bolas gelatinosas e coloridas. Blui pode se transformar no que quiser, e Reddie cria uma mão que estica o quanto for preciso.": "A duo of jelly balls and great friends, from a group of many other colorful jelly balls. Blui can transform into anything he wants, and Reddie makes a hand that stretches as far as needed.",
+"Bolas gelatinosas": "Jelly balls",
+"Amigos inseparáveis": "Inseparable friends",
+"DUPLA": "DUO",
+"Gerente e bartender do Bar Blue Note, na cidade de Urbânia. Namorado da Hofy, ele sempre acaba no meio das situações mais caóticas que acontecem no bar. Nenhum dia de trabalho é tranquilo.": "Manager and bartender of the Blue Note Bar, in the city of Urbânia. Hofy's boyfriend, he always ends up in the middle of the most chaotic situations at the bar. No workday is ever calm.",
+"Bar Blue Note, Urbânia": "Blue Note Bar, Urbânia",
+"Gerente e bartender": "Manager and bartender",
+"BAR": "BAR",
+"Dançarina, cantora e gerente do Bar Blue Note, em Urbânia. Namorada do Doper, ela o acompanha em todas as desventuras do bar e está sempre disposta a topar qualquer coisa.": "Dancer, singer and manager of the Blue Note Bar, in Urbânia. Doper's girlfriend, she goes along on all of the bar's misadventures and is always up for anything.",
+"Dançarina e cantora": "Dancer and singer",
+"Gerente do Blue Note": "Blue Note manager",
+"Uma criatura de uma espécie aquática famosa pela astúcia e inteligência, capaz de construir vilarejos e sociedades submarinas inteiras. Este é o Vermelho, mas existem também o Azul, o Verde, o Amarelo e todas as cores que você imaginar.": "A creature from an aquatic species famous for its cunning and intelligence, capable of building entire underwater villages and societies. This is the Red one, but there are also Blue, Green, Yellow and every color you can imagine.",
+"Criatura aquática": "Aquatic creature",
+"Cor: Vermelho": "Color: Red",
+"AQUÁTICO": "AQUATIC",
+"Um ser humanoide criado no Macromedia Flash 8 para um site flash dos anos 2000. Líder do grupo The White Ones, ao lado de Suzan, Jim, Davis e Lila, ele vive num mundo em que a internet é um universo imenso e cada site é um lugar único.": "A humanoid being created in Macromedia Flash 8 for a 2000s flash website. Leader of the group The White Ones, alongside Suzan, Jim, Davis and Lila, he lives in a world where the internet is an immense universe and every site is a unique place.",
+"Criado no Flash 8": "Created in Flash 8",
+"Líder dos The White Ones": "Leader of The White Ones",
+"FLASH": "FLASH",
+"A nerd do grupo The White Ones, liderado por Dan. Divertida e destemida, ela sabe bastante sobre programação e por isso nunca sai de casa sem o notebook na mão.": "The nerd of the group The White Ones, led by Dan. Funny and fearless, she knows a lot about programming, which is why she never leaves home without her laptop in hand.",
+"Divertida e destemida": "Funny and fearless",
+"Integrante dos The White Ones": "Member of The White Ones",
+"NERD": "NERD",
+"Renanzinho": "Lil' Renan",
+"Renan Antigo": "Old Renan",
+"Seu nome": "Your name",
+"Qual é o seu nome?": "What's your name?",
+"Escolha como você vai aparecer para os outros jogadores.": "Choose how you will appear to other players.",
+"Continuar": "Continue",
+"EI! EU PEDI UM NOME!": "HEY! I ASKED FOR A NAME!",
+"Você pretende continuar sem colocar um nome?": "Do you plan to continue without entering a name?",
+"Vamos tentar de novo. Desta vez, DIGITE ALGUMA COISA.": "Let's try again. This time, TYPE SOMETHING.",
+"Não. Um espaço vazio não conta como nome.": "No. An empty space doesn't count as a name.",
+"Isso não é um nome. Tente novamente.": "That's not a name. Try again.",
+"Você está fazendo isso de propósito, não está?": "You're doing this on purpose, aren't you?",
+"Eu literalmente pedi seu nome.": "I literally asked for your name.",
+"Coloque um nome. Não é tão difícil.": "Enter a name. It's not that hard.",
+"QUEIJO?! Juan, é você?": "CHEESE?! Juan, is that you?",
+"Detectamos queijo. Juan identificado.": "Cheese detected. Juan identified.",
+"Nome contendo queijo. Só pode ser o Juan.": "Name containing cheese. It can only be Juan.",
+"Você colocou queijo no nome? Tá na cara que é o Juan.": "You put cheese in your name? It's obviously Juan.",
+"Sistema: 99,9% de chance de ser Juan.": "System: 99.9% chance of being Juan.",
+"Queijo detectado. Carecudo localizado.": "Cheese detected. Baldy located.",
+"Ah, não... o Juan chegou.": "Oh no... Juan has arrived.",
+"Juan, pare de tentar esconder sua identidade.": "Juan, stop trying to hide your identity.",
+"Você realmente achou que eu não reconheceria o queijo?": "Did you really think I wouldn't recognize the cheese?",
+"Identidade confirmada: Juan.": "Identity confirmed: Juan.",
+"🧀 = Juan. Não faço as regras.": "🧀 = Juan. I don't make the rules.",
+"Detectando queijo... Detectando queijo... Juan encontrado.": "Detecting cheese... Detecting cheese... Juan found.",
+"O algoritmo reconheceu seu verdadeiro nome: Juan.": "The algorithm recognized your true name: Juan.",
+"Modo": "Game",
+"de Jogo": "Mode",
+"Modo clássico": "Classic mode",
+"Um Jogador": "Single Player",
+"Multijogador": "Multiplayer",
+"Galeria": "Gallery",
+"Personagens": "Characters",
+"Normal": "Normal",
+"Torneio": "Tournament",
+"Escolha o tipo de partida": "Choose the match type",
+"3 a 8 jogadores": "3 to 8 players",
+"4 jogadores": "4 players",
+"Todos contra todos na mesma arena. Quem sobrar de pé vence.": "Free-for-all in the same arena. Last one standing wins.",
+"Eliminatórias de 2 contra 2 até a final. Quem cai continua assistindo.": "2-vs-2 knockout rounds up to the final. Whoever is knocked out keeps watching.",
+"Duplas se enfrentam na mesma arena. A dupla que ficar de pé vence. Sem fogo amigo.": "Teams face off in the same arena. The last team standing wins. No friendly fire.",
+"Caixa de sugestões": "Suggestion box",
+"Sugestões": "Suggestions",
+"Tem uma ideia pro jogo? Mande aqui que ela chega direto pro Renan!": "Got an idea for the game? Send it here and it goes straight to Renan!",
+"Sua sugestão": "Your suggestion",
+"Como você se chama?": "What is your name?",
+"Novo personagem, mapa, golpe, correção...": "New character, map, move, fix...",
+"Fechar": "Close",
+"Enviar": "Send",
+"Coloque seu nome.": "Enter your name.",
+"Sugestão enviada! Obrigado! 💙": "Suggestion sent! Thank you! 💙",
+"Não deu pra enviar agora. Confira a internet e tente de novo.": "Couldn't send right now. Check your connection and try again.",
+"TOQUE OU PRESSIONE QUALQUER TECLA": "TAP OR PRESS ANY KEY",
+"TOQUE PARA COMEÇAR": "TAP TO START",
+"Pular": "Skip",
+"Pular intro": "Skip intro",
+"DEMONSTRAÇÃO": "DEMO",
+"◀ Voltar": "◀ Back",
+"◀ Voltar (Esc)": "◀ Back (Esc)",
+"Opções": "Options",
+"Idioma": "Language",
+"◀ ▶ escolher · Enter confirmar · Esc voltar": "◀ ▶ choose · Enter confirm · Esc back",
+"Em Breve": "Coming Soon",
+"Em breve": "Coming soon",
+"Criar Sala": "Create Room",
+"Entrar": "Join",
+"Entrar na Sala": "Join Room",
+"Código da sala": "Room code",
+"Código da sala:": "Room code:",
+"Criando sala...": "Creating room...",
+"Sala criada! Compartilhe o código.": "Room created! Share the code.",
+"Conectando...": "Connecting...",
+"Conectado! Entrando no jogo...": "Connected! Joining the game...",
+"Digite o código da sala.": "Enter the room code.",
+"Conectado ao Mundo!": "Connected to the World!",
+"Reconectado!": "Reconnected!",
+"Conexão perdida. Reconectando...": "Connection lost. Reconnecting...",
+"Conexão com a sala perdida.": "Connection to the room lost.",
+"Não foi possível reconectar. Recarregue a página.": "Couldn't reconnect. Reload the page.",
+"Sala não encontrada. Confira se o código está certo.": "Room not found. Check that the code is correct.",
+"Falha de rede. Verifique sua internet e tente de novo.": "Network failure. Check your internet and try again.",
+"Você foi desconectado do servidor. Tentando reconectar...": "You were disconnected from the server. Trying to reconnect...",
+"O servidor de conexão está indisponível no momento.": "The connection server is unavailable right now.",
+"Erro de conexão. Tente novamente em alguns segundos.": "Connection error. Try again in a few seconds.",
+"A conexão foi fechada inesperadamente.": "The connection was closed unexpectedly.",
+"Seu navegador não suporta este recurso. Tente outro navegador.": "Your browser doesn't support this feature. Try another browser.",
+"Esse código de sala já está em uso. Tente criar novamente.": "That room code is already in use. Try creating again.",
+"Código de sala inválido.": "Invalid room code.",
+"Erro de configuração do serviço de conexão.": "Connection service configuration error.",
+"Erro de conexão segura (SSL).": "Secure connection error (SSL).",
+"Seu navegador ou rede está bloqueando a conexão direta (WebRTC).": "Your browser or network is blocking the direct connection (WebRTC).",
+"Não foi possível conectar. Tente novamente.": "Couldn't connect. Try again.",
+"Aguardando início...": "Waiting to start...",
+"O host saiu": "The host left",
+"O torneio foi encerrado.": "The tournament has ended.",
+"SELEÇÃO DE PERSONAGEM": "CHARACTER SELECT",
+"Pronto": "Ready",
+"Cancelar": "Cancel",
+"Iniciar Jogo": "Start Game",
+"Iniciar luta agora": "Start fight now",
+"Aguardando": "Waiting",
+"Vaga aberta": "Open slot",
+"Mapa": "Map",
+"Vermelho": "Red",
+"Azul": "Blue",
+"Time Vermelho": "Red Team",
+"Time Azul": "Blue Team",
+"mínimo 3 para o torneio": "minimum 3 for the tournament",
+"2 vs 2 precisa de 4 jogadores": "2 vs 2 needs 4 players",
+"Cubos": "Cubes",
+"Colinas": "Hills",
+"Deserto": "Desert",
+"Lado de Fora": "Outside",
+"Poderes": "Powers",
+"Passe o mouse sobre um personagem para ver os poderes dele": "Hover over a character to see their powers",
+"Soco": "Punch",
+"Combo de 2 golpes": "2-hit combo",
+"Chute": "Kick",
+"Golpe corpo a corpo": "Melee attack",
+"Balde": "Bucket",
+"Arremessa um balde na corda": "Throws a bucket on a rope",
+"Pulo duplo": "Double jump",
+"Impulso extra depois de pular": "Extra boost after jumping",
+"Z no ar": "Z in air",
+"Esmalte": "Nail polish",
+"Frasco no chão que explode e dá dano em área": "Bottle on the ground that explodes and deals area damage",
+"Cortador de unha": "Nail clipper",
+"Arremessa um cortador": "Throws a clipper",
+"Unhada": "Nail swipe",
+"Tiro": "Shot",
+"Toque rápido atira; segurando, carrega um tiro maior": "Quick tap fires; hold to charge a bigger shot",
+"Escudo": "Shield",
+"Pune quem encostar nele": "Punishes anyone who touches it",
+"Avanço com soco (no ar, 1 vez até pousar)": "Dashing punch (in the air, once until you land)",
+"Gelatina": "Jelly",
+"Cospe uma rajada de mini bolas de gelatina": "Spits a burst of mini jelly balls",
+"Copo": "Cup",
+"Quica, fica armado e estilhaça em quem encostar": "Bounces, arms itself and shatters on whoever touches it",
+"Empurrão": "Shove",
+"Golpe de empurrar o oponente": "A move that pushes the opponent",
+"Toca uma nota que ondula pelo ar": "Plays a note that waves through the air",
+"Nota musical": "Musical note",
+"Grande e lenta; atravessa os oponentes": "Big and slow; passes through opponents",
+"Microfone": "Microphone",
+"Arremessa um microfone": "Throws a microphone",
+"Cuspe": "Spit",
+"No chão, cospe em linha reta": "On the ground, spits in a straight line",
+"Depois de pular, aperte Z": "After jumping, press Z",
+"Poça": "Puddle",
+"Quem pisa escorrega e leva dano": "Anyone who steps on it slips and takes damage",
+"Bola": "Ball",
+"Avança em forma de bola, quicando": "Moves forward as a bouncing ball",
+"Desenho": "Drawing",
+"Forma que ganha vida e ataca por ~2 s": "A shape that comes to life and attacks for ~2 s",
+"Tinta": "Ink",
+"Poça que deixa os oponentes lentos": "Puddle that slows opponents",
+"Giro": "Spin",
+"Golpe giratório; dá pra andar devagar": "Spinning attack; you can walk slowly",
+"Notebook": "Laptop",
+"Batida de notebook": "Laptop bash",
+"Solta o print(\"hello world!\")": "Drops the print(\"hello world!\")",
+"Bola de bugs": "Bug ball",
+"Bola jelly de bugs": "Jelly ball of bugs",
+"Retângulo base": "Base rectangle",
+"Rainha da manicure": "Manicure queen",
+"Dupla gelatinosa": "Jelly duo",
+"Bartender do Blue Note": "Blue Note bartender",
+"Líder dos White Ones": "Leader of the White Ones",
+"Nerd dos White Ones": "Nerd of the White Ones",
+"Animada e caótica, a Nick vive de fofoca e barraco: sabe de tudo, espalha tudo e ainda joga pipoca enquanto a confusão rola. Com todo o seu charme, ela parece inofensiva, mas se alguém a incomodar, ela não perdoa: resolve na porrada. Ela é a primeira personagem recomendada* do jogo. (*A primeira a ser sugerida por um fã.)": "Lively and chaotic, Nick lives for gossip and drama: she knows everything, spreads everything, and tosses popcorn while the mess unfolds. With all her charm she seems harmless, but if anyone bothers her, she won't forgive: she settles it with her fists. She is also the game's first recommended* character. (*The first one suggested by a fan.)",
+"Animada e caótica": "Lively and chaotic",
+"Amante de fofocas e barracos": "Lover of gossip and drama",
+"Caos em pessoa": "Chaos in person",
+"Andar": "Walk",
+"Pulo simples": "Single jump",
+"Um pulo só (sem pulo duplo)": "Single jump only (no double jump)",
+"Corre pelo palco atrás da próxima confusão": "Runs around the stage chasing the next mess",
+"Tapa": "Slap",
+"Tapa rápido, corpo a corpo": "Quick close-range slap",
+"Pipoca": "Popcorn",
+"Balão de fofoca": "Gossip bubble",
+"Deixa o oponente intrigado: esquerda e direita invertidas por 2 s": "Leaves the opponent intrigued: left and right controls swapped for 2 s",
+"Joga uma pipoca que estoura em pedacinhos": "Throws a popcorn that bursts into little pieces",
+"VOCÊ": "YOU",
+"ELIMINADO": "ELIMINATED",
+"Empate": "Draw",
+"VITÓRIA!": "VICTORY!",
+"Lute!": "Fight!",
+"Voltar ao início": "Back to start",
+"Toque na tela para jogar novamente": "Tap the screen to play again",
+"Pressione R para jogar novamente": "Press R to play again",
+"🏆 CHAVE DO TORNEIO": "🏆 TOURNAMENT BRACKET",
+"👀 Assistindo · 🏆 Chave (B)": "👀 Watching · 🏆 Bracket (B)",
+"Fechar chave": "Close bracket",
+"Semifinais": "Semifinals",
+"Quartas de final": "Quarterfinals",
+"BYE (avança direto)": "BYE (advances automatically)",
+"Sorteando os confrontos...": "Drawing the matchups...",
+"Próxima luta": "Next fight",
+"Empate! A luta será repetida.": "It's a draw! The fight will be replayed.",
+"A luta não começou. Tentando de novo...": "The fight didn't start. Trying again..."
+});
+
+    function ord(n) { var r = n % 100, d = n % 10; return n + ((r >= 11 && r <= 13) ? 'th' : d === 1 ? 'st' : d === 2 ? 'nd' : d === 3 ? 'rd' : 'th'); }
+    // Textos com partes variáveis (nomes, números). Testados com o texto inteiro.
+    var RX = [
+        [/^(.+) \(você\)$/, function (m) { return m[1] + ' (you)'; }],
+        [/^(\d+)\/(\d+) jogadores$/, function (m) { return m[1] + '/' + m[2] + ' players'; }],
+        [/^Aguardando outros jogadores\.\.\. \((\d+)\/(\d+)\)$/, function (m) { return 'Waiting for other players... (' + m[1] + '/' + m[2] + ')'; }],
+        [/^(.+) venceu!$/, function (m) { return m[1] + ' won!'; }],
+        [/^(.+) desconectou\.$/, function (m) { return m[1] + ' disconnected.'; }],
+        [/^(.+) desconectou — (.+) vence por W\.O\.!$/, function (m) { return m[1] + ' disconnected — ' + m[2] + ' wins by W.O.!'; }],
+        [/^começa em (\d+)s$/, function (m) { return 'starts in ' + m[1] + 's'; }],
+        [/^Reconectando\.\.\. \(tentativa (\d+)\/(\d+)\)$/, function (m) { return 'Reconnecting... (attempt ' + m[1] + '/' + m[2] + ')'; }],
+        [/^Sala cheia! Máximo de (\d+) jogadores\.$/, function (m) { return 'Room full! Maximum of ' + m[1] + ' players.'; }],
+        [/^Escreva sua sugestão \(mínimo (\d+) letras\)\.$/, function (m) { return 'Write your suggestion (minimum ' + m[1] + ' letters).'; }],
+        [/^Aguarde (\d+)s para enviar outra\.$/, function (m) { return 'Wait ' + m[1] + 's before sending another.'; }],
+        [/^(\d+)º$/, function (m) { return ord(+m[1]); }]
+    ];
+    function norm(t) { return t.replace(/[\s\u00a0]+/g, ' ').trim(); }
+    function core(n) {
+        if (n in EN) return EN[n];
+        for (var i = 0; i < RX.length; i++) { var m = RX[i][0].exec(n); if (m) return RX[i][1](m); }
+        return undefined;
+    }
+    var cache = Object.create(null), cacheN = 0;
+    function seg(n) {
+        var r = core(n); if (r !== undefined) return r;
+        var parts = n.split(/( · | — | × |: )/); // "Próxima luta: A × B — começa em 5s", "Quartas de final · Mapa: Colinas"
+        if (parts.length < 3) return undefined;
+        var any = false;
+        for (var i = 0; i < parts.length; i += 2) { var q = core(parts[i]); if (q !== undefined) { parts[i] = q; any = true; } }
+        return any ? parts.join('') : undefined;
+    }
+    // devolve o texto traduzido (mantendo espaços das pontas) ou undefined se não houver tradução
+    function tr(s) {
+        if (typeof s !== 'string' || !/[A-Za-zÀ-ÿº]/.test(s)) return undefined;
+        var n = norm(s); if (!n) return undefined;
+        var r;
+        if (n in cache) r = cache[n];
+        else { r = seg(n); if (cacheN++ > 4000) { cache = Object.create(null); cacheN = 0; } cache[n] = r; }
+        if (r === undefined) return undefined;
+        return s.match(/^\s*/)[0] + r + s.match(/\s*$/)[0];
+    }
+
+    // ---------- DOM ----------
+    var ATTRS = ['placeholder', 'title', 'alt', 'aria-label'];
+    var origText = new WeakMap(), origAttr = new WeakMap(), mo = null;
+    function skipNode(node) {
+        var el = node.nodeType === 1 ? node : node.parentElement;
+        if (!el) return true;
+        var tn = el.tagName;
+        if (tn === 'SCRIPT' || tn === 'STYLE' || tn === 'TEXTAREA' || tn === 'NOSCRIPT') return true;
+        return !!(el.closest && el.closest('[translate="no"]'));
+    }
+    function doText(n) {
+        var cur = n.nodeValue, o = origText.get(n);
+        if (o && cur === o.en) return;
+        if (skipNode(n)) return;
+        var out = tr(cur);
+        if (out !== undefined && out !== cur) { origText.set(n, { pt: cur, en: out }); n.nodeValue = out; }
+    }
+    function doAttrs(el) {
+        for (var i = 0; i < ATTRS.length; i++) {
+            var a = ATTRS[i];
+            if (!el.hasAttribute(a)) continue;
+            var cur = el.getAttribute(a), m = origAttr.get(el), rec = m && m[a];
+            if (rec && cur === rec.en) continue;
+            var out = tr(cur);
+            if (out !== undefined && out !== cur) {
+                if (!m) { m = {}; origAttr.set(el, m); }
+                m[a] = { pt: cur, en: out }; el.setAttribute(a, out);
+            }
+        }
+    }
+    function walk(root) {
+        if (root.nodeType === 3) { doText(root); return; }
+        if (root.nodeType !== 1 || skipNode(root)) return;
+        doAttrs(root);
+        var tw = document.createTreeWalker(root, 5 /* TEXT | ELEMENT */), n;
+        while ((n = tw.nextNode())) { if (n.nodeType === 3) doText(n); else doAttrs(n); }
+    }
+    function onMut(recs) {
+        for (var i = 0; i < recs.length; i++) {
+            var r = recs[i];
+            if (r.type === 'characterData') doText(r.target);
+            else if (r.type === 'attributes') doAttrs(r.target);
+            else for (var j = 0; j < r.addedNodes.length; j++) walk(r.addedNodes[j]);
+        }
+    }
+    function restoreAll() {
+        var tw = document.createTreeWalker(document.documentElement, 5), n;
+        while ((n = tw.nextNode())) {
+            if (n.nodeType === 3) { var o = origText.get(n); if (o && n.nodeValue === o.en) n.nodeValue = o.pt; origText.delete(n); }
+            else {
+                var m = origAttr.get(n);
+                if (m) { for (var a in m) if (n.getAttribute(a) === m[a].en) n.setAttribute(a, m[a].pt); origAttr.delete(n); }
+            }
+        }
+    }
+    function start() {
+        walk(document.documentElement);
+        if (!mo) {
+            mo = new MutationObserver(onMut);
+            mo.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+        }
+    }
+    function stop() { if (mo) { mo.disconnect(); mo = null; } restoreAll(); }
+    function syncButton() {
+        var b = document.getElementById('lang-switch'); if (!b) return;
+        Array.prototype.forEach.call(b.querySelectorAll('button'), function (x) { x.classList.toggle('on', x.getAttribute('data-l') === lang); });
+    }
+    function setLang(l) {
+        if (l !== 'pt' && l !== 'en') return;
+        lang = l;
+        try { localStorage.setItem(KEY, l); } catch (e) {}
+        document.documentElement.lang = l === 'en' ? 'en' : 'pt-BR';
+        if (l === 'en') start(); else stop();
+        syncButton();
+        try { window.dispatchEvent(new CustomEvent('langchange', { detail: { lang: l } })); } catch (e) {}
+    }
+    function init() {
+        document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR';
+        // o idioma é escolhido em Opções (menu de modo de jogo); aqui só aplica o idioma salvo
+        if (lang === 'en') start();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+    window.I18N = {
+        get lang() { return lang; },
+        set: setLang,
+        t: function (s) { if (lang !== 'en') return s; var r = tr(s); return r === undefined ? s : r; } // para textos desenhados no canvas
+    };
+})();
+</script>
 </head>
 <body>
 
@@ -2153,7 +2619,7 @@
 
                 function isJuanName(name) {
                     const n = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                    return n.includes('queijo') || name.includes('\u{1F9C0}'); // 🧀
+                    return n.includes('queijo') || n.includes('cheese') || name.includes('\u{1F9C0}'); // 🧀
                 }
 
                 function moveBtnAway() {
@@ -2576,7 +3042,28 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     <div class="mode-icon"><svg viewBox="0 0 100 100"><path d="M50 16c-15 0-26 11-26 25 0 9 5 16 11 21 3 3 4 6 4 10h22c0-4 1-7 4-10 6-5 11-12 11-21 0-14-11-25-26-25z"/><path fill="none" d="M40 79h20M43 88h14"/></svg></div>
                     <div class="mode-label">Sugestões</div>
                 </div>
+                <div id="opt-btn" class="mode-item" style="--i:4">
+                    <div class="mode-icon"><svg viewBox="0 0 100 100"><path d="M80.3 43.5 L90.7 45.1 L90.7 54.9 L80.3 56.5 L76.0 66.9 L82.3 75.3 L75.3 82.3 L66.9 76.0 L56.5 80.3 L54.9 90.7 L45.1 90.7 L43.5 80.3 L33.1 76.0 L24.7 82.3 L17.7 75.3 L24.0 66.9 L19.7 56.5 L9.3 54.9 L9.3 45.1 L19.7 43.5 L24.0 33.1 L17.7 24.7 L24.7 17.7 L33.1 24.0 L43.5 19.7 L45.1 9.3 L54.9 9.3 L56.5 19.7 L66.9 24.0 L75.3 17.7 L82.3 24.7 L76.0 33.1 Z"/><circle fill="none" cx="50" cy="50" r="12"/></svg></div>
+                    <div class="mode-label">Opções</div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <div id="opt-overlay">
+        <div id="opt-stage">
+            <div id="opt-title"><span>Opções</span></div>
+            <div id="opt-panel">
+                <div id="opt-head">
+                    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16"/><ellipse cx="20" cy="20" rx="7" ry="16"/><path d="M4 20h32M7 11h26M7 29h26"/></svg>
+                    <span>Idioma</span>
+                </div>
+                <div id="opt-langs" translate="no" role="radiogroup" aria-label="Language / Idioma">
+                    <div class="opt-lang" data-l="pt" role="radio" aria-checked="false"><i></i><b>PT</b><span>Português</span></div>
+                    <div class="opt-lang" data-l="en" role="radio" aria-checked="false"><i></i><b>EN</b><span>English</span></div>
+                </div>
+            </div>
+            <div id="opt-back">◀ Voltar (Esc)</div>
         </div>
     </div>
 
@@ -2644,7 +3131,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             ['Hofy', 'Hofy Sprites/h_idle.png', 'Dançarina, cantora e gerente do Bar Blue Note, em Urbânia. Namorada do Doper, ela o acompanha em todas as desventuras do bar e está sempre disposta a topar qualquer coisa.', 'Dançarina e cantora', 'Gerente do Blue Note', 'BAR'],
             ['FooshLooket', 'FooshLooket Sprites/f_idle.png', 'Uma criatura de uma espécie aquática famosa pela astúcia e inteligência, capaz de construir vilarejos e sociedades submarinas inteiras. Este é o Vermelho, mas existem também o Azul, o Verde, o Amarelo e todas as cores que você imaginar.', 'Criatura aquática', 'Cor: Vermelho', 'AQUÁTICO'],
             ['Dan', 'Dan Sprites/da_idle1.png', 'Um ser humanoide criado no Macromedia Flash 8 para um site flash dos anos 2000. Líder do grupo The White Ones, ao lado de Suzan, Jim, Davis e Lila, ele vive num mundo em que a internet é um universo imenso e cada site é um lugar único.', 'Criado no Flash 8', 'Líder dos The White Ones', 'FLASH'],
-            ['Suzan', 'Suzan Sprites/s_idle1.png', 'A nerd do grupo The White Ones, liderado por Dan. Divertida e destemida, ela sabe bastante sobre programação e por isso nunca sai de casa sem o notebook na mão.', 'Divertida e destemida', 'Integrante dos The White Ones', 'NERD']
+            ['Suzan', 'Suzan Sprites/s_idle1.png', 'A nerd do grupo The White Ones, liderado por Dan. Divertida e destemida, ela sabe bastante sobre programação e por isso nunca sai de casa sem o notebook na mão.', 'Divertida e destemida', 'Integrante dos The White Ones', 'NERD'],
+            ['Nick', 'Nick Sprites/n_idle.png', 'Animada e caótica, a Nick vive de fofoca e barraco: sabe de tudo, espalha tudo e ainda joga pipoca enquanto a confusão rola. Com todo o seu charme, ela parece inofensiva, mas se alguém a incomodar, ela não perdoa: resolve na porrada. Ela é a primeira personagem recomendada* do jogo. (*A primeira a ser sugerida por um fã.)', 'Animada e caótica', 'Amante de fofocas e barracos', 'CAOS']
         ];
         const $ = id => document.getElementById(id);
         let idx = 0;
@@ -2656,7 +3144,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         function show(restart) {
             const c = LIST[idx];
             $('gal-img').src = c[1]; $('gal-img').alt = c[0];
-            $('gal-name').textContent = c[0]; typeText($('gal-desc'), c[2]);
+            $('gal-name').textContent = c[0]; typeText($('gal-desc'), I18N.t(c[2]));
             $('gal-m1').textContent = c[3]; $('gal-m2').textContent = c[4];
             $('gal-count').textContent = (idx + 1) + '/' + LIST.length;
             $('gal-tag').textContent = c[5];
@@ -2664,6 +3152,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             if (restart) ['gal-img', 'gal-name', 'gal-desc', 'gal-info'].forEach(id => { const e = $(id); e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; });
             [-1, 1].forEach(k => { new Image().src = LIST[(idx + k + LIST.length) % LIST.length][1]; }); // pré-carrega vizinhos
         }
+        window.addEventListener('langchange', () => { if ($('gal-overlay').style.display === 'flex') show(false); });
         function step(d) { $('gal-stage').style.setProperty('--dir', d); idx = (idx + d + LIST.length) % LIST.length; show(true); }
         // brilhos subindo + leve parallax do personagem com o mouse
         const fx = $('gal-fx');
@@ -2911,8 +3400,11 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     <img src="Suzan Sprites/s_idle1.png" alt="Suzan">
                     <div class="char-slot-name">Suzan</div>
                 </div>
-                <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
-                <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
+                <div class="char-slot playable" data-character="nick">
+                    <img src="Nick Sprites/n_idle.png" alt="Nick">
+                    <div class="char-slot-name">Nick</div>
+                </div>
+                                <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
@@ -2922,6 +3414,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
                 <div class="char-slot locked"><div class="char-slot-placeholder"></div><div class="char-slot-name">Em Breve</div></div>
             </div>
+            <div id="char-powers" aria-live="polite"></div>
             <div id="ready-player-list"></div>
             <button class="main-btn" id="ready-btn">Pronto</button>
             <button class="main-btn" id="ready-start-btn" style="display:none; margin-top:10px;">Iniciar Jogo</button>
@@ -3058,7 +3551,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         let _teamMap = {};
         const TEAM_COLORS = ['#e53935', '#1e88e5'], TEAM_NAMES = ['Time Vermelho', 'Time Azul'];
         function sameTeam(a, b) { return a !== b && _teamMap[a] !== undefined && _teamMap[a] === _teamMap[b]; }
-        function isAlly(a, b) { return !FRIENDLY_FIRE && window.mpMode === 'teams' && sameTeam(a, b); }
+        function isAlly(a, b) { if (window.TOURN && TOURN.apart && TOURN.apart(a, b)) return true; return !FRIENDLY_FIRE && window.mpMode === 'teams' && sameTeam(a, b); }
         function teamOfPlayerObj(pl) { for (const k in players) if (players[k] === pl) return _teamMap[k]; return undefined; }
         let championId = null; // id do jogador vencedor, para exibir na tela de fim de partida
         let lastTime = 0;
@@ -3336,6 +3829,29 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     helloPrint: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 },
                     // ↓ + X: bola jelly de bugs/glitch que persegue os oponentes e atordoa (sem hitbox melee)
                     glitchBall: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0 }
+                }
+            },
+            // Nick: animada e caótica, não perde uma fofoca ou barraco. Anda, pula (sem pulo duplo)
+            // dá um tapa (Z), joga pipoca (X) e solta balão de fofoca (↓ + Z). Sprite de pulo = n_walk3.
+            nick: {
+                sprites: {
+                    idle: loadSprite('Nick Sprites/n_idle.png'),
+                    walk: ['n_walk1.png', 'n_walk2.png', 'n_walk3.png', 'n_walk4.png'].map(src => loadSprite('Nick Sprites/' + src)),
+                    jump: loadSprite('Nick Sprites/n_walk3.png'),
+                    punch: [loadSprite('Nick Sprites/n_punch.png')], // Z: tapa
+                    throw: loadSprite('Nick Sprites/n_throw.png'), // X: jogando a pipoca
+                    chat: loadSprite('Nick Sprites/n_chat.png'), // ↓ + Z: soltando o balão de fofoca
+                    kick: null,
+                    djump: null,
+                    bucket: null
+                },
+                attacks: {
+                    // Z: tapa (corpo a corpo, golpe único)
+                    punch1: { duration: 220, activeStart: 60, activeEnd: 130, damage: 4, baseKnockback: 90, growth: 0.55, range: 62, sprite: 0, next: null, comboWindow: 0 },
+                    // X: pipoca arremessada que estoura em pedacinhos (o dano vem da pipoca, não de hitbox melee)
+                    throwPopcorn: { duration: 300, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 600 },
+                    // ↓ + Z: balão de fofoca em linha reta; quem é atingido fica "intrigado" (setas invertidas)
+                    throwGossip: { duration: 320, activeStart: 999999, activeEnd: 999999, damage: 0, baseKnockback: 0, growth: 0, range: 0, sprite: null, next: null, comboWindow: 0, cooldown: 700 }
                 }
             }
         };
@@ -3785,7 +4301,32 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 } catch (e) { /* áudio indisponível */ }
             }
 
-            return { playSwing, playHit, playJump, playFall, playThud, playTink, playGlass, playVictory };
+            // --- Pipoca estourando: "pof" curto (ruído filtrado + blip descendente) ---
+            function playPop() {
+                try {
+                    const c = getCtx();
+                    const t0 = c.currentTime;
+                    const src = noiseSource(c);
+                    const bp = c.createBiquadFilter();
+                    bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 0.8;
+                    const g = envGain(c, 0.0001, 0.001, t0, 0.001);
+                    g.gain.linearRampToValueAtTime(0.28, t0 + 0.004);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+                    src.connect(bp).connect(g).connect(c.destination);
+                    src.start(t0); src.stop(t0 + 0.1);
+                    const osc = c.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(640, t0);
+                    osc.frequency.exponentialRampToValueAtTime(240, t0 + 0.08);
+                    const og = envGain(c, 0.0001, 0.001, t0, 0.001);
+                    og.gain.linearRampToValueAtTime(0.16, t0 + 0.006);
+                    og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.1);
+                    osc.connect(og).connect(c.destination);
+                    osc.start(t0); osc.stop(t0 + 0.12);
+                } catch (e) { /* áudio indisponível, ignora silenciosamente */ }
+            }
+
+            return { playSwing, playHit, playJump, playFall, playThud, playTink, playGlass, playPop, playVictory };
         })();
 
         // Vibração do controle (Gamepad API): dispara em qualquer gamepad conectado.
@@ -4428,7 +4969,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     ctx.fill(); ctx.stroke();
                     ctx.fillStyle = '#14162a'; ctx.font = 'bold 10px ' + FONT;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText('VOCÊ', W - 44, -1);
+                    ctx.fillText(I18N.t('VOCÊ'), W - 44, -1);
                     ctx.restore();
                 }
 
@@ -4436,8 +4977,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round';
                 if (elim) {
                     ctx.font = 'italic 900 20px ' + FONT; ctx.textAlign = 'right';
-                    ctx.lineWidth = 4; ctx.strokeStyle = '#0a0a14'; ctx.strokeText('ELIMINADO', zoneR, 62);
-                    ctx.fillStyle = '#9aa0ad'; ctx.fillText('ELIMINADO', zoneR, 62);
+                    ctx.lineWidth = 4; ctx.strokeStyle = '#0a0a14'; ctx.strokeText(I18N.t('ELIMINADO'), zoneR, 62);
+                    ctx.fillStyle = '#9aa0ad'; ctx.fillText(I18N.t('ELIMINADO'), zoneR, 62);
                 } else {
                     // --- Número do dano ---
                     const numStr = String(Math.floor(st.shown));
@@ -4613,7 +5154,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         function vecClockSample(hostT) {
             const sample = hostT - Date.now(); // = offset real - latência (a amostra de menor latência é a melhor)
             if (!vecClockInit) { vecClockOffset = sample; vecClockInit = true; }
-            else vecClockOffset = Math.max(sample, vecClockOffset - 4); // sobe na hora, desce devagar (acompanha deriva)
+            else vecClockOffset = Math.min(Math.max(sample, vecClockOffset - 4), vecClockOffset + 25); // sobe rápido, mas no máx. 25ms por amostra (um salto grande teleportava a plataforma debaixo de quem estava em cima); desce devagar (acompanha deriva)
         }
         const vecPadFlash = [0, 0];
 
@@ -4946,6 +5487,14 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         }
         // Plataformas: [topo da janela (fixa), móvel esquerda, móvel direita]. Cache curto: é chamada várias vezes por frame
         let _mpPlatCache = null, _mpPlatT = 0;
+        let rawFrameDelta = 0.016;   // preenchido pelo gameLoop
+        // y (topo) de uma plataforma móvel no instante t (s). Usado também para saber onde ela estava no frame anterior
+        function mpMovingY(ax, delay, t) {
+            const Y0 = 140, Y1 = MP_TB_Y - 100 / MP_S, TRAVEL = (Y1 - Y0) * MP_S;
+            const ph = ((t + delay) / 3.2) % 2, tri = ph < 1 ? ph : 2 - ph;
+            const e = (1 - Math.cos(Math.PI * tri)) / 2;
+            return MP_OY + Y0 * MP_S + TRAVEL * e;
+        }
         function getMediaPlayerPlatforms() {
             const now = Date.now();
             if (_mpPlatCache && now - _mpPlatT < 4) return _mpPlatCache;
@@ -4958,7 +5507,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 const e = (1 - Math.cos(Math.PI * tri)) / 2;
                 const y = MP_OY + Y0 * MP_S + TRAVEL * e;
                 const vy = TRAVEL * (Math.PI / 2) * Math.sin(Math.PI * tri) * dir / 3.2;
-                plats.push({ x: MP_OX + (ax + 55) * MP_S - MP_PLAT_W / 2, y, width: MP_PLAT_W, height: 30 * MP_S, moving: true, vx: 0, vy });
+                plats.push({ x: MP_OX + (ax + 55) * MP_S - MP_PLAT_W / 2, y, width: MP_PLAT_W, height: 30 * MP_S, moving: true, vx: 0, vy,
+                    yAt: (dt) => mpMovingY(ax, delay, vecNow() / 1000 - dt) });   // posição dela há dt segundos
             });
             _mpPlatT = now; return (_mpPlatCache = plats);
         }
@@ -5501,6 +6051,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             if (DORFIC_LITE && timestamp - lastTime < 14) { requestAnimationFrame(gameLoop); return; }
             if (IS_MOBILE_PERF) mobilePerfSample(timestamp - lastTime);
             const deltaTime = Math.min((timestamp - lastTime) / 1000, 0.05); // Tempo em segundos, limitado para evitar saltos de física
+            rawFrameDelta = Math.min(Math.max((timestamp - lastTime) / 1000, 0), 0.5); // tempo REAL do frame (sem o clamp): plataformas móveis andam em tempo real
             lastTime = timestamp;
 
             const now = Date.now();
@@ -5522,6 +6073,13 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             const effectiveDelta = frozen ? 0 : deltaTime;
 
             // Zoom de câmera em golpes fortes foi removido — mantém escala e foco padrão.
+            // Torneio com 2 lutas simultâneas: o quadro é desenhado/simulado 1x por luta, cada uma na sua metade da tela
+            // (com o próprio mapa, câmera e só os jogadores/projéteis daquela luta). Fora disso: uma passada só.
+            const _passes = (window.TOURN && TOURN.passes && TOURN.passes()) || [null];
+            for (let _pi = 0; _pi < _passes.length; _pi++) {
+            const _g = _passes[_pi];
+            const _endPass = _g === null ? null : TOURN.beginPass(_g, _pi, _passes.length);
+            try {
             let camScale = 1, camFocusX = WORLD_WIDTH / 2, camFocusY = WORLD_HEIGHT / 2;
 
             ctx.save();
@@ -5733,6 +6291,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                         let dir = 0;
                         if (keysPressed['ArrowLeft']) dir -= 1;
                         if (keysPressed['ArrowRight']) dir += 1;
+                        if (dir !== 0 && now < (p.gossipUntil || 0)) dir = -dir; // intrigado (balão da Nick): esquerda/direita invertidos
                         if (dir !== 0) {
                             isMoving = true;
                             p.facingLeft = dir < 0;
@@ -5819,10 +6378,16 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                         for (const fp of floatPlats) {
                             const fpGroundY = fp.y - PLAYER_SIZE / 2;
                             const overFp = p.x > fp.x && p.x < fp.x + fp.width;
+                            // Plataforma móvel: quanto ela andou neste frame (+ = desceu). A comparação com o frame anterior
+                            // precisa usar a posição ANTERIOR dela; senão, com FPS baixo (clientes), ela anda mais que a
+                            // tolerância num frame só e o jogador atravessa (sobe) ou fica pra trás (desce).
+                            const fpPrevGroundY = (fp.moving && fp.yAt) ? fp.yAt(rawFrameDelta) - PLAYER_SIZE / 2
+                                : fpGroundY - (fp.moving ? (fp.vy || 0) * effectiveDelta : 0);
+                            const fpMoveDy = fpGroundY - fpPrevGroundY;
                             // Já estava parado nesta mesma plataforma no frame anterior: apenas
                             // mantém o pouso sem reacionar o squash (evita re-trigger a cada frame).
-                            const wasRestingHere = wasOnGround && Math.abs(prevY - fpGroundY) < 0.5 + (fp.moving ? 10 : 0) && overFp;
-                            const cameFromAboveFp = prevY <= fpGroundY;
+                            const wasRestingHere = wasOnGround && overFp && Math.abs(prevY - fpPrevGroundY) < 0.5 + (fp.moving ? 10 + Math.abs(fpMoveDy) : 0);
+                            const cameFromAboveFp = prevY <= Math.max(fpGroundY, fpPrevGroundY);
                             if (overFp && p.vy >= 0 && (cameFromAboveFp || wasRestingHere) && (p.y >= fpGroundY || (fp.moving && wasRestingHere && p.vy < 200))) {
                                 if (!wasOnGround) {
                                     p.squashTime = now;
@@ -5904,6 +6469,10 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             drawInkPuddles();
             updateMics(deltaTime * 1000);
             drawMics();
+            updatePopcorn(deltaTime * 1000);
+            drawPopcorn();
+            updateGossip(deltaTime * 1000);
+            drawGossip();
             updateFlails(deltaTime * 1000);
             drawFlails();
             updateHelloPrints();
@@ -5945,6 +6514,9 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             // Raio vermelho/preto de KO: desenhado FORA da transformação de câmera
             // (cobre a tela inteira de forma consistente, sem ser afetado pelo zoom/shake)
             drawKOFlash();
+            } catch (_e) { if (_g === null) throw _e; console.error(_e); } finally { if (_endPass) _endPass(); }
+            }
+            if (_passes.length > 1) TOURN.drawDivider();
 
             // Tela de fim de partida agora é a cena 2.5D (#victory-overlay), controlada
             // via triggerVictoryScreen()/checkMatchEnd() em vez de desenhada no canvas.
@@ -5998,13 +6570,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             if (!isRunning) return; // fora de partida (ex.: já voltou pra seleção): pacote atrasado de outro jogador não pode reabrir a tela de vitória
             if (window.TOURN && TOURN.active) { // torneio: só os 2 lutadores contam, e só com a luta valendo
                 if (TOURN.finished || !TOURN.live || introLock || !TOURN.fighters || matchOver) return; // entradas/contagem/VS nunca encerram a luta
-                // lutador que ainda não apareceu em 'players' conta como vivo (se ele saiu, o host trata por W.O. em onPlayerLeft)
-                const aliveF = TOURN.fighters.filter(id => !(players[id] && players[id].eliminated));
-                if (aliveF.length <= 1) {
-                    matchOver = true;
-                    championId = aliveF.length === 1 ? aliveF[0] : null;
-                    TOURN.onFightEnd(championId);
-                }
+                TOURN.checkGroups(); // cada luta (1 ou 2 simultâneas) é conferida separadamente
                 return;
             }
             const allIds = Object.keys(players);
@@ -6025,6 +6591,10 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             championId = null;
             thrownCups.length = 0;
             thrownMics.length = 0;
+            thrownPopcorns.length = 0;
+            popcornBits.length = 0;
+            gossipBubbles.length = 0;
+            for (const pid in players) players[pid].gossipUntil = 0;
             cupShards.length = 0;
             waterSpits.length = 0;
             spitShots.length = 0;
@@ -6092,7 +6662,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         let vConfetti = [], vConfettiRaf = null;
 
         function victoryAccent(key) {
-            const map = { renanzinho: '#ffb52e', aggie: '#ff4fa0' };
+            const map = { renanzinho: '#ffb52e', aggie: '#ff4fa0', nick: '#ff3d81' };
             if (map[key]) return map[key];
             let h = 0; for (const ch of String(key)) h = (h * 31 + ch.charCodeAt(0)) % 360;
             return `hsl(${h} 85% 58%)`;
@@ -6908,7 +7478,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         // ==========================================
         const GLITCH_BALL_RADIUS = 36;      // raio (px): nem grande nem pequena
         const GLITCH_BALL_LIFETIME = 3000;  // ms que a bola dura
-        const GLITCH_BALL_COOLDOWN = 4000;  // ms entre um spawn e o próximo (conta a partir do spawn)
+        const GLITCH_BALL_COOLDOWN = 8000;  // ms entre um spawn e o próximo (conta a partir do spawn)
         const GLITCH_BALL_FADE_MS = 300;    // some aos poucos no final
         const GLITCH_BALL_SPEED = 210;      // px/s
         const GLITCH_BALL_TURN = 3.2;       // agilidade pra virar em direção ao alvo
@@ -7707,6 +8277,406 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 ctx.beginPath(); ctx.moveTo(10, -8); ctx.lineTo(10, 8); ctx.moveTo(2, 0); ctx.lineTo(18, 0); ctx.stroke();
                 ctx.restore();
             }
+        }
+
+        // ==========================================
+        // PIPOCA DA NICK (X): ela joga uma pipoca em arco; ao encostar no chão, acertar alguém ou depois de
+        // um instante no ar, ela ESTOURA em 3 ou 4 pipoquinhas que voam cada uma pra sua direção e somem.
+        // Cada cliente simula a física localmente; só o DONO decide o estouro e detecta os acertos (um
+        // alvo leva no máximo UM acerto por estouro). A direção das pipoquinhas sai de uma semente
+        // enviada junto com o estouro, então todo mundo vê o mesmo resultado. Desenhada em código.
+        // ==========================================
+        let thrownPopcorns = []; // { id, ownerId, seed, x, y, vx, vy, rot, vr, onGround, spawnTime, acc }
+        let popcornBits = [];    // { grp, ownerId, x, y, vx, vy, rot, vr, scale, spawnTime }
+        const POP_RADIUS = 12;          // raio da pipoca inteira
+        const POP_THROW_VX = 430;       // px/s
+        const POP_THROW_VY = -440;
+        const POP_GRAVITY = 1900;
+        const POP_FUSE = 520;           // ms no ar até estourar sozinha
+        const POP_LIFETIME = 2500;      // ms (segurança)
+        const POP_BIT_SPEED_MIN = 260;  // px/s das pipoquinhas
+        const POP_BIT_SPEED_MAX = 360;
+        const POP_BIT_GRAVITY = 700;
+        const POP_BIT_DRAG = 2.2;       // freio (por segundo): elas voam e vão desacelerando
+        const POP_BIT_LIFE = 800;       // ms até sumirem
+        const POP_BIT_HIT_R = 12;       // folga horizontal da hitbox das pipoquinhas
+        const POP_DAMAGE = 4;
+        const POP_KNOCKBACK = 80;
+
+        function popRand(seed) { // gerador determinístico (mulberry32)
+            let a = seed >>> 0;
+            return () => {
+                a = (a + 0x6D2B79F5) >>> 0;
+                let t = a;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function throwPopcorn(p) {
+            if (!p || p.character !== 'nick') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.nick.attacks.throwPopcorn;
+            p.attackName = 'throwPopcorn';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+
+            const dir = p.facingLeft ? -1 : 1;
+            const sc = getSizeScale(p);
+            const pop = {
+                id: 'pop_' + now + '_' + Math.floor(Math.random() * 100000),
+                ownerId: myUserId,
+                seed: Math.floor(Math.random() * 1e9),
+                x: p.x + dir * 30 * sc,
+                y: p.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * sc * 0.55, // altura da mão
+                vx: dir * POP_THROW_VX,
+                vy: POP_THROW_VY,
+                rot: 0, vr: dir * 11,
+                onGround: false
+            };
+            thrownPopcorns.push(makePopcorn(pop));
+            SFX.playSwing(0.8);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'popThrow', pop });
+        }
+
+        function makePopcorn(data) {
+            return { ...data, spawnTime: Date.now(), acc: 0 };
+        }
+
+        // Cria as 3 ou 4 pipoquinhas do estouro (direções espalhadas em volta, com sorteio da semente)
+        function spawnPopcornBits(ownerId, x, y, seed) {
+            const rnd = popRand(seed);
+            const n = 3 + Math.floor(rnd() * 2);
+            const off = rnd() * Math.PI * 2;
+            const grp = { hit: new Set() }; // quem já levou acerto deste estouro
+            const now = Date.now();
+            for (let k = 0; k < n; k++) {
+                const ang = off + k * (Math.PI * 2 / n) + (rnd() - 0.5) * 0.5;
+                const sp = POP_BIT_SPEED_MIN + rnd() * (POP_BIT_SPEED_MAX - POP_BIT_SPEED_MIN);
+                popcornBits.push({
+                    grp, ownerId, x, y,
+                    vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+                    rot: rnd() * Math.PI * 2, vr: (rnd() - 0.5) * 20,
+                    scale: 0.55 + rnd() * 0.1,
+                    spawnTime: now
+                });
+            }
+            return grp;
+        }
+
+        // Estoura a pipoca inteira (só o dono chama): remove, solta as pipoquinhas e avisa os outros
+        function burstPopcorn(k, alreadyHitId) {
+            const i = thrownPopcorns.indexOf(k);
+            if (i >= 0) thrownPopcorns.splice(i, 1);
+            const grp = spawnPopcornBits(k.ownerId, k.x, k.y, k.seed);
+            if (alreadyHitId) grp.hit.add(alreadyHitId);
+            SFX.playPop();
+            MP.broadcastToAll({ type: 'popBurst', id: k.id, ownerId: k.ownerId, seed: k.seed, x: k.x, y: k.y });
+        }
+
+        function stepPopcorn(k, h, stage, plats) {
+            const prevY = k.y;
+            k.vy += POP_GRAVITY * h;
+            k.x += k.vx * h;
+            k.y += k.vy * h;
+            k.onGround = false;
+            const surfs = [stage].concat(plats);
+            for (const sf of surfs) {
+                const sY = surfLand(sf, k.x, prevY + POP_RADIUS, k.y + POP_RADIUS);
+                if (k.x > sf.x && k.x < sf.x + sf.width && k.vy >= 0 && sY !== null) {
+                    k.y = sY - POP_RADIUS;
+                    k.vx = 0; k.vy = 0; k.vr = 0;
+                    k.onGround = true;
+                    break;
+                }
+            }
+            if (!k.onGround) k.rot += k.vr * h;
+        }
+
+        function popcornHitsTarget(target, x, y, extra) {
+            const tS = getSizeScale(target);
+            const top = target.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * tS;
+            const bottom = target.y + PLAYER_SIZE / 2;
+            return Math.abs(target.x - x) < (PLAYER_SIZE / 2) * 0.85 * tS + extra && y > top - 8 && y < bottom + 10;
+        }
+
+        function hitByPopcorn(id, dir) {
+            applyHit(id, POP_DAMAGE, POP_KNOCKBACK, dir);
+            MP.broadcastToAll({ type: 'hit', targetId: id, damage: POP_DAMAGE, knockback: POP_KNOCKBACK, dir });
+            SFX.playHit('light');
+            rumble(0.3, 90);
+        }
+
+        function updatePopcorn(deltaMs) {
+            const now = Date.now();
+            if (!thrownPopcorns.length && !popcornBits.length) return;
+            const stage = getStageRect();
+            const plats = getFloatingPlatforms();
+            const H = 1 / 120;
+
+            // pipoca inteira, voando em arco
+            for (let i = thrownPopcorns.length - 1; i >= 0; i--) {
+                const k = thrownPopcorns[i];
+                if (now - k.spawnTime > POP_LIFETIME || k.y > WORLD_HEIGHT + 500 || k.x < -600 || k.x > WORLD_WIDTH + 600) {
+                    thrownPopcorns.splice(i, 1);
+                    continue;
+                }
+                k.acc += Math.min(deltaMs, 50) / 1000;
+                while (k.acc >= H) { k.acc -= H; stepPopcorn(k, H, stage, plats); if (k.onGround) { k.acc = 0; break; } }
+
+                // só o dono decide o estouro: acertou alguém, encostou no chão ou o tempo acabou
+                if (isOwnerLocal(k.ownerId)) {
+                    let burstHit = null;
+                    for (const id in players) {
+                        if (id === k.ownerId || isAlly(id, k.ownerId)) continue;
+                        const target = players[id];
+                        if (target.eliminated) continue;
+                        if (popcornHitsTarget(target, k.x, k.y, POP_RADIUS)) { burstHit = id; break; }
+                    }
+                    if (burstHit) {
+                        hitByPopcorn(burstHit, k.vx >= 0 ? 1 : -1);
+                        burstPopcorn(k, burstHit);
+                    } else if (k.onGround || now - k.spawnTime >= POP_FUSE) {
+                        burstPopcorn(k, null);
+                    }
+                }
+            }
+
+            // pipoquinhas: voam, vão freando e somem
+            const dt = Math.min(deltaMs, 50) / 1000;
+            for (let i = popcornBits.length - 1; i >= 0; i--) {
+                const b = popcornBits[i];
+                const age = now - b.spawnTime;
+                if (age > POP_BIT_LIFE) { popcornBits.splice(i, 1); continue; }
+                const drag = Math.exp(-POP_BIT_DRAG * dt);
+                b.vx *= drag; b.vy = b.vy * drag + POP_BIT_GRAVITY * dt;
+                b.x += b.vx * dt; b.y += b.vy * dt;
+                b.rot += b.vr * dt;
+                if (isOwnerLocal(b.ownerId) && age < POP_BIT_LIFE * 0.85) {
+                    for (const id in players) {
+                        if (id === b.ownerId || isAlly(id, b.ownerId) || b.grp.hit.has(id)) continue;
+                        const target = players[id];
+                        if (target.eliminated) continue;
+                        if (popcornHitsTarget(target, b.x, b.y, POP_BIT_HIT_R)) {
+                            b.grp.hit.add(id);
+                            hitByPopcorn(id, b.vx >= 0 ? 1 : -1);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Desenho procedural: nuvenzinha de gomos cremes com CONTORNO PRETO e um "miolo" amarelo na base
+        function drawPopcornShape(x, y, r, rot) {
+            const puffs = [[-0.55, 0.25, 0.62], [0.52, 0.3, 0.6], [-0.35, -0.2, 0.62], [0.4, -0.15, 0.6], [0, -0.55, 0.64], [0, 0.05, 0.68]];
+            const o = Math.max(2, r * 0.22); // espessura do contorno externo
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.lineJoin = 'round';
+            // 1) contorno preto externo: todos os gomos um pouco maiores, em preto
+            ctx.fillStyle = '#000';
+            for (const [dx, dy, pr] of puffs) { ctx.beginPath(); ctx.arc(dx * r, dy * r, pr * r + o, 0, Math.PI * 2); ctx.fill(); }
+            // 2) gomos cremes, cada um com traço preto fino (cria o efeito "nuvem" de desenho animado)
+            ctx.fillStyle = '#fff6d3'; ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(1.2, r * 0.13);
+            for (const [dx, dy, pr] of puffs) { ctx.beginPath(); ctx.arc(dx * r, dy * r, pr * r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+            // 3) miolo amarelo-torrado na base
+            ctx.fillStyle = '#f2b632';
+            ctx.beginPath(); ctx.ellipse(0, r * 0.78, r * 0.42, r * 0.28, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
+
+        // Saco de pipoca (o que a Nick arremessa): pipocas saindo do topo + saquinho listrado
+        function drawPopcornBag(x, y, r, rot) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(1.5, r * 0.16);
+            ctx.fillStyle = '#fff6d3';
+            for (const [dx, dy, pr] of [[-0.55, -0.5, 0.4], [0.5, -0.5, 0.4], [-0.15, -0.8, 0.45], [0.25, -0.75, 0.4], [0, -0.45, 0.45]]) {
+                ctx.beginPath(); ctx.arc(dx * r, dy * r, pr * r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            }
+            const bag = new Path2D();
+            bag.moveTo(-0.9 * r, -0.3 * r); bag.lineTo(0.9 * r, -0.3 * r); bag.lineTo(0.65 * r, 1.1 * r); bag.lineTo(-0.65 * r, 1.1 * r); bag.closePath();
+            ctx.fillStyle = '#fff'; ctx.fill(bag);
+            ctx.save();
+            ctx.clip(bag);
+            ctx.fillStyle = '#e03131';
+            for (let i = 0; i < 3; i++) ctx.fillRect((-0.9 + i * 0.6) * r, -0.3 * r, 0.3 * r, 1.4 * r);
+            ctx.restore();
+            ctx.stroke(bag);
+            ctx.restore();
+        }
+
+        function drawPopcorn() {
+            const now = Date.now();
+            for (const k of thrownPopcorns) drawPopcornBag(k.x, k.y, POP_RADIUS, k.rot);
+            for (const b of popcornBits) {
+                const age = now - b.spawnTime;
+                const fade = Math.max(0, Math.min(1, (POP_BIT_LIFE - age) / 250)); // some suavemente no fim
+                const pop = age < 90 ? 1.35 - 0.35 * (age / 90) : 1; // "pulinho" ao nascer
+                ctx.save();
+                ctx.globalAlpha = fade;
+                drawPopcornShape(b.x, b.y, POP_RADIUS * b.scale * pop, b.rot);
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // BALÃO DE FOFOCA DA NICK (↓ + Z): balão de fala em linha reta. Se acerta alguém, causa um dano
+        // bem pequeno e deixa o oponente "intrigado" por GOSSIP_CONFUSE_MS: esquerda/direita invertidos
+        // (a inversão é aplicada no movimento do próprio jogador atingido, ver gossipUntil). Só o DONO
+        // detecta o acerto. O balão e o "?" sobre a cabeça são desenhados em código, com contorno preto.
+        // ==========================================
+        let gossipBubbles = []; // { id, ownerId, x, y, dir, spawnTime }
+        const GOSSIP_SPEED = 520;         // px/s
+        const GOSSIP_LIFETIME = 1100;     // ms até o balão sumir (alcance ~570 px)
+        const GOSSIP_DAMAGE = 2;          // dano bem baixo: o efeito é o que importa
+        const GOSSIP_KNOCKBACK = 30;
+        const GOSSIP_CONFUSE_MS = 2000;   // quanto tempo o alvo fica intrigado
+        const GOSSIP_HIT_R = 24;          // folga horizontal da hitbox do balão
+
+        function throwGossip(p) {
+            if (!p || p.character !== 'nick') return;
+            const now = Date.now();
+            if (p.hitstunUntil && now < p.hitstunUntil) return;
+            if (p.attackUntil && now < p.attackUntil) return;
+            if (p.attackCooldownUntil && now < p.attackCooldownUntil) return;
+
+            const def = CHARACTERS.nick.attacks.throwGossip;
+            p.attackName = 'throwGossip';
+            p.attackStart = now;
+            p.attackUntil = now + def.duration;
+            p.attackCooldownUntil = now + def.duration + def.cooldown;
+            p.attackSquashTime = now;
+
+            const dir = p.facingLeft ? -1 : 1;
+            const sc = getSizeScale(p);
+            const bubble = {
+                id: 'gos_' + now + '_' + Math.floor(Math.random() * 100000),
+                ownerId: myUserId,
+                x: p.x + dir * 36 * sc,
+                y: p.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * sc * 0.62, // altura da boca
+                dir
+            };
+            gossipBubbles.push(makeGossip(bubble));
+            SFX.playSwing(0.7);
+            MP.sendState();
+            MP.broadcastToAll({ type: 'gossipThrow', bubble });
+        }
+
+        function makeGossip(data) {
+            return { ...data, spawnTime: Date.now() };
+        }
+
+        function removeGossip(b, broadcast) {
+            const i = gossipBubbles.indexOf(b);
+            if (i >= 0) gossipBubbles.splice(i, 1);
+            if (broadcast && isOwnerLocal(b.ownerId)) MP.broadcastToAll({ type: 'gossipRemove', id: b.id });
+        }
+
+        // Deixa o alvo intrigado (setas invertidas). Roda em todos os clientes; quem usa é o movimento do alvo.
+        function applyGossip(targetId, ms) {
+            const t = players[targetId];
+            if (!t || t.eliminated) return;
+            t.gossipUntil = Date.now() + ms;
+        }
+
+        function updateGossip(deltaMs) {
+            if (!gossipBubbles.length) return;
+            const now = Date.now();
+            const dt = Math.min(deltaMs, 50) / 1000;
+            for (let i = gossipBubbles.length - 1; i >= 0; i--) {
+                const b = gossipBubbles[i];
+                if (now - b.spawnTime > GOSSIP_LIFETIME || b.x < -600 || b.x > WORLD_WIDTH + 600) {
+                    gossipBubbles.splice(i, 1);
+                    continue;
+                }
+                b.x += b.dir * GOSSIP_SPEED * dt;
+
+                // só o dono detecta o acerto
+                if (!isOwnerLocal(b.ownerId)) continue;
+                for (const id in players) {
+                    if (id === b.ownerId || isAlly(id, b.ownerId)) continue;
+                    const target = players[id];
+                    if (target.eliminated) continue;
+                    if (popcornHitsTarget(target, b.x, b.y, GOSSIP_HIT_R)) {
+                        const shielded = !!target.isShielding; // escudo bloqueia dano e o efeito
+                        applyHit(id, GOSSIP_DAMAGE, GOSSIP_KNOCKBACK, b.dir);
+                        MP.broadcastToAll({ type: 'hit', targetId: id, damage: GOSSIP_DAMAGE, knockback: GOSSIP_KNOCKBACK, dir: b.dir });
+                        if (!shielded) {
+                            applyGossip(id, GOSSIP_CONFUSE_MS);
+                            MP.broadcastToAll({ type: 'gossipHit', targetId: id, ms: GOSSIP_CONFUSE_MS });
+                        }
+                        SFX.playHit('light');
+                        rumble(0.25, 80);
+                        removeGossip(b, true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Balão de fala: retângulo arredondado branco com contorno preto, rabinho voltado pra trás e "blá" dentro
+        function drawGossipBubble(x, y, dir, age) {
+            const w = 52, h = 36, r = 13;
+            const pop = age < 100 ? 0.6 + 0.4 * (age / 100) : 1;   // "pop" ao nascer
+            const bob = Math.sin(age / 90) * 2;                      // balança enquanto voa
+            ctx.save();
+            ctx.translate(x, y + bob);
+            ctx.scale(pop, pop);
+            ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.lineWidth = 3.5; ctx.strokeStyle = '#000'; ctx.fillStyle = '#fff';
+            // corpo
+            ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, r); ctx.fill(); ctx.stroke();
+            // rabinho (fica atrás, do lado oposto ao movimento), emendado ao corpo
+            const bx = -dir * (w / 2 - 15), b1 = bx - 7, b2 = bx + 7, tipX = bx - dir * 9, tipY = h / 2 + 12;
+            ctx.beginPath(); ctx.moveTo(b1, h / 2 - 1); ctx.lineTo(tipX, tipY); ctx.lineTo(b2, h / 2 - 1); ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.fillRect(b1 + 2, h / 2 - 2.2, (b2 - b1) - 4, 4.4); // apaga o traço entre corpo e rabinho
+            // texto (fora do espelhamento, então nunca fica invertido)
+            ctx.fillStyle = '#000'; ctx.font = "bold 16px 'Trebuchet MS', 'Segoe UI', Arial, sans-serif";
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText('blá', 0, 1);
+            ctx.restore();
+        }
+
+        // "?" sobre a cabeça de quem está intrigado (no canto, pra não cobrir o nome)
+        function drawGossipMarks(now) {
+            for (const id in players) {
+                const p = players[id];
+                if (!p || p.eliminated || !(p.gossipUntil > now)) continue;
+                const remaining = p.gossipUntil - now;
+                if (remaining < 500 && Math.floor(now / 90) % 2 === 0) continue; // pisca no fim
+                const sc = getSizeScale(p);
+                const bob = Math.sin(now / 140) * 3;
+                const x = p.x + 22 * sc, y = p.y + PLAYER_SIZE / 2 - SPRITE_HEIGHT * sc - 6 + bob;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(Math.sin(now / 200) * 0.18);
+                ctx.font = "900 30px 'Trebuchet MS', 'Segoe UI', Arial, sans-serif";
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.lineJoin = 'round'; ctx.lineWidth = 6; ctx.strokeStyle = '#000';
+                ctx.strokeText('?', 0, 0);
+                ctx.fillStyle = '#ffd23f';
+                ctx.fillText('?', 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function drawGossip() {
+            const now = Date.now();
+            for (const b of gossipBubbles) drawGossipBubble(b.x, b.y, b.dir, now - b.spawnTime);
+            drawGossipMarks(now);
         }
 
         // Física da bala: linha reta simples, some depois de BULLET_LIFETIME
@@ -10113,7 +11083,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 spriteOffsetX = 12; // ajuste fino: sprites de ataque encaixam melhor mais à direita
                 if (player.attackName === 'kick') {
                     currentSprite = cSprites.kick;
-                } else if (player.attackName === 'throwPolish' || player.attackName === 'spitJelly' || player.attackName === 'throwCup' || player.attackName === 'throwMic' || player.attackName === 'throwWater') {
+                } else if (player.attackName === 'throwPolish' || player.attackName === 'spitJelly' || player.attackName === 'throwCup' || player.attackName === 'throwMic' || player.attackName === 'throwWater' || player.attackName === 'throwPopcorn') {
                     currentSprite = cSprites.throw;
                 } else if (player.attackName === 'ball') {
                     currentSprite = cSprites.ball || cSprites.idle;
@@ -10123,6 +11093,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     currentSprite = cSprites.sax || cSprites.idle;
                 } else if (player.attackName === 'sing') {
                     currentSprite = cSprites.sing || cSprites.idle;
+                } else if (player.attackName === 'throwGossip') {
+                    currentSprite = cSprites.chat || cSprites.idle;
                 } else if (player.attackName === 'helloPrint' || player.attackName === 'glitchBall') {
                     currentSprite = cSprites.code || cSprites.idle;
                 } else if (player.attackName === 'brush' || player.attackName === 'inkPuddle') {
@@ -10139,6 +11111,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 } else {
                     const def = (charDef.attacks || ATTACK_DEFS)[player.attackName];
                     currentSprite = def ? cSprites.punch[def.sprite] : cSprites.idle;
+                    if (player.character === 'nick') spriteOffsetX = 24; // n_punch é mais largo que o idle; desloca pra frente pra não parecer que ela recua
                 }
             } else if (player.isDoubleJumping) {
                 currentSprite = cSprites.djump || cSprites.jump;
@@ -10411,6 +11384,9 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     else if (me.onGround || !startDoubleJump()) spitStraight(me);
                 } else if (me && me.character === 'suzan') {
                     startAttack(me, 'punch1'); // Suzan: batida de notebook (sem pulo duplo)
+                } else if (me && me.character === 'nick') {
+                    if (keysPressed['ArrowDown']) throwGossip(me); // Nick (↓ + Z): balão de fofoca
+                    else startAttack(me, 'punch1'); // Nick: tapa (sem pulo duplo)
                 } else if (me && (!me.character || me.character === 'basey')) {
                     // Basey: só anda e pula (sem ataque, sem pulo duplo)
                 } else if (me && me.character === 'renanzinho' && keysPressed['ArrowDown']) {
@@ -10428,6 +11404,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 if (me && me.character === 'suzan') {
                     if (keysPressed['ArrowDown']) startGlitchBall(me); // Suzan (↓ + X): bola jelly de bugs
                     else startHelloPrint(me); // Suzan: print("hello world!")
+                } else if (me && me.character === 'nick') {
+                    throwPopcorn(me); // Nick: joga a pipoca
                 } else if (me && (!me.character || me.character === 'basey')) {
                     // Basey: sem ataques
                 } else if (me && me.character === 'renanAntigo') {
@@ -10669,6 +11647,32 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     if (mi >= 0) thrownMics.splice(mi, 1);
                     if (this.role === 'host') this.broadcast(data, fromId);
                 }
+                else if (data.type === 'popThrow') {
+                    if (data.pop.ownerId !== myUserId) thrownPopcorns.push(makePopcorn(data.pop));
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'popBurst') {
+                    if (data.ownerId !== myUserId) {
+                        const pi = thrownPopcorns.findIndex(k => k.id === data.id);
+                        if (pi >= 0) thrownPopcorns.splice(pi, 1);
+                        spawnPopcornBits(data.ownerId, data.x, data.y, data.seed);
+                        SFX.playPop();
+                    }
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'gossipThrow') {
+                    if (data.bubble.ownerId !== myUserId) gossipBubbles.push(makeGossip(data.bubble));
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'gossipRemove') {
+                    const gi = gossipBubbles.findIndex(b => b.id === data.id);
+                    if (gi >= 0) gossipBubbles.splice(gi, 1);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
+                else if (data.type === 'gossipHit') {
+                    applyGossip(data.targetId, data.ms);
+                    if (this.role === 'host') this.broadcast(data, fromId);
+                }
                 else if (data.type === 'cupThrow') {
                     if (data.cup.ownerId !== myUserId) thrownCups.push(makeCup(data.cup));
                     if (this.role === 'host') this.broadcast(data, fromId);
@@ -10868,7 +11872,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             hofy: 'Audios/hofy.mp3',
             fooshlooket: 'Audios/fooshlooket.mp3',
             dan: 'Audios/dan.mp3',
-            suzan: 'Audios/suzan.mp3'
+            suzan: 'Audios/suzan.mp3',
+            nick: 'Audios/nick.mp3'
         };
         let _charSelectAudio = null;
         function playCharSelectAudio(characterId) {
@@ -10892,6 +11897,75 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             });
         });
 
+        // ---- Poderes dos personagens (painel na seleção): [tecla, nome do golpe, descrição curta] ----
+        const CHAR_POWERS = {
+            renanzinho: { name: 'Renanzinho', moves: [
+                ['Z', 'Soco', 'Combo de 2 golpes'],
+                ['X', 'Chute', 'Golpe corpo a corpo'],
+                ['↓ + Z', 'Balde', 'Arremessa um balde na corda'],
+                ['Z no ar', 'Pulo duplo', 'Impulso extra depois de pular']
+            ] },
+            aggie: { name: 'Aggie', moves: [
+                ['Z', 'Esmalte', 'Frasco no chão que explode e dá dano em área'],
+                ['↓ + Z', 'Cortador de unha', 'Arremessa um cortador'],
+                ['X', 'Unhada', 'Golpe corpo a corpo']
+            ] },
+            renanAntigo: { name: 'Renan Antigo', moves: [
+                ['Z', 'Tiro', 'Toque rápido atira; segurando, carrega um tiro maior'],
+                ['↓ + Z', 'Escudo', 'Pune quem encostar nele'],
+                ['X', 'Dash', 'Avanço com soco (no ar, 1 vez até pousar)']
+            ] },
+            blui: { name: 'Blui e Reddie', moves: [
+                ['Z', 'Soco', 'Golpe corpo a corpo'],
+                ['X', 'Gelatina', 'Cospe uma rajada de mini bolas de gelatina']
+            ] },
+            doper: { name: 'Doper', moves: [
+                ['Z', 'Copo', 'Quica, fica armado e estilhaça em quem encostar'],
+                ['X', 'Empurrão', 'Golpe de empurrar o oponente'],
+                ['↓ + X', 'Sax', 'Toca uma nota que ondula pelo ar']
+            ] },
+            hofy: { name: 'Hofy', moves: [
+                ['Z', 'Nota musical', 'Grande e lenta; atravessa os oponentes'],
+                ['X', 'Microfone', 'Arremessa um microfone']
+            ] },
+            fooshlooket: { name: 'FooshLooket', moves: [
+                ['Z', 'Cuspe', 'No chão, cospe em linha reta'],
+                ['Z no ar', 'Pulo duplo', 'Depois de pular, aperte Z'],
+                ['↓ + Z', 'Poça', 'Quem pisa escorrega e leva dano'],
+                ['X', 'Bola', 'Avança em forma de bola, quicando']
+            ] },
+            dan: { name: 'Dan', moves: [
+                ['Z', 'Desenho', 'Forma que ganha vida e ataca por ~2 s'],
+                ['↓ + Z', 'Tinta', 'Poça que deixa os oponentes lentos'],
+                ['X', 'Giro', 'Golpe giratório; dá pra andar devagar']
+            ] },
+            suzan: { name: 'Suzan', moves: [
+                ['Z', 'Notebook', 'Batida de notebook'],
+                ['X', 'Hello World', 'Solta o print("hello world!")'],
+                ['↓ + X', 'Bola de bugs', 'Bola jelly de bugs']
+            ] },
+            nick: { name: 'Nick', moves: [
+                ['Z', 'Tapa', 'Tapa rápido, corpo a corpo'],
+                ['↓ + Z', 'Balão de fofoca', 'Deixa o oponente intrigado: esquerda e direita invertidas por 2 s'],
+                ['X', 'Pipoca', 'Joga uma pipoca que estoura em pedacinhos']
+            ] }
+        };
+        const charPowersEl = document.getElementById('char-powers');
+        function showCharPowers(characterId) {
+            const c = CHAR_POWERS[characterId];
+            if (!c) { charPowersEl.innerHTML = '<div class="cp-hint">Passe o mouse sobre um personagem para ver os poderes dele</div>'; return; }
+            const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            charPowersEl.innerHTML = '<div class="cp-title">Poderes<small>' + esc(c.name) + '</small></div><div class="cp-list">' +
+                c.moves.map(m => '<div class="cp-move"><span class="cp-key">' + esc(m[0]) + '</span><span><b>' + esc(m[1]) + '</b><span class="cp-d">' + esc(m[2]) + '</span></span></div>').join('') + '</div>';
+        }
+        // passar o mouse (ou tocar) mostra os poderes; ao sair, volta para o personagem escolhido
+        document.querySelectorAll('#char-select-grid .char-slot.playable').forEach(slotEl => {
+            slotEl.addEventListener('mouseenter', () => showCharPowers(slotEl.dataset.character));
+            slotEl.addEventListener('mouseleave', () => showCharPowers(myPlayerState.character));
+            slotEl.addEventListener('click', () => showCharPowers(slotEl.dataset.character));
+        });
+        showCharPowers(null);
+
         function openReadyScreen() {
             readyOverlay.classList.toggle('aurora', window.mpMode === 'teams'); // 2 vs 2: fundo aurora
             readyOverlay.style.display = 'block';
@@ -10903,6 +11977,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             document.querySelectorAll('#char-select-grid .char-slot.playable').forEach(el => {
                 el.classList.toggle('selected', el.dataset.character === myPlayerState.character);
             });
+            showCharPowers(myPlayerState.character);
             renderReadyList();
             renderMapSelect();
         }
@@ -11023,7 +12098,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         }
         function introOrder() { if (window.TOURN && TOURN.active && TOURN.fighters) return TOURN.fighters; return (_rosterOrder && _rosterOrder.length) ? _rosterOrder : Object.keys(_hostNickMap); }
         function introSlot(id) {
-            const order = introOrder();
+            const order = (window.TOURN && TOURN.groupOrder && TOURN.groupOrder(id)) || introOrder();
             const n = Math.max(1, order.length);
             const idx = Math.max(0, order.indexOf(id));
             const fr = n <= 2 ? [0.1, 0.9] : n === 3 ? [0.1, 0.5, 0.9] : [0.1, 0.37, 0.63, 0.9];
@@ -11170,6 +12245,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             players[myUserId].facingLeft = players[myUserId].x > WORLD_WIDTH / 2;
             if (window.TOURN) TOURN.applySpectator(players[myUserId]); // torneio: quem só assiste fica fora do palco
             MP.sendState();
+            document.body.classList.add('in-match'); // esconde o botão de idioma durante a partida
             statusText.innerText = "Conectado ao Mundo!";
             connectionDot.className = "status-dot connected";
             readyOverlay.style.display = 'none';
@@ -11190,10 +12266,12 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         // golpes e no fim de luta), vendo a luta pela câmera normal e podendo só abrir/fechar a chave.
         // ==========================================
         window.TOURN = (function () {
-            const T = { active: false, finished: false, inFight: false, live: false, fighters: null, cur: null, bracket: null, lastMap: -1 };
+            const T = { active: false, finished: false, inFight: false, live: false, fighters: null, cur: null, curs: null, grp: null, maps: null, cams: null, gdone: [], gres: [], gtext: [], bracket: null, lastMap: -1 };
             const $ = id => document.getElementById(id);
             const bracketEl = $('t-bracket'), vsEl = $('t-vs'), peekBtn = $('t-peek-btn');
-            const BRACKET_DRAW_MS = 6500, BRACKET_WAIT_MS = 5000, VS_MS = 5500, RESULT_DELAY_MS = 1800;
+            const BRACKET_DRAW_MS = 6500, BRACKET_WAIT_MS = 5000, VS_MS = 5500, VS_PAIR_MS = 4500, RESULT_DELAY_MS = 1800;
+            const vsMs = n => n > 1 ? VS_PAIR_MS : VS_MS; // com 2 lutas, cada apresentação (VS) dura um pouco menos
+            let vsToken = 0;
             let timers = [], drawTimer = null, cdTimer = null, nextTimer = null, resultTimer = null, guardTimer = null, peeking = false;
             let V = { draw: false, reveal: 99, next: null, banner: '', secs: 0 };
             const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
@@ -11232,9 +12310,9 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 rounds[r][i].w = w;
                 if (rounds[r + 1]) rounds[r + 1][i >> 1][(i % 2) ? 'b' : 'a'] = w;
             }
-            // Resolve byes e W.O. pendentes e devolve a próxima luta de verdade {r,i} (null = acabou)
-            function nextMatch() {
-                const B = T.bracket; let first = null;
+            // Resolve byes e W.O. pendentes e devolve as próximas lutas de verdade [{r,i}] (null = acabou).
+            function nextMatches() {
+                const B = T.bracket, found = [];
                 for (let r = 0; r < B.rounds.length; r++) {
                     for (let i = 0; i < B.rounds[r].length; i++) {
                         const m = B.rounds[r][i];
@@ -11242,10 +12320,11 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                         const aOut = m.a === null || !!B.dropped[m.a], bOut = m.b === null || !!B.dropped[m.b];
                         if (aOut && bOut) { settle(r, i, null); continue; }
                         if (aOut || bOut) { settle(r, i, aOut ? m.b : m.a); continue; }
-                        if (!first) first = { r, i }; // 1ª luta de verdade; segue varrendo só para resolver os byes/W.O. restantes
+                        found.push({ r, i }); // luta de verdade; segue varrendo só para resolver os byes/W.O. restantes
                     }
                 }
-                return first;
+                if (!found.length) return null;
+                return [found[0]]; // uma luta por vez (lutas simultâneas em tela dividida desativadas)
             }
 
             // ---------- Orquestração do host ----------
@@ -11261,43 +12340,49 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 if (MP.role !== 'host') return;
                 T.active = true; T.finished = false; T.lastMap = -1;
                 T.bracket = buildBracket();
-                const m = nextMatch();
+                const m = nextMatches();
                 sendAll({ phase: 'bracket', bracket: T.bracket, draw: true, banner: '', next: m, wait: BRACKET_DRAW_MS });
                 scheduleNext(BRACKET_DRAW_MS);
             }
             function hostNext() {
                 if (MP.role !== 'host' || !T.active || T.inFight || T.finished) return;
-                const m = nextMatch();
-                if (!m) return hostFinish();
-                const mt = T.bracket.rounds[m.r][m.i];
-                sendAll({ phase: 'match', bracket: T.bracket, a: mt.a, b: mt.b, r: m.r, i: m.i, map: pickMap() });
+                const ms = nextMatches();
+                if (!ms) return hostFinish();
+                const list = ms.map(m => { const mt = T.bracket.rounds[m.r][m.i]; return { a: mt.a, b: mt.b, r: m.r, i: m.i }; });
+                const maps = [pickMap()]; if (list.length > 1) maps.push(pickMap()); // cada luta simultânea tem o seu mapa (pickMap nunca repete o anterior)
+                sendAll({ phase: 'match', bracket: T.bracket, matches: list, map: maps[0], maps });
                 // vigia: se a luta não chegou a começar (VS sem luta), volta pra chave e tenta de novo em vez de travar
                 if (guardTimer) clearTimeout(guardTimer);
                 guardTimer = setTimeout(() => {
                     guardTimer = null;
                     if (MP.role === 'host' && T.active && !T.finished && T.inFight && !T.live) { T.inFight = false; afterResult('A luta não começou. Tentando de novo...'); }
-                }, VS_MS + 12000);
+                }, vsMs(list.length) * list.length + 12000);
             }
             function hostFinish() {
                 const B = T.bracket, last = B.rounds[B.rounds.length - 1][0];
                 sendAll({ phase: 'end', bracket: B, champion: last.w || null });
             }
             function afterResult(text) {
-                const m = nextMatch();
+                const m = nextMatches();
                 if (!m) return hostFinish();
                 sendAll({ phase: 'bracket', bracket: T.bracket, draw: false, banner: text, next: m, wait: BRACKET_WAIT_MS });
                 scheduleNext(BRACKET_WAIT_MS);
             }
-            function hostResult(champ) {
-                const mt = T.bracket.rounds[T.cur.r][T.cur.i];
-                let text;
-                if (champ && (champ === mt.a || champ === mt.b)) { settle(T.cur.r, T.cur.i, champ); text = infoOf(champ).n + ' venceu!'; }
-                else text = 'Empate! A luta será repetida.';
-                afterResult(text);
+            // Fecha as lutas atuais: vencedor de cada uma vai pra chave (empate = luta repetida) e mostra o resultado
+            function resolveAll(res) {
+                const texts = [], many = T.curs.length > 1;
+                T.curs.forEach((cu, k) => {
+                    if (T.gtext[k]) { texts.push(T.gtext[k]); return; } // já resolvida por W.O.
+                    const mt = T.bracket.rounds[cu.r][cu.i], champ = res[k];
+                    if (champ && (champ === mt.a || champ === mt.b)) { settle(cu.r, cu.i, champ); texts.push(infoOf(champ).n + ' venceu!'); }
+                    else texts.push(many ? 'Empate em ' + infoOf(mt.a).n + ' × ' + infoOf(mt.b).n + ': a luta será repetida.' : 'Empate! A luta será repetida.');
+                });
+                afterResult(texts.join(' · '));
             }
-            // Chamado por checkMatchEnd() em todos os clientes quando a luta acaba (vence quem sobrou)
-            function onFightEnd(champ) {
+            // Todas as lutas atuais acabaram (em todos os clientes); só o host segue pro resultado
+            function onFightEnd(res) {
                 T.live = false;
+                if (!Array.isArray(res)) res = [res];
                 if (MP.role !== 'host' || !T.inFight) return;
                 T.inFight = false; T.resultPending = true;
                 if (resultTimer) clearTimeout(resultTimer);
@@ -11305,8 +12390,27 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 resultTimer = setTimeout(() => {
                     resultTimer = null; T.resultPending = false;
                     if (!T.active || T.finished || T.inFight) return;
-                    hostResult(champ);
+                    resolveAll(res);
                 }, RESULT_DELAY_MS);
+            }
+            // Confere cada luta em andamento; quando todas acabaram, encerra a rodada
+            function checkGroups() {
+                if (!T.curs) return;
+                T.curs.forEach((m, k) => {
+                    if (T.gdone[k]) return;
+                    // lutador que ainda não apareceu em 'players' conta como vivo (se ele saiu, o host trata por W.O. em onPlayerLeft)
+                    const aliveF = [m.a, m.b].filter(id => !(players[id] && players[id].eliminated));
+                    if (aliveF.length <= 1) { T.gdone[k] = true; T.gres[k] = aliveF.length === 1 ? aliveF[0] : null; }
+                });
+                if (T.curs.every((m, k) => T.gdone[k])) {
+                    matchOver = true;
+                    championId = T.curs.length === 1 ? T.gres[0] : null;
+                    onFightEnd(T.gres.slice());
+                }
+            }
+            // Duas lutas simultâneas não se enxergam: golpes e projéteis de uma não atingem a outra (usado pelo isAlly)
+            function apart(a, b) {
+                return !!(T.live && T.curs && T.curs.length > 1 && T.grp && T.grp[a] !== undefined && T.grp[b] !== undefined && T.grp[a] !== T.grp[b]);
             }
             // Só no host: alguém caiu. Lutador => adversário vence por W.O.; os demais ficam fora da chave
             function onPlayerLeft(pid) {
@@ -11314,13 +12418,17 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 T.bracket.dropped[pid] = true;
                 const nm = infoOf(pid).n;
                 if (T.inFight && isF(pid)) {
-                    T.inFight = false; T.live = false;
-                    const opp = T.fighters.find(x => x !== pid);
+                    const k = T.curs.findIndex(m => m.a === pid || m.b === pid);
+                    if (k < 0 || T.gdone[k]) return; // a luta dele já tinha acabado: o resultado já vale
+                    const cu = T.curs[k], mt = T.bracket.rounds[cu.r][cu.i];
+                    const opp = mt.a === pid ? mt.b : mt.a;
                     const oppOut = !opp || T.bracket.dropped[opp];
-                    settle(T.cur.r, T.cur.i, oppOut ? null : opp);
-                    afterResult(oppOut ? nm + ' desconectou.' : nm + ' desconectou — ' + infoOf(opp).n + ' vence por W.O.!');
-                } else if (!T.inFight && !T.resultPending) { // com resultado pendente, o hostResult já resolve (nextMatch considera quem saiu)
-                    const m = nextMatch();
+                    settle(cu.r, cu.i, oppOut ? null : opp);
+                    T.gdone[k] = true; T.gres[k] = oppOut ? null : opp;
+                    T.gtext[k] = oppOut ? nm + ' desconectou.' : nm + ' desconectou — ' + infoOf(opp).n + ' vence por W.O.!';
+                    if (T.curs.every((m, j) => T.gdone[j])) { T.inFight = false; T.live = false; resolveAll(T.gres.slice()); } // senão, a outra luta segue valendo
+                } else if (!T.inFight && !T.resultPending) { // com resultado pendente, o resolveAll já resolve (nextMatches considera quem saiu)
+                    const m = nextMatches();
                     if (!m) return hostFinish();
                     sendAll({ phase: 'bracket', bracket: T.bracket, draw: false, banner: nm + ' desconectou.', next: m, wait: 3500 });
                     scheduleNext(3500);
@@ -11350,8 +12458,8 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 B.rounds.forEach((round, r) => {
                     html += '<div class="tb-col"><div class="tb-rname">' + roundName(r, total) + '</div>';
                     round.forEach((m, i) => {
-                        const nx = V.next && V.next.r === r && V.next.i === i && !V.draw;
-                        const live = T.live && T.cur && T.cur.r === r && T.cur.i === i;
+                        const nx = !V.draw && !!V.next && V.next.some(n => n.r === r && n.i === i);
+                        const live = T.live && !!T.curs && T.curs.some(c => c.r === r && c.i === i);
                         html += '<div class="tb-match' + (nx ? ' next' : '') + (live ? ' live' : '') + '">' + row(m.a, m, r, i * 2) + row(m.b, m, r, i * 2 + 1) + '</div>';
                     });
                     html += '</div>';
@@ -11359,9 +12467,10 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 $('tb-tree').innerHTML = html;
                 $('tb-banner').textContent = V.draw ? 'Sorteando os confrontos...' : (V.banner || '');
                 let foot = '';
-                if (!V.draw && V.next) {
-                    const mt = B.rounds[V.next.r][V.next.i];
-                    foot = 'Próxima luta: ' + infoOf(mt.a).n + ' × ' + infoOf(mt.b).n + (V.secs > 0 ? ' — começa em ' + V.secs + 's' : '');
+                if (!V.draw && V.next && V.next.length) {
+                    const txt = V.next.map(n => { const mt = B.rounds[n.r][n.i]; return infoOf(mt.a).n + ' × ' + infoOf(mt.b).n; }).join(' e ');
+                    foot = (V.next.length > 1 ? 'Próximas lutas (ao mesmo tempo): ' : 'Próxima luta: ') + txt + (V.secs > 0 ? ' — começam em ' + V.secs + 's' : '');
+                    if (V.next.length === 1 && V.secs > 0) foot = foot.replace('começam em', 'começa em');
                 }
                 $('tb-foot').textContent = foot;
             }
@@ -11419,22 +12528,34 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 p.x = -9999; p.y = -9999; p.renderTargetX = -9999; p.renderTargetY = -9999;
                 p.vy = 0; p.knockbackVx = 0;
             }
-            function startVs(s) {
-                T.active = true; T.inFight = true; T.live = false;
-                T.fighters = [s.a, s.b]; T.cur = { r: s.r, i: s.i };
-                currentMapIndex = s.map;
-                bracketEl.className = ''; peeking = false;
-                $('tv-img-a').src = (CHARACTERS[infoOf(s.a).c] || CHARACTERS.basey).sprites.idle.src;
-                $('tv-img-b').src = (CHARACTERS[infoOf(s.b).c] || CHARACTERS.basey).sprites.idle.src;
-                $('tv-name-a').textContent = infoOf(s.a).n;
-                $('tv-name-b').textContent = infoOf(s.b).n;
-                $('tv-info').textContent = roundName(s.r, T.bracket.rounds.length) + ' · Mapa: ' + ((MAPS[s.map] && MAPS[s.map].name) || '');
+            function showVsCard(m, s, k, n) {
+                const tok = ++vsToken, mapIdx = (s.maps && s.maps[k] !== undefined) ? s.maps[k] : s.map;
+                $('tv-img-a').src = (CHARACTERS[infoOf(m.a).c] || CHARACTERS.basey).sprites.idle.src;
+                $('tv-img-b').src = (CHARACTERS[infoOf(m.b).c] || CHARACTERS.basey).sprites.idle.src;
+                $('tv-name-a').textContent = infoOf(m.a).n;
+                $('tv-name-b').textContent = infoOf(m.b).n;
+                $('tv-info').textContent = roundName(m.r, T.bracket.rounds.length) + ' · Mapa: ' + ((MAPS[mapIdx] && MAPS[mapIdx].name) || '') + (n > 1 ? ' · Luta ' + (k + 1) + ' de ' + n + ' (ao mesmo tempo)' : '');
                 vsEl.classList.remove('show'); void vsEl.offsetWidth; vsEl.classList.add('show'); // reinicia as animações
                 // voz do 1º lutador, depois "VS" (Audios/vs.mp3), depois voz do 2º (cada um começa quando o anterior termina)
-                const seq = [CHAR_SELECT_AUDIO[infoOf(s.a).c], 'Audios/vs.mp3', CHAR_SELECT_AUDIO[infoOf(s.b).c]].filter(Boolean);
-                const playNext = () => { const src = seq.shift(); if (!src || !T.inFight) return; const au = new Audio(src); au.onended = playNext; au.onerror = playNext; au.play().catch(playNext); };
+                const seq = [CHAR_SELECT_AUDIO[infoOf(m.a).c], 'Audios/vs.mp3', CHAR_SELECT_AUDIO[infoOf(m.b).c]].filter(Boolean);
+                const playNext = () => { const src = seq.shift(); if (!src || !T.inFight || tok !== vsToken) return; const au = new Audio(src); au.onended = playNext; au.onerror = playNext; au.play().catch(playNext); };
                 later(playNext, 300);
-                later(() => { vsEl.classList.remove('show'); startFight(); }, VS_MS);
+            }
+            function startVs(s) {
+                T.active = true; T.inFight = true; T.live = false;
+                const ms = s.matches;
+                T.curs = ms.map(m => ({ r: m.r, i: m.i, a: m.a, b: m.b }));
+                T.fighters = []; T.grp = {};
+                ms.forEach((m, k) => { T.fighters.push(m.a, m.b); T.grp[m.a] = k; T.grp[m.b] = k; }); // pares lado a lado na entrada
+                T.gdone = []; T.gres = []; T.gtext = [];
+                T.maps = (s.maps && s.maps.length >= ms.length) ? s.maps.slice() : ms.map(() => s.map);
+                T.cams = ms.map(() => ({ focusX: WORLD_WIDTH / 2, focusY: WORLD_HEIGHT / 2, zoom: 1 }));
+                // fora das passadas (eventos, entrada) vale o mapa da luta do jogador local (espectador: o da 1ª luta)
+                currentMapIndex = T.maps[T.grp[myUserId] !== undefined ? T.grp[myUserId] : 0];
+                bracketEl.className = ''; peeking = false;
+                const each = vsMs(ms.length);
+                ms.forEach((m, k) => later(() => showVsCard(m, s, k, ms.length), k * each));
+                later(() => { vsEl.classList.remove('show'); startFight(); }, each * ms.length);
             }
             function startFight() {
                 isRunning = false; // garante que beginGameplay religue o loop do jogo
@@ -11445,7 +12566,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                     p.lastUpdate = nowTs; // ficou um tempão sem pacotes (lobby/chave/VS): não pode parecer inativo
                     if (!isF(id)) { markSpectator(p); continue; }
                     if (id !== myUserId) { // lutador remoto já aparece no ponto de entrada (sem "deslizar" de longe)
-                        p.x = introSlot(id).x; p.y = getGroundYAt(p.x) - PLAYER_SIZE / 2 - 1; p.renderTargetX = p.x; p.renderTargetY = p.y;
+                        const _sv = currentMapIndex; if (T.maps && T.grp && T.grp[id] !== undefined) currentMapIndex = T.maps[T.grp[id]]; p.x = introSlot(id).x; p.y = getGroundYAt(p.x) - PLAYER_SIZE / 2 - 1; currentMapIndex = _sv; p.renderTargetX = p.x; p.renderTargetY = p.y;
                         p.vy = 0; p.knockbackVx = 0; p.hitstunUntil = 0; p.attackUntil = 0;
                     }
                 }
@@ -11487,12 +12608,92 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             function reset() {
                 clearTimers(); if (resultTimer) clearTimeout(resultTimer); if (guardTimer) clearTimeout(guardTimer); resultTimer = guardTimer = null; T.resultPending = false;
                 T.active = false; T.finished = false; T.inFight = false; T.live = false;
-                T.fighters = null; T.cur = null; T.bracket = null; peeking = false;
+                T.fighters = null; T.cur = null; T.curs = null; T.grp = null; T.bracket = null; peeking = false;
                 bracketEl.className = ''; vsEl.classList.remove('show'); peekBtn.style.display = 'none';
             }
 
+
+            // ---------- Tela dividida (2 lutas simultâneas, cada uma com o seu mapa) ----------
+            // Cada passada do loop enxerga só a "sua" luta: jogadores e projéteis/efeitos da outra ficam escondidos,
+            // o mapa e a câmera são os dela, e a largura do canvas é a da metade. O resto do jogo roda como sempre.
+            const VIEW_ARRAYS = [
+                () => hitParticles,
+                () => clawEffects,
+                () => polishSplashes,
+                () => damagePopups,
+                () => impactLines,
+                () => motionTrails,
+                () => fallingBuckets,
+                () => nailPolishBottles,
+                () => nailClippers,
+                () => bullets,
+                () => thrownCups,
+                () => cupShards,
+                () => spitShots,
+                () => waterSpits,
+                () => waterPuddles,
+                () => jellyBalls,
+                () => flails,
+                () => helloPrints,
+                () => glitchBalls,
+                () => notes,
+                () => danDrawings,
+                () => inkPuddles,
+                () => thrownMics,
+                () => thrownPopcorns,
+                () => popcornBits,
+                () => gossipBubbles
+            ];
+            const _cvW = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width');
+            let _fakeW = null; // durante uma passada, canvas.width = largura da metade (letterbox, HUD e KO usam isso)
+            Object.defineProperty(canvas, 'width', { configurable: true, get() { return _fakeW !== null ? _fakeW : _cvW.get.call(canvas); }, set(v) { _cvW.set.call(canvas, v); } });
+            const realW = () => _cvW.get.call(canvas);
+            const groupOfEl = el => {
+                if (!el || typeof el !== 'object') return undefined;
+                if (el._g !== undefined) return el._g;
+                const o = el.ownerId !== undefined ? el.ownerId : el.owner;
+                return (o !== undefined && T.grp && T.grp[o] !== undefined) ? T.grp[o] : undefined;
+            };
+            function passes() { return (T.live && T.curs && T.curs.length > 1 && T.maps && T.grp && T.cams) ? [0, 1] : null; }
+            function groupOrder(id) {
+                if (!T.active || !T.inFight || !T.curs || T.curs.length < 2 || !T.grp || T.grp[id] === undefined) return null;
+                const c = T.curs[T.grp[id]]; return [c.a, c.b];
+            }
+            function beginPass(g, pi, n) {
+                const W = realW(), H = canvas.height, gap = 4, hw = Math.floor((W - gap) / 2), vx = pi === 0 ? 0 : W - hw;
+                ctx.save(); ctx.beginPath(); ctx.rect(vx, 0, hw, H); ctx.clip(); ctx.translate(vx, 0);
+                _fakeW = hw;
+                const hidden = {};
+                for (const id in players) { const gg = T.grp[id]; if (gg !== undefined && gg !== g) { hidden[id] = players[id]; delete players[id]; } }
+                const dflt = T.grp[myUserId] !== undefined ? T.grp[myUserId] : 0; // efeito sem dono conhecido: fica na luta do jogador local
+                const rests = VIEW_ARRAYS.map(get => {
+                    const a = get(), mine = [], rest = [];
+                    for (const el of a) { const gg = groupOfEl(el); ((gg !== undefined ? gg : dflt) === g ? mine : rest).push(el); }
+                    a.splice(0, a.length, ...mine);
+                    return rest;
+                });
+                const prevMap = currentMapIndex; currentMapIndex = T.maps[g];
+                const prevCam = Object.assign({}, cameraState); Object.assign(cameraState, T.cams[g]);
+                return function endPass() {
+                    T.cams[g] = Object.assign({}, cameraState); Object.assign(cameraState, prevCam);
+                    currentMapIndex = prevMap;
+                    VIEW_ARRAYS.forEach((get, i) => {
+                        const cur = get();
+                        for (const el of cur) if (el && typeof el === 'object' && el._g === undefined) el._g = g;
+                        cur.push(...rests[i]);
+                    });
+                    for (const id in hidden) if (!players[id]) players[id] = hidden[id];
+                    _fakeW = null;
+                    ctx.restore();
+                };
+            }
+            function drawDivider() {
+                const W = realW(), H = canvas.height;
+                ctx.save(); ctx.fillStyle = '#10141c'; ctx.fillRect(Math.floor(W / 2) - 2, 0, 4, H); ctx.restore();
+            }
+
             return Object.assign(T, {
-                hostStart, onState, onFightEnd, onPlayerLeft, onHostLost, reset,
+                hostStart, onState, onFightEnd, checkGroups, apart, passes, beginPass, groupOrder, drawDivider, onPlayerLeft, onHostLost, reset,
                 isSpectator: id => T.active && T.inFight && !!T.fighters && !isF(id),
                 applySpectator: p => { if (T.active && T.inFight && T.fighters && !isF(myUserId)) markSpectator(p); },
                 // espectador/aguardando (ou fora da luta): sem controle do personagem
@@ -11906,9 +13107,9 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
         const INTRO_MS = 2700;   // cartela "A VS B": os bots ficam parados até ela terminar
 
         // Apresentação visual dos personagens (cartela de abertura)
-        const NAMES = { basey: 'Basey', renanzinho: 'Renanzinho', aggie: 'Aggie', renanAntigo: 'Renan Antigo', blui: 'Blui e Reddie', doper: 'Doper', hofy: 'Hofy', fooshlooket: 'FooshLooket', dan: 'Dan', suzan: 'Suzan' };
+        const NAMES = { basey: 'Basey', renanzinho: 'Renanzinho', aggie: 'Aggie', renanAntigo: 'Renan Antigo', blui: 'Blui e Reddie', doper: 'Doper', hofy: 'Hofy', fooshlooket: 'FooshLooket', dan: 'Dan', suzan: 'Suzan', nick: 'Nick' };
         const TAGS = { basey: 'Retângulo base', renanzinho: 'Otimista e alegre', aggie: 'Rainha da manicure', renanAntigo: 'Criado em 2020', blui: 'Dupla gelatinosa',
-                       doper: 'Bartender do Blue Note', hofy: 'Dançarina e cantora', fooshlooket: 'Criatura aquática', dan: 'Líder dos White Ones', suzan: 'Nerd dos White Ones' };
+                       doper: 'Bartender do Blue Note', hofy: 'Dançarina e cantora', fooshlooket: 'Criatura aquática', dan: 'Líder dos White Ones', suzan: 'Nerd dos White Ones', nick: 'Caos em pessoa' };
         const CARD_COLORS = [['#e53935', '#8e1b1b'], ['#1e88e5', '#0d3f7a']];
         function portraitSrc(ch) {
             const sp = CHARACTERS[ch] && CHARACTERS[ch].sprites && CHARACTERS[ch].sprites.idle;
@@ -11976,6 +13177,11 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
                 { id: 'spin', role: 'kill', melee: true, min: 0, max: 85, tol: 40, evalMs: 1100, ready: meleeOk, use: p => startAttack(p, 'spin') },
                 { id: 'ink', role: 'trap', min: 60, max: 240, tol: 120, evalMs: 3000,
                   ready: (p, t, b) => meleeOk(p, t) && p.onGround && countMine(inkPuddles, b.id, () => true) < INK_MAX, use: p => paintInk(p) }
+            ] },
+            nick: { style: 'zoner', moves: [
+                { id: 'popcorn', role: 'zone', min: 120, max: 420, tol: 90, evalMs: 1600, ready: meleeOk, use: p => throwPopcorn(p) },
+                { id: 'gossip', role: 'zone', min: 90, max: 460, tol: 50, evalMs: 1800, ready: meleeOk, use: p => throwGossip(p) },
+                { id: 'slap', role: 'poke', melee: true, min: 0, max: 62, tol: 40, evalMs: 700, ready: meleeOk, use: p => startAttack(p, 'punch1') }
             ] },
             fooshlooket: { style: 'trapper', djump: true, moves: [
                 { id: 'ball', role: 'kill', melee: true, min: 60, max: 210, tol: 50, run: 260, evalMs: 1600, ready: meleeOk, use: p => startAttack(p, 'ball') },
@@ -12513,7 +13719,7 @@ function silA(t){return t<=2.5?0:easeSil((t-2.5)/1);}
             cleanup() {
                 for (const id of Object.keys(players)) if (players[id].demoBot) delete players[id];
                 this.bots = [];
-                for (const arr of [nailPolishBottles, nailClippers, bullets, notes, thrownMics, flails, helloPrints, glitchBalls, jellyBalls,
+                for (const arr of [nailPolishBottles, nailClippers, bullets, notes, thrownMics, thrownPopcorns, popcornBits, gossipBubbles, flails, helloPrints, glitchBalls, jellyBalls,
                                    thrownCups, cupShards, waterSpits, spitShots, waterPuddles, fallingBuckets, hitParticles,
                                    clawEffects, polishSplashes, damagePopups, impactLines, motionTrails]) arr.length = 0;
                 isRunning = false; matchOver = false; championId = null;
@@ -13184,6 +14390,36 @@ document.addEventListener('visibilitychange', () => {
         }).catch(function () {
             setMsg('Não deu pra enviar agora. Confira a internet e tente de novo.', 'err');
         }).then(function () { send.disabled = false; });
+    });
+})();
+</script>
+
+<script>
+(function () {
+    // Menu de Opções (aberto pelo item "Opções" do menu Modo de Jogo). Por enquanto só tem o idioma;
+    // o idioma em si é gerenciado por I18N (salvo no navegador). Esc volta ao menu de modo de jogo.
+    var $ = function (id) { return document.getElementById(id); };
+    var ov = $('opt-overlay'), cards = ov.querySelectorAll('.opt-lang');
+    function sync() {
+        for (var i = 0; i < cards.length; i++) {
+            var on = cards[i].getAttribute('data-l') === I18N.lang;
+            cards[i].classList.toggle('selected', on);
+            cards[i].setAttribute('aria-checked', on ? 'true' : 'false');
+        }
+    }
+    function open() { $('mode-overlay').style.display = 'none'; ov.style.display = 'flex'; sync(); }
+    function close() { ov.style.display = 'none'; $('mode-overlay').style.display = 'flex'; }
+    $('opt-btn').addEventListener('click', open);
+    $('opt-back').addEventListener('click', close);
+    for (var i = 0; i < cards.length; i++) {
+        cards[i].addEventListener('click', function () { I18N.set(this.getAttribute('data-l')); });
+    }
+    window.addEventListener('langchange', sync);
+    document.addEventListener('keydown', function (e) {
+        if (ov.style.display !== 'flex') return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') I18N.set('pt');
+        else if (e.key === 'ArrowRight') I18N.set('en');
     });
 })();
 </script>
