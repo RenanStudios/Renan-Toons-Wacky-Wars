@@ -16,6 +16,7 @@ Abra o `index.html` no navegador (as imagens/sprites ficam nas pastas ao lado, e
 | Ataque secundário | **X** | Botão X |
 | Variações | segurar **↓** + Z ou X | Joystick para baixo + botão |
 | Jogar de novo (fim da partida) | **R** | Tocar na tela |
+| Pausar (modo Um Jogador) | **Esc** | — |
 
 Também há vibração em controles (Gamepad API) quando o navegador suporta.
 
@@ -24,8 +25,8 @@ Também há vibração em controles (Gamepad API) quando o navegador suporta.
 - **Intro da logo "Renan Studios":** a logo é desenhada em wireframe num canvas e, no fim, é revelada a arte final (`rs_logo.png`). Há um botão **Pular** no canto inferior direito.
 - **Tela de título:** logo do jogo (`game_logo.png`) sobre uma esfera de anéis em CSS 3D girando, raios de luz e vinheta, com o aviso "TOQUE PARA COMEÇAR". Depois de 15 s parado aqui começa a [demonstração](#demonstração-attract-mode).
 - **Nome:** obrigatório antes de criar ou entrar numa sala (até 16 caracteres).
-- **Modo de Jogo** (estilo "Mode Select" do Smash 64), com cinco itens: **Um Jogador** (bloqueado, "Em breve"), **Multijogador**, **Galeria**, **Sugestões** e **Opções**.
-- **Seleção de personagem** (estética Melee VS): ao passar o mouse ou tocar num personagem, o painel de poderes mostra os golpes dele e a fala do personagem toca ao escolhê-lo. Detalhes em [Seleção de personagem](#seleção-de-personagem).
+- **Modo de Jogo** (estilo "Mode Select" do Smash 64), com cinco itens: **Um Jogador** (Modo História, veja [Modo Um Jogador](#modo-um-jogador-modo-história)), **Multijogador**, **Galeria**, **Sugestões** e **Opções**.
+- **Seleção de personagem** (estética Melee VS): ao passar o mouse ou tocar num personagem, o painel de poderes mostra os golpes dele e a fala do personagem toca ao escolhê-lo. Detalhes em [Seleção de personagem](#seleção-de-personagem). O modo Um Jogador reaproveita essa mesma tela.
 
 ## Personagens e ataques
 
@@ -101,7 +102,7 @@ O botão **Opções** do menu Modo de Jogo abre uma tela, no mesmo estilo do men
 
 ## Mapas
 
-Cubos · Colinas · DORFic · **Vector** · **Blue Note** · **Deserto** · **Lado de Fora** · **Media Player**
+Cubos · Colinas · DORFic · **Vector** · **Blue Note** · **Deserto** · **Lado de Fora** · **Media Player** · **End...?** (só no modo Um Jogador)
 
 O mapa **Vector** tem 3 plataformas flutuantes que se movem (duas sobem/descem, uma vai de um lado para o outro). O **Deserto** tem a plataforma principal ondulando (veja a seção abaixo). O **Media Player** tem a barra de tarefas como chão, o topo da janela como plataforma alta e duas plataformas que sobem e descem. Os outros mapas têm só o palco principal (Cubos tem plataformas flutuantes fixas).
 
@@ -183,6 +184,67 @@ Na tela **Modo de Jogo** há um quarto botão, **Sugestões** (com uma lâmpada)
 - **Regras:** nome obrigatório, sugestão com 5 a 1000 caracteres, intervalo de 60 s entre envios e um campo escondido contra robôs. As teclas digitadas na janela não movem o personagem nem acionam atalhos do jogo.
 - **Envio:** com o **EmailJS** configurado (3 chaves no topo do bloco `CAIXA DE SUGESTÕES`), a sugestão chega direto no e-mail do Renan, sem o jogador sair do jogo. Sem as chaves, abre uma nova mensagem do **Gmail** no navegador, já preenchida com destinatário, assunto e texto (antes abria o app de e-mail padrão).
 
+## Modo Um Jogador (Modo História)
+
+No menu **Modo de Jogo**, o botão **Um Jogador** abre uma sequência de **8 lutas contra a CPU**, no estilo do modo Um Jogador do Smash 64: você escolhe o personagem (na mesma tela de seleção do multijogador, com os botões **Voltar** e **Começar**) e enfrenta uma série de oponentes, em mapas diferentes, até chegar ao chefe final. Nada vai pela rede.
+
+- **Vidas:** você tem 3 vidas. Todos os oponentes (e o aliado, nas lutas em dupla) têm **1 vida**, e quase todos já começam com dano acumulado, então voam fácil. A exceção é o Wexel, que tem barra de vida (veja abaixo).
+- **Antes de cada luta:** uma cartela "A VS B" (cerca de 2,7 s) com o nome da luta e do oponente, com os controles travados, seguida de "LUTE!".
+- **Fim de luta:** vitória mostra "Continuar" para a próxima luta; derrota oferece "Tentar de novo" ou "Sair". **Esc** pausa (Continuar / Sair do modo história). O topo da tela mostra "Fase x/8" e o nome da luta, mais o aliado (lutas em dupla) ou quantos FooshLookets restam (horda).
+- **IA:** as CPUs usam a mesma IA da [demonstração](#demonstração-attract-mode), com ajustes por luta (`ai` em `STAGES`: habilidade, tempo de reação, imprecisão e agressividade), que ficam mais afiados nas lutas finais.
+
+| # | Luta | Mapa | Como é |
+|---|---|---|---|
+| 1 | Renanzinho | Cubos | Duelo; o oponente começa com 110% de dano |
+| 2 | Horda de FooshLookets | Vector | 10 no total, sempre 2 em cena; quando um cai, entra o próximo. São mais fracos que o FooshLooket original, começam com 130% de dano e voam bem mais longe (knockback 3,2×). Seis cores, com sprites feitos em HTML/CSS |
+| 3 | Renan Antigo | Colinas | Duelo; começa com 70% de dano e IA mais afiada |
+| 4 | Doper e Hofy | Blue Note | 2 contra 2: você e um aliado sorteado (CPU) contra os dois |
+| 5 | Aggie | DORFic | Duelo; começa com 60% de dano |
+| 6 | Dan e Suzan | Media Player | 2 contra 2, também com aliado sorteado |
+| 7 | Renanzinho de Prata | Lado de Fora | Chefe: começa com 0% de dano, sofre 70% do knockback, bate 50% mais forte, é 12% mais rápido e a IA quase não erra |
+| 8 | Wexel | End...? | Chefe final |
+
+Nas lutas em dupla o aliado é sorteado entre os personagens que não são o seu nem dos oponentes. O Renanzinho de Prata usa sprites em baixa resolução (44×77 px, 24 cores) embutidos em base64 no próprio `index.html`.
+
+### Luta 8: Wexel
+
+O chefe final é o **Wexel**, um mago "quase 3D" em wireframe (malha de linhas desenhada em canvas, com matrizes 4×4 próprias, em baixa resolução para rodar liso). Ele aparece de perfil, sempre olhando para o jogador, e entra no motor como um lutador comum para os golpes do jogo funcionarem, mas todo dano que recebe vira perda de **HP (300)** e o knockback é anulado.
+
+- **Comportamento:** voa pelo palco e, a cada 3 s de intervalo, desce ao meio da plataforma (onde dá para acertá-lo) e usa um ataque. Uma sombra no chão mostra a altura do voo, e o nome do golpe aparece na tela. A barra de HP fica no topo.
+- **Ataques:**
+
+| Ataque | Dano |
+|---|---|
+| Soco duplo | 7 + 7 |
+| Cabeçada | 9 |
+| Bola de fogo | 11 |
+| Raio | 12 |
+| Nova arcana | 9 |
+| Furacão | 6 + 6 |
+| Chuva de meteoros | 10 por meteoro |
+| Esmagamento | 12 (onda de choque no chão: dá para pular por cima) |
+
+- **Entrada (cutscene):** a malha se monta com glitch enquanto um terminal verde escreve `> new Wexel()` e mensagens de erro, terminando em "ELE NÃO DEVERIA EXISTIR". A câmera do jogo faz um **close** nele, o jogador **não pode se mexer**, barras pretas de cinema indicam a cutscene e a câmera 3D do próprio Wexel não gira. Ele é invulnerável nessa fase, e a barra de HP só aparece quando a luta começa.
+- **Morte (cutscene):** novo close com o jogador travado e as barras de cinema. O Wexel treme, as mãos somem, as cores dessaturam e saturam, o corpo vira um cilindro e um cubo mal feitos, os olhos entram em pânico e o chapéu corrompe, enquanto janelas de erro estilo Windows 98 giram em 3D ao redor dele (sem cobrir a tela). O cenário desaba (tremor, rachaduras, fatias com separação de cor, blocos que caem girando, chuva de glifos de erro e vinheta) e a música some aos poucos, até a tela ficar toda preta. Depois aparece a mensagem de vitória.
+- **Tamanho:** o Wexel é desenhado maior que a escala original (constante `U` do bloco `WEXEL`, 46 px de mundo por unidade); as caixas de acerto dos golpes usam a mesma unidade, então crescem junto.
+- **Mapa End...?:** cenário "glitch" exclusivo do modo Um Jogador (`storyOnly`), que não aparece nos modos multijogador nem no sorteio da demonstração. A música do jogo some conforme o cenário corrompe na morte do Wexel.
+- **Implementação:** módulo `WEXEL` dentro do bloco do modo história no `index.html` (`tick`, `draw`, `cam`, `corrupt`, `reset`; constantes `HP_MAX`, `INTERVAL` e a lista `IDS` dos ataques).
+- **Atalho de teste:** **F8** vai direto para a luta 8, de qualquer menu (marcado no código para remover antes de publicar).
+
+## Trailer de lançamento (modo gravação)
+
+Para gerar o vídeo de lançamento do modo Um Jogador: abra `index.html?trailer` ou aperte **F9** em qualquer tela. O trailer toca sozinho, sem tela de título, nome nem menus, e **grava a si mesmo**.
+
+- **Roteiro (cerca de 26 s):**
+  1. O menu Modo de Jogo com **Um Jogador** bloqueado: close no botão, que treme cada vez mais, solta um brilho e é liberado.
+  2. **5 lutas de 3 s** do modo Um Jogador (`TRAILER_CLIPS`), com as fases de verdade e o jogador também controlado pela CPU: Cubos (Renanzinho), Vector (horda), Blue Note (Doper e Hofy, 2 contra 2), DORFic (Aggie) e Lado de Fora (Renanzinho de Prata). A IA dos inimigos fica mais agressiva para dar ação em 3 s, e a tela de vitória não aparece.
+  3. Uma **palhinha do Wexel**: só termina quando a entrada dele termina (com limite de 9 s).
+  4. A cartela final: **"Modo Singleplayer lançado!!!"** e, embaixo, "Jogue agora no site:" com o link do jogo. Ela fica 3,5 s na tela antes de a gravação parar.
+- **Gravação:** captura a própria guia (menus, jogo e mensagem final) na **resolução que ela tiver**, com o áudio, usando `getDisplayMedia` (`preferCurrentTab`) e `MediaRecorder`. O arquivo baixa sozinho no fim, como `trailer-renan-toons-LARGURAxALTURA.webm` (ou `.mp4`, se o navegador só suportar esse formato), com taxa de bits proporcional à resolução (de 8 a 40 Mbps).
+- **Como iniciar:** com `?trailer` aparece uma tela com **Gravar e iniciar** e **Iniciar sem gravar**, porque o navegador só deixa gravar a tela depois de um clique. Na janela do navegador, escolha **Esta guia** e marque o áudio da guia. O **F9** já conta como interação e dispara a gravação direto.
+- **Se algo der errado:** negar a captura roda o trailer sem gravar; parar o compartilhamento no meio salva o que já foi gravado. Funciona melhor no Chrome e no Edge.
+- **Implementação:** bloco `TRAILER` dentro do módulo do modo história no `index.html` (`trailerStart`, `trailerRun`, `trailerRecord`, `trailerGate`; constantes `TRAILER_CLIPS`, `TRAILER_MENU_MS`, `TRAILER_CLIP_MS`). Durante o trailer, um CSS injetado (`#trailer-css`) esconde os menus e o botão Sugestões.
+
 ## Multiplayer
 
 Online via [PeerJS](https://peerjs.com/) (conexão P2P entre jogadores, com código de sala curto). Cada cliente simula a física dos projéteis localmente; só o dono de cada ataque detecta o acerto e avisa os outros.
@@ -263,7 +325,7 @@ Implementação: helpers `rideAttach(obj, superfície, índice)` (ao pousar) e `
 
 ## Demonstração (attract mode)
 
-Depois de 15 s parado na tela de título, dois lutadores controlados por CPU lutam por 60 s com o motor real do jogo (nada é enviado pela rede) e depois volta ao título. Qualquer tecla ou toque encerra a demonstração. Os mapas Vector e Media Player não entram no sorteio da demonstração, porque dependem do relógio do host. O Deserto e o Blue Note entram no sorteio; a onda do Deserto ainda não foi testada com os bots, então, se algum travar nela, basta excluí-lo do sorteio como é feito com o Vector.
+Depois de 15 s parado na tela de título, dois lutadores controlados por CPU lutam por 60 s com o motor real do jogo (nada é enviado pela rede) e depois volta ao título. Qualquer tecla ou toque encerra a demonstração. Os mapas Vector e Media Player não entram no sorteio da demonstração, porque dependem do relógio do host, e o End..., por ser exclusivo do modo Um Jogador. O Deserto e o Blue Note entram no sorteio; a onda do Deserto ainda não foi testada com os bots, então, se algum travar nela, basta excluí-lo do sorteio como é feito com o Vector.
 
 Visual da demonstração:
 
@@ -280,10 +342,14 @@ Tudo isso fica no bloco `LUTA DE DEMONSTRAÇÃO` do `index.html` (CSS do overlay
 
 ## Tecnologias
 
-HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos e para as músicas (chiptune gerado em código). O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, a esfera da tela de título também, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS. Os mapas Blue Note, Deserto e Lado de Fora são adaptados de HTML/CSS para canvas, e o Media Player usa uma imagem SVG gerada a partir do HTML da arte (`foreignObject`), desenhada uma vez em canvas na memória. A tradução PT/EN é um dicionário próprio (`I18N`), sem biblioteca. O EmailJS (opcional) envia as sugestões por e-mail.
+HTML5 Canvas, JavaScript (sem build), PeerJS, Font Awesome (CDN) e Web Audio para os efeitos e para as músicas (chiptune gerado em código). O troféu do lobby do torneio e o boneco do fundo do 2v2 usam CSS 3D, a esfera da tela de título também, os fogos de artifício usam um `<canvas>` 2D próprio, e o fundo e os botões do 2v2 usam apenas gradientes e animações CSS. Os mapas Blue Note, Deserto e Lado de Fora são adaptados de HTML/CSS para canvas, e o Media Player usa uma imagem SVG gerada a partir do HTML da arte (`foreignObject`), desenhada uma vez em canvas na memória. O Wexel é desenhado em canvas 2D com projeção 3D própria (matrizes 4×4, sem biblioteca). A tradução PT/EN é um dicionário próprio (`I18N`), sem biblioteca. O EmailJS (opcional) envia as sugestões por e-mail. O modo de gravação do trailer usa `getDisplayMedia` e `MediaRecorder`.
 
 ## Changelog
 
+- **Modo Um Jogador (Modo História):** o botão **Um Jogador** do menu Modo de Jogo foi liberado. São 8 lutas contra a CPU (Renanzinho, horda de FooshLookets, Renan Antigo, Doper e Hofy, Aggie, Dan e Suzan, Renanzinho de Prata e o Wexel), com escolha de personagem, cartela VS antes de cada luta, aliado sorteado nas lutas em dupla, pausa com Esc e tela de derrota/vitória.
+- **Wexel, chefe final:** mago em wireframe 3D com 300 de HP, 8 ataques, cutscene de entrada (close, jogador travado, barras de cinema, terminal de erro) e cutscene de morte (corrupção do corpo, janelas de erro em 3D e o cenário desabando até a tela ficar preta). Desenhado maior que a escala original.
+- **Novo mapa · End...?:** cenário "glitch" da luta final, exclusivo do modo Um Jogador (fora dos modos multijogador e da demonstração).
+- **Trailer de lançamento:** `index.html?trailer` (ou F9) toca um trailer de cerca de 26 s (menu com o Um Jogador sendo liberado, 5 lutas do modo Um Jogador, palhinha do Wexel e cartela final) e grava tudo, na resolução da guia, baixando o vídeo no fim.
 - **Novo personagem · Nick:** animada e caótica, com tapa (Z), pipoca que estoura em pipoquinhas (X) e balão de fofoca (↓ + Z) que deixa o oponente intrigado, com esquerda e direita invertidas por 2 s. Sem pulo duplo, com fala própria na seleção e kit de CPU como *zoner*.
 - **Novo mapa · Blue Note:** palco noturno adaptado do `ceu-noturno.html`, com céu estrelado, lua, prédios em parallax, plataforma preta com o letreiro "BLUE NOTE / Bar" e dois holofotes de feixe giratório. Entra no sorteio da demonstração.
 - **Idiomas · Português e English:** novo botão **Opções** no menu Modo de Jogo, com troca de idioma (←/→, Esc volta). Traduz o HTML e os textos do canvas na hora, salva a escolha no navegador, abre em inglês na primeira visita de navegadores que não são em português, e cada jogador vê o jogo no próprio idioma, mesmo online.
