@@ -2216,6 +2216,12 @@
 "Pipoca na cara": "Popcorn in the Face",
 "Rajada curta de 5 pipocas em leque": "Short burst of 5 popcorn kernels in a fan",
 "Gritinho": "Little Scream",
+"Boneco de papel": "Paper Doll",
+"Arremessa um boneco de papel que quica ao acertar": "Throws a paper doll that bounces off on impact",
+"Corda de papel": "Paper Rope",
+"Lança um avião de papel preso a uma corda: se agarrar, puxa o Will até o alvo": "Launches a paper plane tied to a rope: if it grabs, it pulls Will to the target",
+"A olhada": "The Stare",
+"Rajada de curto alcance na frente dele": "Short-range blast in front of him",
 "Um garoto otimista e sempre alegre, que contagia todo mundo por onde passa. Rumores dizem que ele tem poderes, mas ninguém sabe se isso é verdade.": "An optimistic, always cheerful boy who rubs off on everyone around him. Rumors say he has powers, but nobody knows if that's true.",
 "Otimista e alegre": "Optimistic and cheerful",
 "Poderes: só rumores": "Powers: just rumors",
@@ -15218,6 +15224,11 @@ return { render, platform };
                 ['X', 'Chinelada', 'Chinelo que vai e volta girando: acerta na ida e na volta'],
                 ['↓ + Z', 'Pipoca na cara', 'Rajada curta de 5 pipocas em leque'],
                 ['↓ + X', 'Gritinho', 'Onda de choque em volta dela que afasta quem está colado']
+            ] },
+            will: { name: 'Will', moves: [
+                ['Z', 'Boneco de papel', 'Arremessa um boneco de papel que quica ao acertar'],
+                ['↓ + Z', 'Corda de papel', 'Lança um avião de papel preso a uma corda: se agarrar, puxa o Will até o alvo'],
+                ['X', 'A olhada', 'Rajada de curto alcance na frente dele']
             ] }
         };
         const charPowersEl = document.getElementById('char-powers');
